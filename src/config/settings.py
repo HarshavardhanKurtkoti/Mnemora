@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     CROSS_ENCODER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     
     # Retrieval Configuration
-    VECTOR_DB_PATH: str = "./data/chroma_db"
+    QDRANT_URL: Optional[str] = None
+    QDRANT_API_KEY: Optional[str] = None
     BM25_INDEX_PATH: str = "./data/bm25_index.pkl"
     CHUNK_SIZE: int = 800
     CHUNK_OVERLAP: int = 100

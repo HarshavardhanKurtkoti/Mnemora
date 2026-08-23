@@ -19,15 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  chroma:
-    image: chromadb/chroma:latest
-    container_name: mnemora_chroma
-    restart: always
-    volumes:
-      - chroma_data:/chroma/chroma
-    ports:
-      - "8000:8000"
-
   api:
     build: .
     container_name: mnemora_api
@@ -39,15 +30,14 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-mnemora_user}:${POSTGRES_PASSWORD:-mnemora_pass}@db:5432/${POSTGRES_DB:-mnemora_db}
       - LLM_PROVIDER=${LLM_PROVIDER}
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
     depends_on:
       db:
         condition: service_healthy
-      chroma:
-        condition: service_started
     volumes:
       - ./data:/app/data
       - ./src:/app/src
 
 volumes:
   postgres_data:
-  chroma_data:
