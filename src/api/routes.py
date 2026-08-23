@@ -3,6 +3,9 @@ import tempfile
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 from src.ingestion.loaders import DocumentLoaderService
 from src.ingestion.chunking import ChunkingService
@@ -110,6 +113,7 @@ async def ingest_file(
         return {"status": "success", "chunks_processed": len(chunked_docs)}
         
     except Exception as e:
+        logger.error("Error during file ingestion", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/query", response_model=QueryResponse)
@@ -175,6 +179,7 @@ async def query_rag(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error("Error during query processing", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/stats/overview", response_model=schemas.SystemStatSchema)
