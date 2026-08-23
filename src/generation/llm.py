@@ -64,7 +64,7 @@ class GenerationService:
     def generate_answer(self, question: str, retrieved_docs: List[Document]) -> Dict[str, Any]:
         if not retrieved_docs:
             return {
-                "answer": "I couldn't find sufficient information in the provided documents to answer this question.",
+                "answer": "Insufficient information to answer the question based on the provided documents.",
                 "citations": []
             }
             
@@ -100,7 +100,7 @@ class GenerationService:
                     else:
                         logger.error(f"Failed to generate valid citations after {max_retries} retries.")
                         return {
-                            "answer": "I couldn't find sufficient information in the provided documents to answer this question.",
+                            "answer": "Insufficient information to answer the question based on the provided documents.",
                             "citations": []
                         }
                 

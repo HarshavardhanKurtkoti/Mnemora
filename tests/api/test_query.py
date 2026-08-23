@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from src.main import app
-from src.api.routes import get_hybrid_search, get_reranker, get_generation
+from src.api.controllers.rag_controller import get_hybrid_search, get_reranker, get_generation
 
 client = TestClient(app)
 
@@ -19,7 +19,9 @@ app.dependency_overrides[get_generation] = mock_generation
 def test_empty_query():
     response = client.post("/api/v1/query", json={"query": "   "})
     assert response.status_code == 400
-    assert "Empty query provided" in response.json()["detail"]
+    res_data = response.json()
+    msg = res_data.get("message") or res_data.get("detail", "")
+    assert "Empty query provided" in msg
 
 def test_missing_query():
     response = client.post("/api/v1/query", json={})

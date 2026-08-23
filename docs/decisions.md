@@ -70,3 +70,20 @@ The Phase 1.6 benchmark uses synthetic MD documents deterministically chunked ba
 
 ### Reason
 FastAPI `UploadFile` utilizes random temporary filenames which previously broke evaluation mappings. Overriding the parsed source metadata with the original filename preserves reproducibility. A benchmark script generates the dataset dynamically, maintaining a static baseline ground truth against which system adjustments can be regression-tested.
+
+## Decision: Dual Database Support (PostgreSQL and SQLite Fallback)
+Date: 2026-08-23
+Status: Accepted
+
+### Decision
+`src/config/database.py` defaults to `sqlite:///./data/mnemora.db` when `DATABASE_URL` is omitted, while retaining full PostgreSQL compatibility when configured (e.g. in Docker Compose).
+
+### Reason
+Allows instant local execution, testing, and development without requiring external database services or elevated privileges to be running on the host, while remaining 100% production-compatible with PostgreSQL.
+
+### Alternatives Considered
+- Hard dependency on PostgreSQL only: Requires users/developers to have PostgreSQL installed and running locally with matching credentials.
+
+### Consequences
+SQLite connection options require `check_same_thread=False` for multi-threaded FastAPI access.
+

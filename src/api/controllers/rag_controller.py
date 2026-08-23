@@ -2,7 +2,7 @@ import os
 import tempfile
 import time
 import logging
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import math
@@ -107,7 +107,7 @@ async def query_rag(
     start_time = time.time()
     
     if not request.query.strip():
-        raise ValueError("Empty query provided.")
+        raise HTTPException(status_code=400, detail="Empty query provided.")
         
     # 1. Hybrid Retrieval (Vector + BM25)
     t0 = time.time()
