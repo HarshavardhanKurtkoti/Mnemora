@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -28,8 +28,6 @@ class Settings(BaseSettings):
     TOP_K_BM25: int = 10
     FINAL_TOP_K_AFTER_RERANK: int = 5
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=True)
 
 settings = Settings()
