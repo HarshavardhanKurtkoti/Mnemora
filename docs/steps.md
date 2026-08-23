@@ -26,6 +26,7 @@ IN PROGRESS
 - [x] Phase 1.6: Real Retrieval & Generation Benchmark
 - [x] Frontend M1: Product UI (Next.js App Router, shadcn/ui, Dark theme)
 - [x] Frontend Redesign: Match Dashboard Command Center Mockup
+- [x] Full Environment Setup & Dependencies Installed (Python venv, PyTorch, Node.js 22, PNPM, DB Seeding, Verified Pytest suite)
 
 ## In Progress
 
@@ -39,11 +40,7 @@ IN PROGRESS
 
 ## Current Task
 
-## Current Task
-
-Completed Frontend Milestone 1 (Product UI).
-Built Evaluation Page UI with benchmark triggering.
-Added URL syncing and backend database tracking for Recent Queries and Activity Feed.
+All dependencies installed, database seeded, backend and frontend verified, and startup instructions documented.
 
 ## Next Step
 

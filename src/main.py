@@ -3,8 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from src.config.settings import settings
+from src.config.database import engine, Base
+from src.api import models
 from src.api.controllers import rag_controller, stats_controller
 from src.api.utils.response import error_response
+
+# Ensure database tables exist
+Base.metadata.create_all(bind=engine)
 
 logger = logging.getLogger(__name__)
 
