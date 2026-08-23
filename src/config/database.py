@@ -3,6 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Fallback to local postgres if not in Docker
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
