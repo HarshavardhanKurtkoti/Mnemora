@@ -309,7 +309,7 @@ function AskPageContent() {
                 </div>
                 
                 <div className="mt-2 lg:mt-3 flex justify-center shrink-0">
-                   <button className="text-[8px] lg:text-[9px] text-accent hover:text-accent/80 flex items-center gap-1 transition-colors uppercase tracking-widest">
+                   <button onClick={() => router.push('/evaluation')} className="text-[8px] lg:text-[9px] text-accent hover:text-accent/80 flex items-center gap-1 transition-colors uppercase tracking-widest">
                      View full evaluation <ArrowUpRight className="h-3 w-3" />
                    </button>
                 </div>
