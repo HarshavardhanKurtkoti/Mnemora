@@ -23,6 +23,8 @@ function AskPageContent() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showResult, setShowResult] = useState(false); 
+  const [answerData, setAnswerData] = useState<any>(null);
+  const [selectedCitation, setSelectedCitation] = useState<any>(null);
   
   // Dynamic states
   const [overviewStats, setOverviewStats] = useState({ documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
@@ -63,10 +65,12 @@ function AskPageContent() {
       setIsSearching(true);
       setShowResult(true);
       askMnemora(urlQuery)
+        .then(res => setAnswerData(res))
         .catch(console.error)
         .finally(() => setIsSearching(false));
     } else {
       setShowResult(false);
+      setAnswerData(null);
     }
   }, [urlQuery]);
 
@@ -403,20 +407,25 @@ function AskPageContent() {
                   Neural Response
                 </div>
                 
-                <div className="text-foreground/90 leading-relaxed text-base lg:text-lg font-light">
-                  Authentication is handled through the Identity Service using short-lived JWT access tokens. All protected APIs, including checkout endpoints, require a valid token in the Authorization header.
-                  <sup className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface/80 border border-border/50 text-[10px] font-mono text-muted-foreground hover:border-accent hover:text-accent hover:shadow-[0_0_10px_rgba(0,229,255,0.3)] transition-all cursor-pointer">1</sup>
+                <div className="text-foreground/90 leading-relaxed text-base lg:text-lg font-light whitespace-pre-wrap">
+                  {answerData?.answer || "Generating response..."}
                 </div>
 
                 {/* Sources list */}
-                <div className="flex flex-wrap gap-2 pt-6 mt-6 border-t border-white/5">
-                  <div className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-foreground cursor-pointer transition-all">
-                    <FileText className="h-3.5 w-3.5" /> auth-service.md <span className="text-accent font-mono ml-2 border border-accent/20 bg-accent/10 px-1 rounded text-[10px]">P.4</span>
+                {answerData?.citations?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-6 mt-6 border-t border-white/5">
+                    {answerData.citations.map((cite: any, idx: number) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setSelectedCitation(cite)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-accent cursor-pointer transition-all shadow-sm hover:shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+                      >
+                        <FileText className="h-3.5 w-3.5" /> {cite.document} 
+                        <span className="text-accent font-mono ml-2 border border-accent/20 bg-accent/10 px-1 rounded text-[10px]">P.{cite.page || 1}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-foreground cursor-pointer transition-all">
-                    <FileText className="h-3.5 w-3.5" /> checkout-architecture.md
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Retrieval Trace */}
@@ -432,73 +441,48 @@ function AskPageContent() {
                       <span className="text-foreground text-xs uppercase tracking-widest">Pipeline Execution</span>
                     </div>
                     <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 px-2 py-0.5 rounded">
-                      <span className="text-xs text-accent">605ms</span>
+                      <span className="text-xs text-accent">Status: OK</span>
                     </div>
                   </div>
                   
                   <div className="p-5 space-y-3.5 text-muted-foreground/80 bg-background/30 text-[13px]">
                     <div className="flex justify-between items-center text-foreground">
                       <span className="flex items-center gap-2"><span className="text-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)] h-2 w-2 rounded-full inline-block"></span> Query received</span>
-                      <span className="text-xs">0ms</span>
                     </div>
                     
                     <div className="pl-3 border-l border-border/30 ml-[3px] space-y-4 py-2">
-                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                        <span>Embedding generated</span>
-                        <span className="text-xs font-medium">12ms</span>
-                      </div>
                       
                       <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
                         <div className="space-y-1.5">
                           <div className="text-foreground/90">Vector search</div>
-                          <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
+                          <div className="text-[11px] text-muted-foreground/50">└── {answerData?.retrieval?.vector_results || 0} candidates</div>
                         </div>
-                        <span className="text-xs mt-0.5">16ms</span>
                       </div>
 
                       <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
                         <div className="space-y-1.5">
                           <div className="text-foreground/90">BM25 search</div>
-                          <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
+                          <div className="text-[11px] text-muted-foreground/50">└── {answerData?.retrieval?.bm25_results || 0} candidates</div>
                         </div>
-                        <span className="text-xs mt-0.5">0.3ms</span>
                       </div>
 
                       <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
                         <div className="space-y-1.5">
                           <div className="text-emerald-400 font-medium">RRF fusion</div>
-                          <div className="text-[11px] text-emerald-400/50">└── 8 unique candidates</div>
                         </div>
-                        <span className="text-xs mt-0.5 text-emerald-400">0.2ms</span>
                       </div>
 
                       <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
                         <div className="space-y-1.5">
                           <div className="text-accent font-medium">Cross encoder reranking</div>
-                          <div className="text-[11px] text-accent/50">└── 5 candidates</div>
+                          <div className="text-[11px] text-accent/50">└── {answerData?.retrieval?.reranked_results || 0} candidates</div>
                         </div>
-                        <span className="text-xs mt-0.5 text-accent font-medium shadow-[0_0_10px_rgba(0,229,255,0.2)]">91ms</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                        <span>Context assembled</span>
-                        <span className="text-xs">2ms</span>
                       </div>
                       
                       <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
                         <span className="text-foreground/90">LLM generation</span>
-                        <span className="text-xs">482ms</span>
                       </div>
                       
-                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                        <span>Citation validation</span>
-                        <span className="text-xs">4ms</span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-3 mt-2 border-t border-border/20 font-medium text-foreground">
-                      <span className="uppercase tracking-widest text-[11px]">Total Latency</span>
-                      <span className="text-xs text-accent">605ms</span>
                     </div>
                   </div>
                 </div>
@@ -595,6 +579,46 @@ function AskPageContent() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedCitation && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8">
+          <div className="bg-[#070b0e] border border-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50"></div>
+            
+            <div className="flex justify-between items-center p-5 lg:p-6 border-b border-white/5 bg-[#030405]/50">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base lg:text-lg font-medium text-foreground truncate">{selectedCitation.document}</h2>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <span className="text-accent font-mono border border-accent/20 bg-accent/10 px-1.5 rounded uppercase tracking-wider text-[10px]">Page {selectedCitation.page || 1}</span>
+                    <span>•</span>
+                    <span className="font-mono text-[10px] opacity-70 truncate">ID: {selectedCitation.chunk_id}</span>
+                  </div>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedCitation(null)} className="hover:bg-white/10 shrink-0 text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="p-6 lg:p-8 overflow-y-auto custom-scrollbar flex-1 bg-[#0a0f14]">
+              <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                <Activity className="h-3 w-3" /> Extracted Context
+              </div>
+              
+              <div className="relative group">
+                <div className="absolute -inset-1 rounded-xl bg-accent/20 blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
+                <div className="relative bg-[#030405] border border-accent/30 rounded-xl p-5 lg:p-6 shadow-inner text-sm lg:text-base leading-relaxed text-foreground/90 font-light whitespace-pre-wrap">
+                  {selectedCitation.content || "Context preview not available for this chunk."}
+                </div>
+              </div>
             </div>
           </div>
         </div>

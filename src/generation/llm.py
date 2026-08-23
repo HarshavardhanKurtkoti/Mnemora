@@ -109,6 +109,7 @@ class GenerationService:
                             "chunk_id": cid,
                             "source": doc.metadata.get("source"),
                             "page": doc.metadata.get("page"),
+                            "content": doc.page_content,
                             "relevance_score": doc.metadata.get("relevance_score", 0.0)
                         })
                         

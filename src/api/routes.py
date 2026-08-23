@@ -53,6 +53,7 @@ class Citation(BaseModel):
     document: str = Field(description="The source document name or URL.")
     chunk_id: str = Field(description="The unique identifier of the chunk.")
     page: Optional[int] = Field(None, description="The page number, if applicable.")
+    content: Optional[str] = Field(None, description="The text content of the cited chunk.")
 
 class RetrievalStats(BaseModel):
     vector_results: int
@@ -144,7 +145,8 @@ async def query_rag(
                 Citation(
                     document=cite_raw.get("source", "unknown"),
                     chunk_id=cite_raw.get("chunk_id", "unknown"),
-                    page=cite_raw.get("page")
+                    page=cite_raw.get("page"),
+                    content=cite_raw.get("content")
                 )
             )
             
