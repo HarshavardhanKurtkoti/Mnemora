@@ -25,6 +25,7 @@ IN PROGRESS
 - [x] Phase 1.5: Production Hardening & Verification
 - [x] Phase 1.6: Real Retrieval & Generation Benchmark
 - [x] Frontend M1: Product UI (Next.js App Router, shadcn/ui, Dark theme)
+- [x] Frontend Redesign: Match Dashboard Command Center Mockup
 
 ## In Progress
 

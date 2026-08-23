@@ -1,531 +1,716 @@
-Yeah buddy — **the current UI is decent, but it still feels like a prototype of a developer console rather than a product I'd want to use every day.**
+Yeah buddy. The current UI is **clean**, but I agree with you — it still feels like a nicely themed dashboard rather than a **designed product**.
 
-And I think the biggest issue isn't that it needs *more* UI. It needs **better hierarchy, density, interaction, and visual identity**.
+What I’d push Mnemora toward is more like a **premium AI infrastructure instrument**: layered surfaces, depth, soft translucency, subtle gradients, strong hierarchy, and interactions that make the system feel alive.
 
-From the screenshots, I'd take Mnemora in a more **"technical instrument / observability console"** direction rather than the usual "dark AI SaaS dashboard."
+Also, I think you mean **glassmorphism / layered polymorphic surfaces** rather than traditional neumorphism. I would *not* go full neumorphism — it can quickly look dated.
 
-### What I'd change
+### The direction I'd take
 
-#### 1. Stop wasting so much horizontal space
+![Image](https://images.openai.com/static-rsc-4/e_S_la0QjYocSCzdByQYkAD3POI36T1r6Ls1n9kVKyDX7PNg0S9QBt4_wCtrf4bAyWIpnM2E952VE8H_96JJaaL6kpBib7zd2NUsxHZ6dGiwod90rPA1ZFtbviBhfcMjhZSksdPKmmO7hfROGwPoEsECpUkox-3_OEKByYww71Mqep-7neWB0td1hRgHyX88?purpose=fullsize)
 
-The current layout has:
+![Image](https://images.openai.com/static-rsc-4/uGNyPXFmgNL98xlI2iG7kF0SugFaoDxOnoqwgX27pVq5HlEh66Lhs2P7ZRt38QpqbZqy6j_fyDqxUTJ9VmHdjmr5_WZXgIlC3iWwJOIQKqXHA0Kc-lYB8WGPq5-L5ujxNIHKQMGUYh-cSs4cy_EQf4cGnBu9mh0tlu5ozeAjdfG1krHKfFf327TZhPjDvn3l?purpose=fullsize)
 
-* ~240px sidebar
-* huge empty content areas
-* content starting fairly far from the edges
-* lots of unused black space
+![Image](https://images.openai.com/static-rsc-4/2_VUaOwy0kMXJ3Xugi0a-5xv7IiUTZitsKkXOFAMfFBb3sB2rqLMSeAgkGwG37MtBY-XtLc7hVTYb7Czv3eZfYZVeSRyIAfgaWB4osLQce3G9YTOPFo2ldccsVz1-MkSmQ3V-6qwMvqdxwjHzreixBFMk2yvtMtCU6B_EOVLL200wzPRteZDwMVEL_lgLuC9?purpose=fullsize)
 
-For example, Knowledge currently feels like:
+![Image](https://images.openai.com/static-rsc-4/4CW3ck17jsfwO2c-HkWb_ziwSj3fX1HtyrgOmhY1LH_SJXqMdcaZ9MUZvt1t80r6tff-7e9XpIDlZ5zu43gzdAFRAS_hc4WIJvebtp0ApSfG8lwa4W12NbyCftu7bhk1gsAs-0mqX_zk9biLbE1d4VzPGh7-UBYQfwNQD1Z4fQJbmK5S50PtXH2z9drx5ltx?purpose=fullsize)
 
-> heading → tiny card → giant empty area → table
+![Image](https://images.openai.com/static-rsc-4/e1qYkPih8IxQEjagYhsj078RWW8Pzogm3k8nN5hXvSnspQA8J3aOUZrDyXdHzXisUSLYM8wDefeW28q1uwUZcT9SsbAzu-t9nkozCkHyJf6EfKvImu2H7Hqi55nGJV43EdbYgig32iNCHFisnt7Q3fm6Scy4R-IW62A0nTx8evYEv-vcv2VGLCa0Vg1TzG5U?purpose=fullsize)
 
-Instead, I'd make the content area feel intentionally structured:
+![Image](https://images.openai.com/static-rsc-4/eApM6g6BWTIjAF1me9dM4IAZH53QAd_wR-lsDvsEIsqtyA8Vgs6i54UOZaxh3yGpgRhQJaStHtRFqkajszveXoqBzH9mMbByW-51I1b969yiz4A8I0x39cwMlQ4S-l0XTuSejBBE_07ObifIxIdl9diadnWe0GGmf5R2G5qabAyGlxR7OxThTLUagbSwkw-y?purpose=fullsize)
+
+**Mnemora should feel like:**
+
+> **Linear × Vercel × Raycast × AI observability console**
+
+Not:
+
+> "ChatGPT clone with a sidebar."
+
+### The big visual changes
+
+**1. Layered depth**
+
+Instead of everything being `#08090A` + borders:
+
+```text
+Background
+   ↓
+ambient gradient / glow
+   ↓
+glass shell
+   ↓
+inner surface
+   ↓
+content
+   ↓
+micro highlights
+```
+
+Use very subtle translucent surfaces:
+
+```css
+background: rgba(255,255,255,0.025);
+border: 1px solid rgba(255,255,255,0.07);
+backdrop-filter: blur(24px);
+```
+
+And have some surfaces almost disappear into the background.
+
+---
+
+**2. Make the dashboard composition asymmetrical**
+
+Don't put everything into equal-sized cards.
+
+For example:
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│ Knowledge Base                              + Add documents  │
-│ 12 documents · 240 chunks · indexed                         │
-│                                                              │
-│ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
-│ │ Documents  │ │ Chunks     │ │ Avg tokens │ │ Index      │ │
-│ │ 12         │ │ 486        │ │ 612        │ │ Healthy    │ │
-│ └────────────┘ └────────────┘ └────────────┘ └────────────┘ │
-│                                                              │
-│ Corpus                                                       │
-│ ┌──────────────────────────────────────────────────────────┐ │
-│ │ Search documents...                         Filter ▾      │ │
-│ ├──────────────────────────────────────────────────────────┤ │
-│ │ auth-service.md       38 chunks   Markdown    Ready      │ │
-│ │ checkout.md            51 chunks   Markdown    Ready      │ │
-│ │ payment-api.md         44 chunks   Markdown    Ready      │ │
-│ └──────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────┘
+│ MNEMORA                         SYSTEM ● OPERATIONAL          │
+├───────────┬──────────────────────────────────────────────────┤
+│           │                                                  │
+│ ASK       │        M N E M O R A                             │
+│ KNOWLEDGE │        Intelligence for your knowledge.          │
+│ RETRIEVAL │                                                  │
+│ EVALUATION│   ┌──────────────────────────────────────────┐   │
+│ SYSTEM    │   │ Ask your knowledge base...            ↗ │   │
+│           │   └──────────────────────────────────────────┘   │
+│           │                                                  │
+│           │   Recent queries                                 │
+│           │   ─────────────────────────────────────────────  │
+│           │   Authentication flow              2.1s          │
+│           │   Payment architecture             1.8s          │
+│           │   Database sharding                1.4s          │
+│           │                                                  │
+└───────────┴──────────────────────────────────────────────────┘
 ```
 
-Much more useful.
+Much more breathing room.
 
 ---
 
-## 2. Make **Ask** the actual hero
+**3. Make the Ask box the visual centerpiece**
 
-This is the most important page.
+This should be *beautiful*.
 
-Right now it looks like a rendered answer with the retrieval trace underneath.
-
-I'd make it feel like you're operating a RAG engine.
-
-Something closer to:
-
-```text
-ASK MNEMORA
-
-Ask anything about your knowledge base.
-
-┌─────────────────────────────────────────────────────────────┐
-│ How does authentication work for checkout?                  │
-│                                                             │
-│                                                     ⌘ ↵     │
-└─────────────────────────────────────────────────────────────┘
-
-
-ANSWER
-
-Authentication is handled through the Identity Service...
-
-[ auth-service.md ] [ checkout-architecture.md ] [ api-reference.md ]
-
-
-──────────────────────────────────────────────────────────────
-
-RETRIEVAL
-
-Vector       5 results      16ms
-BM25         5 results       0.3ms
-RRF          8 candidates   0.2ms
-Reranker     5 results      91ms
-
-──────────────────────────────────────────────────────────────
-```
-
-Then clicking **Retrieval** opens the actual inspection interface.
-
----
-
-# 3. The Retrieval page should NOT be a blank page
-
-This is probably the biggest missed opportunity in the current UI.
-
-Mnemora's differentiator is literally its retrieval pipeline.
-
-So this should be one of the coolest pages.
-
-I'd make:
-
-### Retrieval Inspector
-
-```text
-Retrieval Inspector
-
-Query
-┌─────────────────────────────────────────────────────────────┐
-│ authentication checkout                                     │
-└─────────────────────────────────────────────────────────────┘
-
-
-METHOD COMPARISON
-
-             Recall     MRR       Latency
-
-Vector        51.7%     52.5%     16.4ms
-BM25          42.7%     41.7%      0.3ms
-Hybrid        48.7%     49.3%     16.6ms
-Reranked      49.0%     52.5%    107.3ms
-
-
-RESULT FLOW
-
-Query
-  ↓
-Embedding
-  ↓
-Vector Search ────────┐
-                      ├── RRF ──→ Reranker ──→ Final Context
-BM25 ─────────────────┘
-
-
-TOP RESULTS
-
-01  auth-service.md
-    "Authentication is handled through..."
-    Vector       0.842
-    BM25         0.721
-    RRF          0.0312
-    Reranker     0.923
-
-02  checkout-architecture.md
-    ...
-```
-
-This is **actual RAG observability**, not just another dashboard.
-
----
-
-# 4. Evaluation should look like an experiment console
-
-You already have great numbers.
-
-Right now you're hiding the best part of the project.
-
-I'd make Evaluation something like:
-
-```text
-Evaluation
-
-PHASE 1.6 BENCHMARK
-12 documents · 60 questions · Local provider
-
-────────────────────────────────────────────────────────
-
-                 VECTOR    BM25    HYBRID    RERANKER
-Recall@5          51.7%    42.7%    48.7%      49.0%
-Recall@10         51.7%    48.7%    51.7%      51.7%
-MRR@10            52.5%    41.7%    49.3%      52.5%
-P95 latency       16.4ms   0.3ms    16.6ms     107.3ms
-
-────────────────────────────────────────────────────────
-
-        Recall@5
-60% ┤
-50% ┤       █
-40% ┤       █       █
-30% ┤
-20% ┤
-10% ┤
-    └────────────────────────
-       Vector BM25 Hybrid Rerank
-
-
-QUERY BREAKDOWN
-
-Factual          ███████████████  72%
-Semantic         █████████████    64%
-Exact keyword    ████████████████ 78%
-Multi-hop        ███████████      55%
-No-answer        ███████████████  91%
-```
-
-And underneath:
-
-### Benchmark runs
-
-```text
-Phase 1.6
-Aug 22, 2026
-60 questions · 12 documents
-Local / HuggingFace
-
-✓ Completed
-
-[ View report ] [ Run again ]
-```
-
-Now it starts feeling like an **actual engineering product**.
-
----
-
-# 5. System page should become genuinely useful
-
-Instead of an empty page, expose the architecture.
+Not a normal input.
 
 Something like:
 
 ```text
-SYSTEM
-
-Mnemora Runtime
-────────────────────────────────────────
-
-STATUS                     OPERATIONAL ●
-
-Embedding Model
-all-MiniLM-L6-v2
-Loaded · 1 worker
-
-Reranker
-cross-encoder/...
-Loaded · 1 worker
-
-Vector Store
-Chroma
-12 documents
-486 chunks
-
-Keyword Index
-BM25
-486 indexed chunks
-
-LLM
-Local provider
-Available
-
-
-PIPELINE HEALTH
-
-Ingestion       ● Healthy
-Embeddings      ● Healthy
-Vector Store    ● Healthy
-BM25            ● Healthy
-Reranker        ● Healthy
-Generation      ● Healthy
+       ┌──────────────────────────────────────────────┐
+       │                                              │
+       │  Ask Mnemora anything...                     │
+       │                                              │
+       │                                              │
+       │  Hybrid RRF       12 documents       ↗      │
+       └──────────────────────────────────────────────┘
+             ╲                                ╱
+              ╲____ subtle cyan glow _______╱
 ```
 
-And a small architecture diagram.
+On hover:
+
+* border becomes slightly brighter
+* ambient cyan glow expands
+* inner gradient shifts
+* arrow moves 2–3px
+* no crazy animation
+
+That tiny interaction will make it feel expensive.
 
 ---
 
-# 6. Knowledge Base needs document inspection
-
-This is another major UX improvement.
-
-Clicking:
-
-**`auth-service.md`**
-
-should open a document detail view.
-
-```text
-auth-service.md
-
-Markdown
-38 chunks
-24,183 tokens
-Indexed 2m ago
-
-────────────────────────────────────────────
-
-DOCUMENT
-
-# Authentication Service
-
-...
-
-────────────────────────────────────────────
-
-CHUNKS
-
-Chunk 01
-Authentication is handled through...
-
-384 tokens
-Embedding ✓
-
-Chunk 02
-JWT tokens are generated...
-
-412 tokens
-Embedding ✓
-```
-
-And importantly:
-
-**"Search this document"**
-
-would be really useful.
-
----
-
-# 7. Sidebar needs hierarchy
-
-Current sidebar:
-
-```text
-Ask
-Knowledge
-Retrieval
-Evaluation
-System
-```
-
-is clean, but a little flat.
-
-I'd do:
-
-```text
-MNEMORA
-
-WORKSPACE
-
-⌕ Ask
-
-KNOWLEDGE
-   Corpus
-   Documents
-
-RETRIEVAL
-   Inspector
-   Search comparison
-
-EVALUATION
-   Benchmarks
-   Runs
-
-SYSTEM
-   Overview
-   Models
-```
-
-And bottom:
-
-```text
-─────────────────
-● Local Runtime
-v1.6.0
-```
-
-That gives the application more of an actual product structure.
-
----
-
-# 8. Don't overdo the cyan
+**4. Stop overusing cyan**
 
 This is important.
 
-The current cyan works, but it's being used as the primary visual personality.
+Currently the cyan risks becoming:
 
-I'd make cyan **semantic**, not decorative.
-
-Use it for:
-
-* active states
-* pipeline progress
-* selected result
-* important metrics
-* links
-* focus states
-
-Not every icon / heading / little piece of UI.
-
-Most of the UI should be:
-
-**white → gray → muted gray**
-
-with cyan appearing only where something is happening.
-
-That makes the cyan feel much more expensive.
-
----
-
-# 9. Typography needs more contrast
-
-The current typography is very uniform.
-
-I'd create three levels:
-
-### Product UI
-
-`Geist`
-
-### Technical data
-
-`Geist Mono`
-
-### Content
-
-A slightly warmer serif / editorial font could remain for actual document answers.
-
-That distinction would make:
-
-> Authentication is handled through the Identity Service...
-
-feel like **knowledge**, while:
-
-> RRF · 0.2ms · 8 candidates
-
-feels like **system telemetry**.
-
-That's a really nice identity for Mnemora.
-
----
-
-# 10. Add motion, but almost imperceptibly
-
-Not:
-
-> "LOOK GUYS, ANIMATION!"
+> "everything technical = cyan"
 
 Instead:
 
-* result cards enter with 100–150ms fade
-* retrieval pipeline nodes illuminate sequentially
-* metrics count up very subtly
-* expanding traces animate height
-* document upload has an actual indexing state
-* status indicators pulse slowly
-* page transitions are ~150ms
+* 90% monochrome
+* cyan only for active/interactive state
+* green only for healthy state
+* amber/red only for actual warnings
 
-Basically:
-
-**motion should communicate state, not decorate the UI.**
+That makes cyan **mean something**.
 
 ---
 
-# The bigger design direction
+**5. Typography hierarchy**
 
-I'd actually define the Mnemora visual language as:
+I'd make the typography much more intentional.
 
-> **A scientific instrument for inspecting retrieval systems.**
-
-Not:
-
-> "An AI chatbot."
-
-That distinction is huge.
-
-Think:
-
-**Linear × Vercel × Grafana × research lab**
-
-but without copying any of them.
-
-The product should feel like you're looking inside a machine.
-
----
-
-## I'd restructure the whole app
+### Hero
 
 ```text
-MNEMORA
-│
-├── Ask
-│   └── Query Console
-│
-├── Knowledge
-│   ├── Corpus
-│   └── Documents
-│
-├── Retrieval
-│   ├── Inspector
-│   └── Comparison
-│
-├── Evaluation
-│   ├── Overview
-│   ├── Benchmarks
-│   └── Runs
-│
-└── System
-    ├── Runtime
-    ├── Models
-    └── Health
+ASK YOUR
+KNOWLEDGE BASE
 ```
 
-And the killer workflow becomes:
+Huge, elegant serif/display font.
 
-**Upload document → inspect chunks → ask question → inspect retrieval → inspect citations → compare retrieval strategies → inspect benchmark performance.**
+Then:
 
-That's a coherent product.
+```text
+Search across your indexed knowledge with
+semantic retrieval, keyword search and reranking.
+```
+
+Small neutral sans.
+
+Technical information gets:
+
+```text
+HYBRID RRF · 12 DOCS · 16.6 MS
+```
+
+in mono.
+
+This creates three distinct visual languages.
 
 ---
 
-### One thing I would NOT do
+**6. Add ambient background physics**
 
-I wouldn't throw the current frontend away.
+Very subtle.
 
-The foundation is actually good.
+Not floating blobs everywhere 😂.
 
-I'd keep:
+Something like:
 
-* Next.js
-* shadcn
-* Tailwind
-* Lucide
-* Recharts
-* existing API abstraction
-* existing dark theme
+```text
+                    ╭──────────────╮
+              ╭─────╯              ╰─────╮
+           cyan                        blue
+             glow                       glow
 
-and do a **UX/visual refinement pass + real page architecture**, rather than letting another coding agent regenerate the entire thing into generic AI-dashboard soup.
+       ──────────────────────────────────────
+                MAIN CONTENT
+       ──────────────────────────────────────
+```
 
-If you're going to give this to Antigravity/Cursor, I'd make the next instruction very explicit:
+Large blurred radial gradients behind major sections.
 
-> **Do not rebuild Mnemora as a generic AI SaaS dashboard. Preserve the existing technical-console identity and improve hierarchy, density, navigation, information architecture, interaction design, and visual polish. Every screen should expose useful RAG system state. Avoid decorative cards, excessive gradients, excessive cyan, oversized empty spaces, fake metrics, and unnecessary animations.**
+They should barely be visible until you look for them.
 
-That one constraint alone will save you from 80% of the usual AI-slop result.
+---
+
+**7. Give every page its own visual identity**
+
+### Ask
+
+Hero + query + answer + retrieval trace.
+
+### Knowledge
+
+Corpus visualization + documents + ingestion activity.
+
+Instead of:
+
+> Total Documents: 12
+
+make it:
+
+```text
+KNOWLEDGE BASE
+
+12
+DOCUMENTS INDEXED
+
+423
+CHUNKS
+
+38.2k
+TOKENS
+```
+
+Then a beautiful document list underneath.
+
+### Retrieval
+
+This is where Mnemora can get **really cool**.
+
+Visualize:
+
+```text
+QUERY
+  │
+  ├── Vector ───────── 5 candidates
+  │
+  ├── BM25 ─────────── 5 candidates
+  │
+  ├── RRF ───────────── 8 candidates
+  │
+  └── Reranker ──────── 5 candidates
+                         │
+                         ▼
+                    FINAL CONTEXT
+```
+
+with animated connections.
+
+### Evaluation
+
+This should look like an **AI benchmark laboratory**, not a CRUD page.
+
+Something like:
+
+```text
+RETRIEVAL PERFORMANCE
+
+             Recall@5     MRR@10      P95
+Vector       51.7%        52.5%       16ms
+BM25         42.7%        41.7%       0.3ms
+Hybrid       48.7%        49.3%       17ms
+Reranker     49.0%        52.5%       107ms
+```
+
+Then graphs.
+
+---
+
+## And I'd give your coding agent this exact prompt
+
+```text
+Redesign the Mnemora frontend UI/UX.
+
+IMPORTANT:
+Do NOT simply add more cards, gradients, shadows, or generic glassmorphism.
+The current UI is technically clean but still feels like a generic AI dashboard.
+
+The goal is to make Mnemora feel like a premium AI infrastructure / RAG observability product.
+
+Design direction:
+
+Linear × Vercel × Raycast × AI infrastructure console.
+
+Visual language:
+- Deep near-black graphite background
+- Layered translucent surfaces
+- Sophisticated glassmorphism
+- Extremely subtle polymorphic/depth effect
+- Fine 1px borders with low opacity
+- Soft ambient radial lighting
+- Electric cyan used sparingly as an interaction/accent color
+- Green only for healthy system state
+- Monospace typography for technical metadata
+- Elegant display typography for major headings
+- Large negative space
+- Strong visual hierarchy
+- Asymmetric layouts instead of a grid of identical cards
+
+DO NOT:
+- use excessive rounded cards
+- make everything glow
+- use gradients everywhere
+- use huge colorful blobs
+- make it look like a ChatGPT clone
+- create generic SaaS dashboard cards
+- overuse cyan
+- add unnecessary animations
+- use excessive glass blur
+
+The interface should feel calm, technical, expensive and intentional.
+
+==================================================
+GLOBAL EXPERIENCE
+==================================================
+
+Create a persistent application shell:
+
+Left:
+- compact navigation
+- Ask
+- Knowledge
+- Retrieval
+- Evaluation
+- System
+
+Top:
+- MNEMORA wordmark
+- system status
+- minimal controls
+
+The sidebar should feel integrated into the background rather than being a large solid panel.
+
+Use subtle separators and active-state illumination.
+
+The active navigation item should have:
+- translucent surface
+- very subtle cyan edge/highlight
+- smooth transition
+
+==================================================
+BACKGROUND
+==================================================
+
+Create a very subtle atmospheric background.
+
+Use:
+- radial gradients
+- extremely low-opacity cyan/blue ambient light
+- subtle vignette
+- optional faint noise texture
+
+The background should have depth but should NOT look like a colorful landing page.
+
+Think:
+high-end developer tool.
+
+==================================================
+ASK PAGE
+==================================================
+
+Make Ask the hero experience.
+
+The page should have a large central composition rather than a normal dashboard.
+
+Hero:
+
+"Ask your knowledge."
+
+Use elegant large typography.
+
+Subtitle:
+
+"Search across your indexed knowledge using semantic retrieval,
+keyword search, hybrid fusion and reranking."
+
+Then create a premium query composer.
+
+The query composer should feel like an instrument rather than an input.
+
+It should have:
+- large writing area
+- subtle glass surface
+- fine border
+- internal gradient
+- contextual metadata
+- submit arrow button
+- hover/focus lighting
+- keyboard shortcut hint
+
+Example:
+
+Ask anything about your knowledge...
+
+HYBRID RRF · 12 DOCUMENTS · LOCAL
+
+↗
+
+On hover:
+- very subtle cyan ambient glow
+- border brightens
+- arrow translates 2px
+- surface becomes slightly brighter
+
+Keep animation subtle.
+
+Below it:
+
+RECENT QUERIES
+
+Use a minimal list rather than cards.
+
+Each query row:
+- query
+- retrieval method
+- latency
+- timestamp
+- arrow
+
+==================================================
+ANSWER EXPERIENCE
+==================================================
+
+When a query is submitted, transform the page into a focused answer workspace.
+
+Show:
+
+USER QUERY
+
+ANSWER
+
+CITATIONS
+
+RETRIEVAL TRACE
+
+The answer should have strong editorial typography.
+
+Citations should be inline and interactive.
+
+Clicking a citation should reveal the source chunk in a side panel.
+
+==================================================
+RETRIEVAL TRACE
+==================================================
+
+This is one of Mnemora's core differentiators.
+
+Make it visually impressive.
+
+Represent:
+
+Query
+ ↓
+Embedding
+ ↓
+Vector Search
+ ↓
+BM25
+ ↓
+RRF Fusion
+ ↓
+Cross Encoder
+ ↓
+Context
+ ↓
+Generation
+
+Use a vertical pipeline with:
+- node
+- status
+- latency
+- candidate count
+
+The active pipeline step should have a subtle cyan pulse.
+
+Do NOT make it look like a flowchart from a PowerPoint.
+
+It should feel like an observability trace.
+
+Allow each step to expand and reveal:
+- candidates
+- scores
+- metadata
+- timings
+
+==================================================
+KNOWLEDGE PAGE
+==================================================
+
+Redesign this as a real knowledge management console.
+
+Hero:
+
+"Knowledge Base"
+
+Show compact metrics:
+
+12
+DOCUMENTS
+
+423
+CHUNKS
+
+38.2K
+TOKENS
+
+Then provide a prominent upload interaction.
+
+Documents should appear in a refined table/list.
+
+Columns:
+Document
+Chunks
+Type
+Indexed
+Status
+
+Use subtle row hover states.
+
+Clicking a document should open a detail drawer showing:
+- document metadata
+- chunk count
+- ingestion timestamp
+- chunk preview
+- source information
+
+==================================================
+RETRIEVAL PAGE
+==================================================
+
+Implement a proper Retrieval Inspector.
+
+Allow entering a query.
+
+Show four retrieval columns:
+
+VECTOR
+BM25
+HYBRID RRF
+RERANKER
+
+Each result should show:
+- chunk/source
+- score
+- rank
+- snippet
+
+Make it possible to visually compare retrieval strategies.
+
+Use synchronized result rows where appropriate.
+
+Add a compact latency comparison.
+
+==================================================
+EVALUATION PAGE
+==================================================
+
+Make this feel like an AI benchmark laboratory.
+
+Hero:
+
+"Evaluation"
+
+Subtitle:
+
+"Measure retrieval quality, latency and generation reliability."
+
+Show benchmark summary:
+
+Recall@5
+Recall@10
+HitRate@5
+MRR@10
+P95
+P99
+
+Then create a polished comparison visualization for:
+
+Vector
+BM25
+Hybrid
+Hybrid + Reranker
+
+Use Recharts.
+
+Charts should be restrained and monochrome with cyan emphasis.
+
+Add:
+- query category breakdown
+- latency distribution
+- retrieval strategy comparison
+- benchmark run information
+
+The existing benchmark values must be used from the real evaluation data.
+Do not invent metrics.
+
+==================================================
+SYSTEM PAGE
+==================================================
+
+Create a system observability page.
+
+Show:
+
+SYSTEM OPERATIONAL
+
+Components:
+- FastAPI
+- Vector Store
+- BM25
+- Embeddings
+- Reranker
+- LLM
+
+Each should show:
+status
+latency
+model
+provider
+
+Add a lightweight architecture/runtime visualization.
+
+==================================================
+INTERACTION DESIGN
+==================================================
+
+Use Framer Motion carefully.
+
+Animations should be:
+- 150–300ms
+- ease-out
+- opacity + translate
+- subtle scale only when appropriate
+
+Use:
+- page transitions
+- hover transitions
+- drawer transitions
+- retrieval trace expansion
+- citation panel transitions
+- query composer focus states
+
+Respect prefers-reduced-motion.
+
+==================================================
+DESIGN SYSTEM
+==================================================
+
+Establish reusable primitives instead of styling every page independently.
+
+Create:
+- GlassSurface
+- Metric
+- StatusIndicator
+- SectionHeader
+- DataRow
+- QueryComposer
+- TraceStep
+- Citation
+- SourceDrawer
+- EmptyState
+
+Use consistent spacing.
+
+Prefer:
+8px spacing system
+16px / 24px / 32px / 48px / 64px sections.
+
+Corners should be restrained.
+Avoid making every component heavily rounded.
+
+==================================================
+IMPORTANT
+==================================================
+
+Before modifying pages, inspect the existing frontend architecture.
+
+Preserve:
+- Next.js App Router
+- TypeScript
+- Tailwind
+- shadcn/ui
+- lucide-react
+- framer-motion
+- recharts
+
+Do not rewrite the entire application unnecessarily.
+
+Refactor shared components where appropriate.
+
+Most importantly:
+
+The final result should look like a real product designed by a strong product designer, not an AI-generated dashboard template.
+
+Every visual decision should have a purpose.
+
+Prioritize:
+1. hierarchy
+2. spacing
+3. typography
+4. composition
+5. interaction
+6. visual polish
+
+Only then add decorative effects.
+```
+
+One other thing I'd change, buddy: **don't try to make every page impressive at once.** Make `/ask` absolutely gorgeous first. That's the page people will actually experience. Then use the same design language to bring Knowledge → Retrieval → Evaluation → System up to that level.
+
+Your existing backend work is actually perfect for this because Mnemora has something most fake-looking RAG demos don't have: **real retrieval internals and benchmark data**. The UI should expose that as the product's identity rather than hiding it behind another chat box.
