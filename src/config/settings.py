@@ -7,9 +7,10 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # LLM Provider Configuration
-    # Supports 'openai' or 'local'
+    # Supports 'openai', 'groq', or 'local'
     LLM_PROVIDER: str = "openai"
     OPENAI_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = None
     
     # Model Configuration
     LLM_MODEL_NAME: str = "gpt-4o-mini"

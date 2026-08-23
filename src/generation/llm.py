@@ -33,8 +33,15 @@ class GenerationService:
                 openai_api_key=settings.OPENAI_API_KEY,
                 temperature=0.0 # strict, factual
             ).with_structured_output(LLMResponse)
+        elif settings.LLM_PROVIDER.lower() == "groq" and settings.GROQ_API_KEY:
+            self.llm = ChatOpenAI(
+                model_name="llama-3.1-8b-instant",
+                openai_api_key=settings.GROQ_API_KEY,
+                openai_api_base="https://api.groq.com/openai/v1",
+                temperature=0.0
+            ).with_structured_output(LLMResponse)
         else:
-            logger.info("Using MockLLM because OPENAI_API_KEY is missing or LLM_PROVIDER is local.")
+            logger.info("Using MockLLM because required API key is missing or LLM_PROVIDER is local.")
             self.llm = MockLLM()
             
         self._load_prompts()
