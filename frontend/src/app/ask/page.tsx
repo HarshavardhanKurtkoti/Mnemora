@@ -375,129 +375,130 @@ function AskPageContent() {
         </div>
       ) : (
         // TRACE RESULTS VIEW
-        <>
-          <div className="flex-1 overflow-y-auto p-6 lg:p-10">
-            <div className="mx-auto max-w-4xl space-y-8">
-              <div className="space-y-12">
-                {/* User Query */}
-                <div className="space-y-3">
-                  <div className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"></div> User Request
-                  </div>
-                  <div className="text-2xl font-medium text-foreground tracking-tight ml-3.5">
-                    {query || "How does authentication work for checkout?"}
-                  </div>
+        <div className="flex flex-col h-full w-full relative bg-[#030405]">
+          <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
+          
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+            <div className="mx-auto max-w-4xl space-y-6 lg:space-y-8">
+              
+              {/* User Query Card */}
+              <div className="bg-surface/30 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8 shadow-sm">
+                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                  <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"></div> User Request
+                </div>
+                <div className="text-xl lg:text-2xl font-medium text-foreground tracking-tight">
+                  {query || "How does authentication work for checkout?"}
+                </div>
+              </div>
+
+              {/* Mnemora Response Card */}
+              <div className="relative bg-[#070b0e]/80 backdrop-blur-xl border border-accent/20 rounded-2xl p-6 lg:p-8 shadow-[0_8px_32px_rgba(0,229,255,0.05)] overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50"></div>
+                
+                <div className="text-[10px] font-mono text-accent uppercase tracking-widest flex items-center gap-2 mb-6">
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent shadow-[0_0_8px_rgba(0,229,255,0.8)]"></span>
+                  </div> 
+                  Neural Response
+                </div>
+                
+                <div className="text-foreground/90 leading-relaxed text-base lg:text-lg font-light">
+                  Authentication is handled through the Identity Service using short-lived JWT access tokens. All protected APIs, including checkout endpoints, require a valid token in the Authorization header.
+                  <sup className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface/80 border border-border/50 text-[10px] font-mono text-muted-foreground hover:border-accent hover:text-accent hover:shadow-[0_0_10px_rgba(0,229,255,0.3)] transition-all cursor-pointer">1</sup>
                 </div>
 
-                {/* Mnemora Response */}
-                <div className="space-y-5">
-                  <div className="text-[11px] font-mono text-accent uppercase tracking-widest flex items-center gap-2">
-                    <div className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-accent shadow-[0_0_8px_rgba(0,229,255,0.8)]"></span>
-                    </div> 
-                    Neural Response
+                {/* Sources list */}
+                <div className="flex flex-wrap gap-2 pt-6 mt-6 border-t border-white/5">
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-foreground cursor-pointer transition-all">
+                    <FileText className="h-3.5 w-3.5" /> auth-service.md <span className="text-accent font-mono ml-2 border border-accent/20 bg-accent/10 px-1 rounded text-[10px]">P.4</span>
                   </div>
-                  
-                  <div className="text-foreground/90 leading-relaxed max-w-4xl text-lg ml-4 font-light">
-                    Authentication is handled through the Identity Service using short-lived JWT access tokens. All protected APIs, including checkout endpoints, require a valid token in the Authorization header.
-                    <sup className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface/80 border border-border/50 text-[10px] font-mono text-muted-foreground hover:border-accent hover:text-accent hover:shadow-[0_0_10px_rgba(0,229,255,0.3)] transition-all cursor-pointer">1</sup>
-                  </div>
-
-                  {/* Sources list */}
-                  <div className="flex flex-wrap gap-3 pt-4 ml-4">
-                    <div className="inline-flex items-center gap-2 rounded border border-border/30 bg-surface/20 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/60 hover:border-border/60 hover:text-foreground cursor-pointer transition-all">
-                      <FileText className="h-3.5 w-3.5" /> auth-service.md <span className="text-accent font-mono ml-2 border border-accent/20 bg-accent/10 px-1 rounded text-[10px]">P.4</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2 rounded border border-border/30 bg-surface/20 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/60 hover:border-border/60 hover:text-foreground cursor-pointer transition-all">
-                      <FileText className="h-3.5 w-3.5" /> checkout-architecture.md
-                    </div>
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-foreground cursor-pointer transition-all">
+                    <FileText className="h-3.5 w-3.5" /> checkout-architecture.md
                   </div>
                 </div>
+              </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-border/10 via-border/40 to-border/10 my-10"></div>
-
-                {/* Retrieval Trace */}
-                <div className="space-y-4 pb-20">
-                  <div className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    <Activity className="h-3.5 w-3.5" /> Telemetry Trace
+              {/* Retrieval Trace */}
+              <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8">
+                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-6">
+                  <Activity className="h-3.5 w-3.5" /> Telemetry Trace
+                </div>
+                
+                <div className="rounded-xl border border-border/40 bg-[#070b0e]/50 overflow-hidden font-mono text-sm">
+                  <div className="p-4 bg-background/50 border-b border-border/40 flex justify-between items-center cursor-pointer hover:bg-surface/40 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-foreground text-xs uppercase tracking-widest">Pipeline Execution</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 px-2 py-0.5 rounded">
+                      <span className="text-xs text-accent">605ms</span>
+                    </div>
                   </div>
                   
-                  <div className="rounded-lg border border-border/40 bg-[#070b0e] overflow-hidden font-mono text-sm shadow-xl">
-                    <div className="p-4 bg-background/50 border-b border-border/40 flex justify-between items-center cursor-pointer hover:bg-surface/40 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground text-xs uppercase tracking-widest">Pipeline Execution</span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 px-2 py-0.5 rounded">
-                        <span className="text-xs text-accent">605ms</span>
-                      </div>
+                  <div className="p-5 space-y-3.5 text-muted-foreground/80 bg-background/30 text-[13px]">
+                    <div className="flex justify-between items-center text-foreground">
+                      <span className="flex items-center gap-2"><span className="text-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)] h-2 w-2 rounded-full inline-block"></span> Query received</span>
+                      <span className="text-xs">0ms</span>
                     </div>
                     
-                    <div className="p-5 space-y-3.5 text-muted-foreground/80 bg-background/30 text-[13px]">
-                      <div className="flex justify-between items-center text-foreground">
-                        <span className="flex items-center gap-2"><span className="text-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)] h-2 w-2 rounded-full inline-block"></span> Query received</span>
-                        <span className="text-xs">0ms</span>
+                    <div className="pl-3 border-l border-border/30 ml-[3px] space-y-4 py-2">
+                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
+                        <span>Embedding generated</span>
+                        <span className="text-xs font-medium">12ms</span>
                       </div>
                       
-                      <div className="pl-3 border-l border-border/30 ml-[3px] space-y-4 py-2">
-                        <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                          <span>Embedding generated</span>
-                          <span className="text-xs font-medium">12ms</span>
+                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
+                        <div className="space-y-1.5">
+                          <div className="text-foreground/90">Vector search</div>
+                          <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
                         </div>
-                        
-                        <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                          <div className="space-y-1.5">
-                            <div className="text-foreground/90">Vector search</div>
-                            <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
-                          </div>
-                          <span className="text-xs mt-0.5">16ms</span>
-                        </div>
-
-                        <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                          <div className="space-y-1.5">
-                            <div className="text-foreground/90">BM25 search</div>
-                            <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
-                          </div>
-                          <span className="text-xs mt-0.5">0.3ms</span>
-                        </div>
-
-                        <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                          <div className="space-y-1.5">
-                            <div className="text-emerald-400 font-medium">RRF fusion</div>
-                            <div className="text-[11px] text-emerald-400/50">└── 8 unique candidates</div>
-                          </div>
-                          <span className="text-xs mt-0.5 text-emerald-400">0.2ms</span>
-                        </div>
-
-                        <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                          <div className="space-y-1.5">
-                            <div className="text-accent font-medium">Cross encoder reranking</div>
-                            <div className="text-[11px] text-accent/50">└── 5 candidates</div>
-                          </div>
-                          <span className="text-xs mt-0.5 text-accent font-medium shadow-[0_0_10px_rgba(0,229,255,0.2)]">91ms</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                          <span>Context assembled</span>
-                          <span className="text-xs">2ms</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                          <span className="text-foreground/90">LLM generation</span>
-                          <span className="text-xs">482ms</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                          <span>Citation validation</span>
-                          <span className="text-xs">4ms</span>
-                        </div>
+                        <span className="text-xs mt-0.5">16ms</span>
                       </div>
 
-                      <div className="flex justify-between items-center pt-3 mt-2 border-t border-border/20 font-medium text-foreground">
-                        <span className="uppercase tracking-widest text-[11px]">Total Latency</span>
-                        <span className="text-xs text-accent">605ms</span>
+                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
+                        <div className="space-y-1.5">
+                          <div className="text-foreground/90">BM25 search</div>
+                          <div className="text-[11px] text-muted-foreground/50">└── 5 candidates</div>
+                        </div>
+                        <span className="text-xs mt-0.5">0.3ms</span>
                       </div>
+
+                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
+                        <div className="space-y-1.5">
+                          <div className="text-emerald-400 font-medium">RRF fusion</div>
+                          <div className="text-[11px] text-emerald-400/50">└── 8 unique candidates</div>
+                        </div>
+                        <span className="text-xs mt-0.5 text-emerald-400">0.2ms</span>
+                      </div>
+
+                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
+                        <div className="space-y-1.5">
+                          <div className="text-accent font-medium">Cross encoder reranking</div>
+                          <div className="text-[11px] text-accent/50">└── 5 candidates</div>
+                        </div>
+                        <span className="text-xs mt-0.5 text-accent font-medium shadow-[0_0_10px_rgba(0,229,255,0.2)]">91ms</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
+                        <span>Context assembled</span>
+                        <span className="text-xs">2ms</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
+                        <span className="text-foreground/90">LLM generation</span>
+                        <span className="text-xs">482ms</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
+                        <span>Citation validation</span>
+                        <span className="text-xs">4ms</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 mt-2 border-t border-border/20 font-medium text-foreground">
+                      <span className="uppercase tracking-widest text-[11px]">Total Latency</span>
+                      <span className="text-xs text-accent">605ms</span>
                     </div>
                   </div>
                 </div>
@@ -506,29 +507,32 @@ function AskPageContent() {
           </div>
           
           {/* Input Area (Bottom Sticky) */}
-          <div className="p-4 border-t border-border/20 bg-[#070b0e]/95 backdrop-blur-md">
+          <div className="p-4 lg:p-6 bg-[#030405]/80 backdrop-blur-xl border-t border-white/5 shrink-0 relative z-10">
             <div className="mx-auto max-w-4xl relative">
-              <form onSubmit={handleSearch} className="relative flex items-center">
-                <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask anything about your knowledge base..."
-                  className="h-14 w-full bg-surface/50 border-border/60 pl-12 pr-14 text-base focus-visible:ring-accent/50 rounded-xl"
-                  disabled={isSearching}
-                />
-                <Button 
-                  type="submit" 
-                  size="icon"
-                  disabled={!query || isSearching}
-                  className="absolute right-2 h-10 w-10 bg-accent text-accent-foreground hover:bg-accent/90"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+              <form onSubmit={handleSearch} className="relative flex items-center group">
+                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-accent/20 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[2px]"></div>
+                <div className="relative flex items-center w-full bg-[#070b0e] rounded-2xl overflow-hidden shadow-2xl">
+                    <Search className="absolute left-5 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Ask anything about your knowledge base..."
+                      className="h-14 w-full bg-transparent border border-white/10 pl-14 pr-14 text-base focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-accent/40 rounded-2xl transition-colors"
+                      disabled={isSearching}
+                    />
+                    <Button 
+                      type="submit" 
+                      size="icon"
+                      disabled={!query || isSearching}
+                      className="absolute right-2 h-10 w-10 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 shadow-[0_0_15px_rgba(0,229,255,0.2)]"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                </div>
               </form>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {urlView === 'recent' && (
