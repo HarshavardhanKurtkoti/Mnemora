@@ -23,3 +23,33 @@ export async function fetchDocuments() {
   */
   return [];
 }
+
+export const fetchOverviewStats = async () => {
+  const res = await fetch(`${API_BASE_URL}/stats/overview`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch overview stats');
+  return res.json();
+};
+
+export const fetchPerformanceStats = async () => {
+  const res = await fetch(`${API_BASE_URL}/stats/performance`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch performance stats');
+  return res.json();
+};
+
+export const fetchRecentQueries = async () => {
+  const res = await fetch(`${API_BASE_URL}/queries/recent`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch recent queries');
+  return res.json();
+};
+
+export const fetchActivityFeed = async () => {
+  const res = await fetch(`${API_BASE_URL}/activity`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch activity feed');
+  return res.json();
+};
+
+export const fetchHealthServices = async () => {
+  const res = await fetch(`${API_BASE_URL}/health/services`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch health services');
+  return res.json();
+};

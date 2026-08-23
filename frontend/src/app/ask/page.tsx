@@ -1,22 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, FileText, ChevronDown, ChevronRight, Activity, Search, Command, BookOpen, Layers, Fingerprint, Clock, CheckCircle2, File, Zap, Database, Server, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-const performanceData = [
-  { name: "Vector Search", recall: 51.7, color: "#00E5FF" },
-  { name: "BM25", recall: 42.7, color: "#8B5CF6" },
-  { name: "Hybrid RRF", recall: 48.7, color: "#14B8A6" },
-  { name: "Hybrid + Reranker", recall: 49.0, color: "#F59E0B" },
-];
+import { 
+  fetchOverviewStats, 
+  fetchPerformanceStats, 
+  fetchRecentQueries, 
+  fetchActivityFeed, 
+  fetchHealthServices 
+} from "@/lib/api";
 
 export default function AskPage() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showResult, setShowResult] = useState(false); 
+  
+  // Dynamic states
+  const [overviewStats, setOverviewStats] = useState({ documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
+  const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [recentQueries, setRecentQueries] = useState<any[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
+  const [healthServices, setHealthServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetchOverviewStats().catch(() => ({})),
+      fetchPerformanceStats().catch(() => []),
+      fetchRecentQueries().catch(() => []),
+      fetchActivityFeed().catch(() => []),
+      fetchHealthServices().catch(() => [])
+    ]).then(([overview, performance, queries, activity, health]) => {
+      setOverviewStats(overview || { documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
+      setPerformanceData(performance.map((p: any) => ({
+        name: p.strategy_name,
+        recall: p.recall_at_5,
+        color: p.color,
+        recall_at_10: p.recall_at_10,
+        hit_rate_at_5: p.hit_rate_at_5,
+        mrr_at_10: p.mrr_at_10,
+        p95_latency_ms: p.p95_latency_ms
+      })));
+      setRecentQueries(queries);
+      setActivityFeed(activity);
+      setHealthServices(health);
+    });
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +138,7 @@ export default function AskPage() {
                        <BookOpen className="h-3 w-3 lg:h-4 lg:w-4" />
                      </div>
                      <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">12</div>
+                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{overviewStats.documents_indexed}</div>
                        <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Documents<br/>Indexed</div>
                      </div>
                   </div>
@@ -116,7 +147,7 @@ export default function AskPage() {
                        <Layers className="h-3 w-3 lg:h-4 lg:w-4" />
                      </div>
                      <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">423</div>
+                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{overviewStats.chunks_stored}</div>
                        <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Chunks<br/>Stored</div>
                      </div>
                   </div>
@@ -125,7 +156,7 @@ export default function AskPage() {
                        <Fingerprint className="h-3 w-3 lg:h-4 lg:w-4" />
                      </div>
                      <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">38.2K</div>
+                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{(overviewStats.tokens_total / 1000).toFixed(1)}K</div>
                        <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Tokens<br/>Total</div>
                      </div>
                   </div>
@@ -160,27 +191,20 @@ export default function AskPage() {
                   <span className="text-[8px] lg:text-[9px] text-accent flex items-center gap-0.5 cursor-pointer">View all <ChevronRight className="h-2 w-2 lg:h-2.5 lg:w-2.5" /></span>
                 </div>
                 <div className="flex flex-col gap-0.5 lg:gap-1 overflow-y-auto custom-scrollbar flex-1 pr-1 min-h-0">
-                  {[
-                    { name: "FastAPI Server", sub: "v0.1.0", icon: Server },
-                    { name: "Vector Store", sub: "ChromaDB", icon: Database },
-                    { name: "BM25 Index", sub: "In-Memory", icon: FileText },
-                    { name: "Embeddings", sub: "BGE-M3", icon: Zap },
-                    { name: "Reranker", sub: "Cross-Encoder", icon: Activity },
-                    { name: "LLM Provider", sub: "Local", icon: Command },
-                  ].map((service, i) => (
+                  {healthServices.map((service, i) => (
                     <div key={i} className="flex items-center justify-between group">
                       <div className="flex items-center gap-1.5 lg:gap-2 min-w-0">
                         <div className="h-4 w-4 lg:h-5 lg:w-5 rounded bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
-                          <service.icon className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                          <Server className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                         </div>
                         <div className="min-w-0 pr-1 lg:pr-1.5">
-                          <div className="text-[9px] lg:text-[10px] leading-tight text-foreground font-medium truncate">{service.name}</div>
-                          <div className="text-[7px] lg:text-[8px] leading-tight text-muted-foreground truncate">{service.sub}</div>
+                          <div className="text-[9px] lg:text-[10px] leading-tight text-foreground font-medium truncate">{service.service_name}</div>
+                          <div className="text-[7px] lg:text-[8px] leading-tight text-muted-foreground truncate">{service.version_or_info}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        <div className="h-1 w-1 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        <span className="text-[6px] lg:text-[7px] text-emerald-500 uppercase tracking-wider hidden xl:inline">Healthy</span>
+                        <div className={`h-1 w-1 rounded-full ${service.status === 'healthy' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
+                        <span className={`text-[6px] lg:text-[7px] uppercase tracking-wider hidden xl:inline ${service.status === 'healthy' ? 'text-emerald-500' : 'text-red-500'}`}>{service.status}</span>
                       </div>
                     </div>
                   ))}
@@ -244,19 +268,19 @@ export default function AskPage() {
                 <div className="grid grid-cols-4 gap-1 lg:gap-2 mt-2 pt-2 border-t border-white/10 shrink-0">
                    <div>
                      <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">Recall@10</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">51.7%</div>
+                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.recall_at_10 || 0}%</div>
                    </div>
                    <div>
                      <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">Hit Rate@5</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">54.0%</div>
+                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.hit_rate_at_5 || 0}%</div>
                    </div>
                    <div>
                      <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">MRR@10</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">0.525</div>
+                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.mrr_at_10 || 0}</div>
                    </div>
                    <div>
                      <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">P95 Latency</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">16.6ms</div>
+                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.p95_latency_ms || 0}ms</div>
                    </div>
                 </div>
                 
@@ -274,24 +298,20 @@ export default function AskPage() {
                   <span className="text-[10px] text-accent flex items-center gap-1 cursor-pointer">View all <ChevronRight className="h-3 w-3" /></span>
                 </div>
                 <div className="space-y-3 lg:space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
-                  {[
-                    { q: "How does authentication work for checkout?", type: "Hybrid RRF", time: "2.1s", ago: "Just now" },
-                    { q: "Explain payment processing architecture", type: "Hybrid RRF", time: "1.8s", ago: "2m ago" },
-                    { q: "What database is used for storing orders?", type: "Vector Search", time: "1.4s", ago: "5m ago" },
-                    { q: "How does inventory synchronization work?", type: "Hybrid RRF", time: "2.6s", ago: "12m ago" },
-                    { q: "What is the retry policy for failed payments?", type: "BM25", time: "1.2s", ago: "18m ago" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex justify-between items-start group cursor-pointer" onClick={() => { setQuery(item.q); setShowResult(true); }}>
+                  {recentQueries.map((item, i) => (
+                    <div key={i} className="flex justify-between items-start group cursor-pointer" onClick={() => { setQuery(item.query_text); setShowResult(true); }}>
                       <div className="flex gap-2 lg:gap-3 max-w-[75%] min-w-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-border/40 mt-1.5 group-hover:bg-accent transition-colors shrink-0"></div>
                         <div className="min-w-0 pr-2">
-                          <p className="text-xs text-foreground truncate">{item.q}</p>
-                          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5">{item.type}</p>
+                          <p className="text-xs text-foreground truncate">{item.query_text}</p>
+                          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5">{item.strategy_type}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-[10px] lg:text-xs text-foreground flex items-center justify-end gap-0.5">{item.time} <ChevronRight className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" /></p>
-                        <p className="text-[8px] lg:text-[9px] text-muted-foreground mt-0.5">{item.ago}</p>
+                        <p className="text-[10px] lg:text-xs text-foreground flex items-center justify-end gap-0.5">{(item.latency_ms/1000).toFixed(1)}s <ChevronRight className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" /></p>
+                        <p className="text-[8px] lg:text-[9px] text-muted-foreground mt-0.5">
+                          {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -305,55 +325,25 @@ export default function AskPage() {
                   <span className="text-[10px] text-accent flex items-center gap-1 cursor-pointer">Live <ChevronRight className="h-3 w-3" /></span>
                 </div>
                 <div className="space-y-4 lg:space-y-5 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
-                   <div className="flex gap-3 min-w-0">
-                     <div className="h-6 w-6 lg:h-7 lg:w-7 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                       <File className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-muted-foreground" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="flex justify-between items-baseline">
-                         <p className="text-xs text-foreground truncate pr-2">Document ingested</p>
-                         <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">2m ago</span>
-                       </div>
-                       <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">api-reference.md</p>
-                     </div>
-                   </div>
-                   <div className="flex gap-3 min-w-0">
-                     <div className="h-6 w-6 lg:h-7 lg:w-7 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                       <CheckCircle2 className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-muted-foreground" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="flex justify-between items-baseline">
-                         <p className="text-xs text-foreground truncate pr-2">Benchmark eval completed</p>
-                         <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">15m ago</span>
-                       </div>
-                       <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">60 questions • 4 strategies</p>
-                     </div>
-                   </div>
-                   <div className="flex gap-3 min-w-0">
-                     <div className="h-6 w-6 lg:h-7 lg:w-7 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                       <Activity className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-emerald-500" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="flex justify-between items-baseline">
-                         <p className="text-xs text-foreground truncate pr-2">System health check</p>
-                         <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">1h ago</span>
-                       </div>
-                       <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">All systems operational</p>
-                     </div>
-                   </div>
-                   <div className="flex gap-3 min-w-0">
-                     <div className="h-6 w-6 lg:h-7 lg:w-7 rounded bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                       <File className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-muted-foreground" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="flex justify-between items-baseline">
-                         <p className="text-xs text-foreground truncate pr-2">New document uploaded</p>
-                         <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">2h ago</span>
-                       </div>
-                       <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">checkout-flow.md</p>
-                     </div>
-                   </div>
-                 </div>
+                  {activityFeed.map((activity, i) => (
+                    <div key={i} className="flex gap-3 min-w-0">
+                      <div className={`h-6 w-6 lg:h-7 lg:w-7 rounded flex items-center justify-center shrink-0 ${activity.event_type === 'health_check' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : activity.event_type === 'benchmark_eval' ? 'bg-white/5 border-white/10 text-muted-foreground' : 'bg-white/5 border-white/10 text-muted-foreground'} border`}>
+                        {activity.event_type === 'health_check' ? <Activity className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> : 
+                         activity.event_type === 'benchmark_eval' ? <CheckCircle2 className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> : 
+                         <File className="h-3 w-3 lg:h-3.5 lg:w-3.5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline">
+                          <p className="text-xs text-foreground truncate pr-2">{activity.title}</p>
+                          <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">
+                            {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">{activity.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

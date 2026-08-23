@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageSquare, Library, Search, LineChart, Server, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { fetchHealthServices } from "@/lib/api";
 
 const navigation = [
   { name: "Ask", href: "/ask", icon: MessageSquare },
@@ -15,6 +17,14 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isHealthy, setIsHealthy] = useState(true);
+
+  useEffect(() => {
+    fetchHealthServices().then(services => {
+      const allHealthy = services.every((s: any) => s.status === 'healthy');
+      setIsHealthy(allHealthy);
+    }).catch(() => setIsHealthy(true));
+  }, []);
 
   return (
     <div className="flex h-full w-[260px] flex-col border-r border-border/20 bg-black/40 backdrop-blur-md">
@@ -70,7 +80,9 @@ export function Sidebar() {
         <div className="mb-4">
           <h3 className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-2">System Health</h3>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-emerald-500 text-xs font-medium">All systems operational</span>
+            <span className={cn("text-xs font-medium", isHealthy ? "text-emerald-500" : "text-red-500")}>
+              {isHealthy ? "All systems operational" : "System degraded"}
+            </span>
           </div>
           
           {/* Circular Progress (Mock) */}

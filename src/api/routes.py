@@ -13,6 +13,10 @@ from src.retrieval.reranker import ReRankerService
 from src.generation.llm import GenerationService
 from src.config.settings import settings
 
+from sqlalchemy.orm import Session
+from src.config.database import get_db
+from src.api import models, schemas
+
 from fastapi import Depends
 from functools import lru_cache
 
@@ -156,3 +160,30 @@ async def query_rag(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/stats/overview", response_model=schemas.SystemStatSchema)
+def get_stats_overview(db: Session = Depends(get_db)):
+    stat = db.query(models.SystemStat).first()
+    if not stat:
+        return schemas.SystemStatSchema(documents_indexed=0, chunks_stored=0, tokens_total=0)
+    return stat
+
+@router.get("/stats/performance", response_model=List[schemas.PerformanceMetricSchema])
+def get_stats_performance(db: Session = Depends(get_db)):
+    metrics = db.query(models.PerformanceMetric).all()
+    return metrics
+
+@router.get("/queries/recent", response_model=List[schemas.QueryHistorySchema])
+def get_recent_queries(db: Session = Depends(get_db), limit: int = 5):
+    queries = db.query(models.QueryHistory).order_by(models.QueryHistory.created_at.desc()).limit(limit).all()
+    return queries
+
+@router.get("/activity", response_model=List[schemas.ActivityFeedSchema])
+def get_activity_feed(db: Session = Depends(get_db), limit: int = 10):
+    activities = db.query(models.ActivityFeed).order_by(models.ActivityFeed.created_at.desc()).limit(limit).all()
+    return activities
+
+@router.get("/health/services", response_model=List[schemas.SystemHealthSchema])
+def get_health_services(db: Session = Depends(get_db)):
+    services = db.query(models.SystemHealth).all()
+    return services

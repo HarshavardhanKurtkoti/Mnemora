@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: mnemora_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mnemora_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mnemora_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-mnemora_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mnemora_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: mnemora_chroma
+    restart: always
+    volumes:
+      - chroma_data:/chroma/chroma
+    ports:
+      - "8000:8000"
+
+  api:
+    build: .
+    container_name: mnemora_api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mnemora_user}:${POSTGRES_PASSWORD:-mnemora_pass}@db:5432/${POSTGRES_DB:-mnemora_db}
+      - CHROMA_API_IMPL=rest
+      - CHROMA_SERVER_HOST=chroma
+      - CHROMA_SERVER_HTTP_PORT=8000
+    depends_on:
+      db:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  postgres_data:
+  chroma_data:
