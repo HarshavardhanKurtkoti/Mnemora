@@ -28,7 +28,10 @@ export default function KnowledgePage() {
 
     // Simulated progress bar while waiting for backend
     const interval = setInterval(() => {
-      setUploadProgress(p => p < 90 ? p + (Math.random() * 15) : p);
+      setUploadProgress(p => {
+        const next = p + (Math.random() * 15);
+        return next > 99 ? 99 : next;
+      });
     }, 300);
     
     try {
@@ -131,8 +134,8 @@ export default function KnowledgePage() {
       </div>
 
       {uploadState !== 'idle' && selectedFile && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#070b0e]/90 backdrop-blur-xl border border-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-md p-6 relative overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#070b0e]/40 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-md p-6 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50"></div>
             
             <div className="flex justify-between items-start mb-6">
