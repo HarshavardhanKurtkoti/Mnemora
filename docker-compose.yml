@@ -37,8 +37,8 @@ services:
     command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-mnemora_user}:${POSTGRES_PASSWORD:-mnemora_pass}@db:5432/${POSTGRES_DB:-mnemora_db}
-      - LLM_PROVIDER=groq
-      - GROQ_API_KEY=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
+      - LLM_PROVIDER=${LLM_PROVIDER}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     depends_on:
       db:
         condition: service_healthy
