@@ -35,7 +35,7 @@ class GenerationService:
             ).with_structured_output(LLMResponse)
         elif settings.LLM_PROVIDER.lower() == "groq" and settings.GROQ_API_KEY:
             self.llm = ChatOpenAI(
-                model_name="mixtral-8x7b-32768",
+                model_name="gemma2-9b-it",
                 openai_api_key=settings.GROQ_API_KEY,
                 openai_api_base="https://api.groq.com/openai/v1",
                 temperature=0.0

@@ -1,16 +1,33 @@
 // API client for FastAPI Backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+async function handleResponse(res: Response) {
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    if (!res.ok) throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
+    throw new Error('Invalid JSON response from server');
+  }
+
+  if (data && data.status === "error") {
+    throw new Error(data.error?.message || "Unknown server error");
+  }
+  
+  if (!res.ok) {
+     throw new Error(data.detail || `HTTP Error: ${res.status}`);
+  }
+
+  return data.data !== undefined ? data.data : data; 
+}
+
 export async function askMnemora(query: string) {
   const res = await fetch(`${API_BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query }),
   });
-  if (!res.ok) {
-      throw new Error('Failed to ask Mnemora');
-  }
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function fetchDocuments() {
@@ -23,34 +40,29 @@ export async function fetchDocuments() {
 
 export const fetchOverviewStats = async () => {
   const res = await fetch(`${API_BASE_URL}/stats/overview`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch overview stats');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchPerformanceStats = async () => {
   const res = await fetch(`${API_BASE_URL}/stats/performance`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch performance stats');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchRecentQueries = async (limit?: number) => {
   const url = limit ? `${API_BASE_URL}/queries/recent?limit=${limit}` : `${API_BASE_URL}/queries/recent`;
   const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch recent queries');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchActivityFeed = async (limit?: number) => {
   const url = limit ? `${API_BASE_URL}/activity?limit=${limit}` : `${API_BASE_URL}/activity`;
   const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch activity feed');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchHealthServices = async () => {
   const res = await fetch(`${API_BASE_URL}/health/services`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch health services');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const runEvaluation = async () => {
@@ -58,8 +70,7 @@ export const runEvaluation = async () => {
     method: 'POST',
     headers: { "Content-Type": "application/json" }
   });
-  if (!res.ok) throw new Error('Failed to run evaluation');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const uploadDocument = async (file: File) => {
@@ -71,9 +82,5 @@ export const uploadDocument = async (file: File) => {
     body: formData,
   });
   
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to upload document');
-  }
-  return res.json();
+  return handleResponse(res);
 };

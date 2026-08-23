@@ -1,7 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes import router
+import logging
+
 from src.config.settings import settings
+from src.api.controllers import rag_controller, stats_controller
+from src.api.utils.response import error_response
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -16,11 +21,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router, prefix=settings.API_V1_STR)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    return error_response(message=str(exc), status_code=500)
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(f"HTTPException: {exc.detail}")
+    return error_response(message=str(exc.detail), status_code=exc.status_code)
+
+app.include_router(rag_controller.router, prefix=settings.API_V1_STR)
+app.include_router(stats_controller.router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    from src.api.utils.response import success_response
+    return success_response({"status": "healthy"})
 
 if __name__ == "__main__":
     import uvicorn
