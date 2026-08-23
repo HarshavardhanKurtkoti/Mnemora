@@ -61,3 +61,19 @@ export const runEvaluation = async () => {
   if (!res.ok) throw new Error('Failed to run evaluation');
   return res.json();
 };
+
+export const uploadDocument = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const res = await fetch(`${API_BASE_URL}/ingest/file`, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to upload document');
+  }
+  return res.json();
+};
