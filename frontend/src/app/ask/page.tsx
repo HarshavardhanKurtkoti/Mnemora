@@ -428,6 +428,32 @@ function AskPageContent() {
                 )}
               </div>
 
+              {/* Performance Metrics */}
+              {answerData?.performance && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Search className="h-3 w-3 text-accent" /> Retrieval Time</div>
+                    <div className="text-xl font-semibold text-foreground">{answerData.performance.retrieval_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
+                  </div>
+                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Zap className="h-3 w-3 text-[#8B5CF6]" /> Generation Time</div>
+                    <div className="text-xl font-semibold text-foreground">{answerData.performance.generation_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
+                  </div>
+                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Clock className="h-3 w-3 text-white/70" /> Total Latency</div>
+                    <div className="text-xl font-semibold text-foreground">{answerData.performance.total_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
+                  </div>
+                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> Avg Confidence</div>
+                    <div className="text-xl font-semibold text-emerald-400">{answerData.performance.confidence_score} <span className="text-xs text-muted-foreground font-normal">%</span></div>
+                  </div>
+                </div>
+              )}
+
               {/* Retrieval Trace */}
               <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8">
                 <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-6">

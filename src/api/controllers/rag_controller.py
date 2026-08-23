@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, UploadFile, File, Depends
 from typing import List, Optional
 from pydantic import BaseModel, Field
+import math
 from sqlalchemy.orm import Session
 
 from src.ingestion.loaders import DocumentLoaderService
@@ -109,6 +110,7 @@ async def query_rag(
         raise ValueError("Empty query provided.")
         
     # 1. Hybrid Retrieval (Vector + BM25)
+    t0 = time.time()
     retrieved_docs = hybrid_search.search(request.query)
     vector_count = settings.TOP_K_VECTOR
     bm25_count = settings.TOP_K_BM25
@@ -116,9 +118,20 @@ async def query_rag(
     # 2. Re-rank
     reranked_docs = reranker.rerank(request.query, retrieved_docs)
     reranked_count = len(reranked_docs)
+    retrieval_ms = (time.time() - t0) * 1000
+    
+    # Calculate confidence from top docs (sigmoid of logits)
+    avg_confidence = 0
+    if reranked_docs:
+        scores = [doc.metadata.get("relevance_score", 0) for doc in reranked_docs[:3]]
+        # Sigmoid: 1 / (1 + exp(-x))
+        probs = [1 / (1 + math.exp(-s)) for s in scores]
+        avg_confidence = (sum(probs) / len(probs)) * 100
     
     # 3. Generate Answer
+    t1 = time.time()
     response = generation.generate_answer(request.query, reranked_docs)
+    generation_ms = (time.time() - t1) * 1000
     
     # Map citations
     citations = []
@@ -136,13 +149,20 @@ async def query_rag(
         "reranked_results": reranked_count
     }
     
-    latency_ms = (time.time() - start_time) * 1000
+    total_ms = (time.time() - start_time) * 1000
+    
+    performance_metrics = {
+        "retrieval_ms": round(retrieval_ms, 2),
+        "generation_ms": round(generation_ms, 2),
+        "total_ms": round(total_ms, 2),
+        "confidence_score": round(avg_confidence, 2)
+    }
     
     # Save query to database
     db_query = models.QueryHistory(
         query_text=request.query,
         strategy_type="HYBRID RRF",
-        latency_ms=latency_ms
+        latency_ms=total_ms
     )
     db.add(db_query)
     db.commit()
@@ -150,5 +170,6 @@ async def query_rag(
     return success_response({
         "answer": response.get("answer", ""),
         "citations": citations,
-        "retrieval": stats
+        "retrieval": stats,
+        "performance": performance_metrics
     })
