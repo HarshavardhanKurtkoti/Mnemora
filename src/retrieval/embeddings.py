@@ -1,6 +1,6 @@
 from functools import lru_cache
 from langchain_openai import OpenAIEmbeddings
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from src.config.settings import settings
 
 @lru_cache(maxsize=1)
@@ -13,6 +13,6 @@ def get_embedding_model():
     else:
         import logging
         logging.getLogger(__name__).info("Using local embeddings because OPENAI_API_KEY is missing or LLM_PROVIDER is local.")
-        return HuggingFaceEmbeddings(
-            model_name=settings.LOCAL_EMBEDDING_MODEL
+        return FastEmbedEmbeddings(
+            model_name="BAAI/bge-small-en-v1.5" # Very lightweight and fast model
         )
