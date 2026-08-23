@@ -1,0 +1,115 @@
+import os
+import logging
+from typing import List, Dict, Any
+from pydantic import BaseModel, Field
+from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+from src.config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+class LLMResponse(BaseModel):
+    answer: str = Field(description="The answer to the user's question.")
+    citations: List[str] = Field(description="List of exact chunk IDs used as evidence.")
+
+class GenerationService:
+    def __init__(self):
+        # Determine LLM
+        if settings.LLM_PROVIDER.lower() == "openai":
+            self.llm = ChatOpenAI(
+                model_name=settings.LLM_MODEL_NAME,
+                openai_api_key=settings.OPENAI_API_KEY,
+                temperature=0.0 # strict, factual
+            ).with_structured_output(LLMResponse)
+        else:
+            raise NotImplementedError("Local LLM structured output not fully configured yet.")
+            
+        self._load_prompts()
+        
+    def _load_prompts(self):
+        prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "system_v1.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            self.prompt_template = f.read()
+
+    def format_context(self, docs: List[Document]) -> str:
+        """Format documents into a readable string with chunk IDs for citation."""
+        formatted = []
+        for doc in docs:
+            chunk_id = doc.metadata.get("chunk_id", "unknown_chunk")
+            source = doc.metadata.get("source", "unknown_source")
+            content = doc.page_content.strip()
+            formatted.append(f"--- [CHUNK_ID: {chunk_id} | SOURCE: {source}] ---\n{content}\n")
+        return "\n".join(formatted)
+
+    def generate_answer(self, question: str, retrieved_docs: List[Document]) -> Dict[str, Any]:
+        if not retrieved_docs:
+            return {
+                "answer": "I couldn't find sufficient information in the provided documents to answer this question.",
+                "citations": []
+            }
+            
+        context_str = self.format_context(retrieved_docs)
+        valid_chunk_ids = {doc.metadata.get("chunk_id") for doc in retrieved_docs if doc.metadata.get("chunk_id")}
+        
+        prompt = PromptTemplate.from_template(self.prompt_template)
+        formatted_prompt = prompt.format(context=context_str, question=question)
+        
+        # Validation Loop (Retry up to 1 time for invalid citations)
+        max_retries = 1
+        for attempt in range(max_retries + 1):
+            try:
+                # Call LLM
+                response: LLMResponse = self.llm.invoke(formatted_prompt)
+                
+                # If LLM claims insufficient evidence (which we instruct it to do)
+                if "insufficient information" in response.answer.lower():
+                    return {
+                        "answer": response.answer,
+                        "citations": []
+                    }
+                
+                # Validate citations
+                invalid_citations = [c for c in response.citations if c not in valid_chunk_ids]
+                
+                if invalid_citations:
+                    if attempt < max_retries:
+                        logger.warning(f"Invalid citations detected: {invalid_citations}. Retrying...")
+                        # Append a strong warning to the prompt for the retry
+                        formatted_prompt += f"\n\nWARNING: In your previous attempt, you cited invalid CHUNK_IDs: {invalid_citations}. You MUST only use the CHUNK_IDs provided in the context."
+                        continue
+                    else:
+                        logger.error(f"Failed to generate valid citations after {max_retries} retries.")
+                        return {
+                            "answer": "I couldn't find sufficient information in the provided documents to answer this question.",
+                            "citations": []
+                        }
+                
+                # All citations are valid
+                # Map chunk_ids back to document metadata
+                doc_lookup = {doc.metadata.get("chunk_id"): doc for doc in retrieved_docs}
+                
+                valid_sources = []
+                for cid in response.citations:
+                    doc = doc_lookup.get(cid)
+                    if doc:
+                        valid_sources.append({
+                            "chunk_id": cid,
+                            "source": doc.metadata.get("source"),
+                            "page": doc.metadata.get("page"),
+                            "relevance_score": doc.metadata.get("relevance_score", 0.0)
+                        })
+                        
+                return {
+                    "answer": response.answer,
+                    "citations": valid_sources
+                }
+            except Exception as e:
+                logger.error(f"LLM Generation error: {str(e)}")
+                if attempt == max_retries:
+                    raise
+                    
+        return {
+            "answer": "I couldn't find sufficient information in the provided documents to answer this question.",
+            "citations": []
+        }

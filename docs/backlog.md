@@ -1,0 +1,7 @@
+- Advanced structure-aware parsing (e.g., LlamaParse integration for complex PDFs).
+- Semantic caching to reduce LLM calls for repeated queries.
+- Integration with Qdrant for a distributed vector store environment instead of local ChromaDB.
+- Support for streaming LLM responses in the FastAPI endpoint.
+- Experiment with smaller local LLMs (e.g., Llama-3-8B) for Generation.
+- Implement `llama.cpp` grammar or `outlines` integration to support strict structured JSON output for local LLMs in `GenerationService`.
+- Migrate BM25 to a persistent index backend (e.g. Elasticsearch or Qdrant Hybrid) for better multi-instance scaling.
