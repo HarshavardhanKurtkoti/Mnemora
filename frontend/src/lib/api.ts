@@ -2,18 +2,15 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function askMnemora(query: string) {
-  // In M1, we are using mock data in the UI. 
-  // Future implementation will connect to the FastAPI backend.
-  /*
   const res = await fetch(`${API_BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query }),
   });
+  if (!res.ok) {
+      throw new Error('Failed to ask Mnemora');
+  }
   return res.json();
-  */
-  console.log("Mock API call to askMnemora:", query);
-  return { status: "mocked" };
 }
 
 export async function fetchDocuments() {
@@ -36,14 +33,16 @@ export const fetchPerformanceStats = async () => {
   return res.json();
 };
 
-export const fetchRecentQueries = async () => {
-  const res = await fetch(`${API_BASE_URL}/queries/recent`, { cache: 'no-store' });
+export const fetchRecentQueries = async (limit?: number) => {
+  const url = limit ? `${API_BASE_URL}/queries/recent?limit=${limit}` : `${API_BASE_URL}/queries/recent`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch recent queries');
   return res.json();
 };
 
-export const fetchActivityFeed = async () => {
-  const res = await fetch(`${API_BASE_URL}/activity`, { cache: 'no-store' });
+export const fetchActivityFeed = async (limit?: number) => {
+  const url = limit ? `${API_BASE_URL}/activity?limit=${limit}` : `${API_BASE_URL}/activity`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch activity feed');
   return res.json();
 };

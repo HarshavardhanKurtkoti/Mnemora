@@ -116,8 +116,11 @@ async def query_rag(
     request: QueryRequest,
     hybrid_search: HybridSearchService = Depends(get_hybrid_search),
     reranker: ReRankerService = Depends(get_reranker),
-    generation: GenerationService = Depends(get_generation)
+    generation: GenerationService = Depends(get_generation),
+    db: Session = Depends(get_db)
 ):
+    import time
+    start_time = time.time()
     try:
         if not request.query.strip():
             raise HTTPException(status_code=400, detail="Empty query provided.")
@@ -150,6 +153,17 @@ async def query_rag(
             bm25_results=bm25_count,
             reranked_results=reranked_count
         )
+        
+        latency_ms = (time.time() - start_time) * 1000
+        
+        # Save query to database
+        db_query = models.QueryHistory(
+            query_text=request.query,
+            strategy_type="HYBRID RRF",
+            latency_ms=latency_ms
+        )
+        db.add(db_query)
+        db.commit()
         
         return QueryResponse(
             answer=response.get("answer", ""),

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ArrowRight, FileText, ChevronDown, ChevronRight, Activity, Search, Command, BookOpen, Layers, Fingerprint, Clock, CheckCircle2, File, Zap, Database, Server, ArrowUpRight } from "lucide-react";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, FileText, ChevronDown, ChevronRight, Activity, Search, Command, BookOpen, Layers, Fingerprint, Clock, CheckCircle2, File, Zap, Database, Server, ArrowUpRight, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,15 @@ import {
   fetchPerformanceStats, 
   fetchRecentQueries, 
   fetchActivityFeed, 
-  fetchHealthServices 
+  fetchHealthServices,
+  askMnemora
 } from "@/lib/api";
 
-export default function AskPage() {
+function AskPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get('q');
+  const urlView = searchParams.get('view');
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showResult, setShowResult] = useState(false); 
@@ -24,6 +30,8 @@ export default function AskPage() {
   const [recentQueries, setRecentQueries] = useState<any[]>([]);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [healthServices, setHealthServices] = useState<any[]>([]);
+  const [allQueries, setAllQueries] = useState<any[]>([]);
+  const [allActivity, setAllActivity] = useState<any[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -49,15 +57,31 @@ export default function AskPage() {
     });
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query) return;
-    setIsSearching(true);
-    // Simulate search
-    setTimeout(() => {
-      setIsSearching(false);
+  useEffect(() => {
+    if (urlQuery) {
+      setQuery(urlQuery);
+      setIsSearching(true);
       setShowResult(true);
-    }, 1500);
+      askMnemora(urlQuery)
+        .catch(console.error)
+        .finally(() => setIsSearching(false));
+    } else {
+      setShowResult(false);
+    }
+  }, [urlQuery]);
+
+  useEffect(() => {
+    if (urlView === 'recent') {
+      fetchRecentQueries(50).then(setAllQueries).catch(() => []);
+    } else if (urlView === 'activity') {
+      fetchActivityFeed(50).then(setAllActivity).catch(() => []);
+    }
+  }, [urlView]);
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!query) return;
+    router.push(`/ask?q=${encodeURIComponent(query)}`);
   };
 
   return (
@@ -295,11 +319,11 @@ export default function AskPage() {
               <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col min-h-0 h-full">
                 <div className="flex items-center justify-between mb-3 shrink-0">
                   <h3 className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Recent Queries</h3>
-                  <span className="text-[10px] text-accent flex items-center gap-1 cursor-pointer">View all <ChevronRight className="h-3 w-3" /></span>
+                  <span onClick={() => router.push('/ask?view=recent')} className="text-[10px] text-accent flex items-center gap-1 cursor-pointer hover:underline">View all <ChevronRight className="h-3 w-3" /></span>
                 </div>
                 <div className="space-y-3 lg:space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
                   {recentQueries.map((item, i) => (
-                    <div key={i} className="flex justify-between items-start group cursor-pointer" onClick={() => { setQuery(item.query_text); setShowResult(true); }}>
+                    <div key={i} className="flex justify-between items-start group cursor-pointer" onClick={() => router.push(`/ask?q=${encodeURIComponent(item.query_text)}`)}>
                       <div className="flex gap-2 lg:gap-3 max-w-[75%] min-w-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-border/40 mt-1.5 group-hover:bg-accent transition-colors shrink-0"></div>
                         <div className="min-w-0 pr-2">
@@ -322,7 +346,7 @@ export default function AskPage() {
               <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col min-h-0 h-full">
                 <div className="flex items-center justify-between mb-3 shrink-0">
                   <h3 className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Activity Feed</h3>
-                  <span className="text-[10px] text-accent flex items-center gap-1 cursor-pointer">Live <ChevronRight className="h-3 w-3" /></span>
+                  <span onClick={() => router.push('/ask?view=activity')} className="text-[10px] text-accent flex items-center gap-1 cursor-pointer hover:underline">Live <ChevronRight className="h-3 w-3" /></span>
                 </div>
                 <div className="space-y-4 lg:space-y-5 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
                   {activityFeed.map((activity, i) => (
@@ -506,6 +530,80 @@ export default function AskPage() {
           </div>
         </>
       )}
+
+      {urlView === 'recent' && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#070b0e] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-white/10">
+              <h2 className="text-lg font-medium text-foreground">All Recent Queries</h2>
+              <Button variant="ghost" size="icon" onClick={() => router.push(urlQuery ? `/ask?q=${encodeURIComponent(urlQuery)}` : '/ask')} className="hover:bg-white/10">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+              {allQueries.map((item, i) => (
+                <div key={i} className="flex justify-between items-start group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => router.push(`/ask?q=${encodeURIComponent(item.query_text)}`)}>
+                  <div className="flex gap-3 max-w-[75%] min-w-0">
+                    <div className="w-1.5 h-1.5 rounded-full bg-border/40 mt-1.5 group-hover:bg-accent transition-colors shrink-0"></div>
+                    <div className="min-w-0 pr-2">
+                      <p className="text-sm text-foreground truncate">{item.query_text}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{item.strategy_type}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-foreground flex items-center justify-end gap-0.5">{(item.latency_ms/1000).toFixed(1)}s <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" /></p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {urlView === 'activity' && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#070b0e] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-white/10">
+              <h2 className="text-lg font-medium text-foreground">Activity Feed</h2>
+              <Button variant="ghost" size="icon" onClick={() => router.push(urlQuery ? `/ask?q=${encodeURIComponent(urlQuery)}` : '/ask')} className="hover:bg-white/10">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+              {allActivity.map((activity, i) => (
+                <div key={i} className="flex gap-4 min-w-0 hover:bg-white/5 p-2 rounded transition-colors">
+                  <div className={`h-8 w-8 rounded flex items-center justify-center shrink-0 ${activity.event_type === 'health_check' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : activity.event_type === 'benchmark_eval' ? 'bg-white/5 border-white/10 text-muted-foreground' : 'bg-white/5 border-white/10 text-muted-foreground'} border`}>
+                    {activity.event_type === 'health_check' ? <Activity className="h-4 w-4" /> : 
+                     activity.event_type === 'benchmark_eval' ? <CheckCircle2 className="h-4 w-4" /> : 
+                     <File className="h-4 w-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <p className="text-sm text-foreground truncate pr-2">{activity.title}</p>
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 truncate">{activity.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+  );
+}
+
+export default function AskPage() {
+  return (
+    <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-muted-foreground">Loading...</div>}>
+      <AskPageContent />
+    </Suspense>
   );
 }

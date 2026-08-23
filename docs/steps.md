@@ -39,8 +39,11 @@ IN PROGRESS
 
 ## Current Task
 
+## Current Task
+
 Completed Frontend Milestone 1 (Product UI).
 Built Evaluation Page UI with benchmark triggering.
+Added URL syncing and backend database tracking for Recent Queries and Activity Feed.
 
 ## Next Step
 
