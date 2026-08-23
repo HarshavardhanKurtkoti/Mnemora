@@ -154,46 +154,46 @@ export default function AskPage() {
               </div>
 
               {/* Right Side: System Status */}
-              <div className="w-[260px] lg:w-[280px] shrink-0 bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-2 lg:p-3 flex flex-col h-full min-h-0">
-                <div className="flex items-center justify-between mb-1.5 lg:mb-2 shrink-0">
-                  <h3 className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-widest font-medium">System Status</h3>
-                  <span className="text-[9px] lg:text-[10px] text-accent flex items-center gap-1 cursor-pointer">View all <ChevronRight className="h-2.5 w-2.5 lg:h-3 lg:w-3" /></span>
+              <div className="w-[240px] lg:w-[260px] shrink-0 bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl px-2 py-1.5 lg:px-3 lg:py-2 flex flex-col h-full min-h-0">
+                <div className="flex items-center justify-between mb-1 shrink-0">
+                  <h3 className="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest font-medium">System Status</h3>
+                  <span className="text-[8px] lg:text-[9px] text-accent flex items-center gap-0.5 cursor-pointer">View all <ChevronRight className="h-2 w-2 lg:h-2.5 lg:w-2.5" /></span>
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 overflow-y-auto custom-scrollbar flex-1 pr-1.5 lg:pr-2 min-h-0">
+                <div className="flex flex-col gap-0.5 lg:gap-1 overflow-y-auto custom-scrollbar flex-1 pr-1 min-h-0">
                   {[
                     { name: "FastAPI Server", sub: "v0.1.0", icon: Server },
                     { name: "Vector Store", sub: "ChromaDB", icon: Database },
                     { name: "BM25 Index", sub: "In-Memory", icon: FileText },
                     { name: "Embeddings", sub: "BGE-M3", icon: Zap },
                     { name: "Reranker", sub: "Cross-Encoder", icon: Activity },
-                    { name: "LLM Provider", sub: "Local (Llama.cpp)", icon: Command },
+                    { name: "LLM Provider", sub: "Local", icon: Command },
                   ].map((service, i) => (
                     <div key={i} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2 lg:gap-3 min-w-0">
-                        <div className="h-5 w-5 lg:h-6 lg:w-6 rounded bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
+                      <div className="flex items-center gap-1.5 lg:gap-2 min-w-0">
+                        <div className="h-4 w-4 lg:h-5 lg:w-5 rounded bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                           <service.icon className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                         </div>
-                        <div className="min-w-0 pr-1.5 lg:pr-2">
-                          <div className="text-[10px] lg:text-xs text-foreground font-medium truncate">{service.name}</div>
-                          <div className="text-[8px] lg:text-[9px] text-muted-foreground truncate">{service.sub}</div>
+                        <div className="min-w-0 pr-1 lg:pr-1.5">
+                          <div className="text-[9px] lg:text-[10px] leading-tight text-foreground font-medium truncate">{service.name}</div>
+                          <div className="text-[7px] lg:text-[8px] leading-tight text-muted-foreground truncate">{service.sub}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 lg:gap-1.5 shrink-0">
-                        <div className="h-1 w-1 lg:h-1.5 lg:w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        <span className="text-[7px] lg:text-[8px] text-emerald-500 uppercase tracking-wider hidden xl:inline">Healthy</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div className="h-1 w-1 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        <span className="text-[6px] lg:text-[7px] text-emerald-500 uppercase tracking-wider hidden xl:inline">Healthy</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 
-                <div className="flex justify-between items-center mt-1.5 lg:mt-2 pt-1.5 lg:pt-2 border-t border-white/10 shrink-0">
+                <div className="flex justify-between items-center mt-1 lg:mt-1.5 pt-1 border-t border-white/10 shrink-0">
                   <div>
-                    <div className="text-[7px] lg:text-[8px] text-muted-foreground uppercase tracking-widest mb-0.5">Uptime</div>
-                    <div className="text-[10px] lg:text-xs text-emerald-500">2h 47m</div>
+                    <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Uptime</div>
+                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">2h 47m</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[7px] lg:text-[8px] text-muted-foreground uppercase tracking-widest mb-0.5">Environment</div>
-                    <div className="text-[10px] lg:text-xs text-emerald-500">Local Dev</div>
+                    <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Environment</div>
+                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">Local Dev</div>
                   </div>
                 </div>
               </div>
