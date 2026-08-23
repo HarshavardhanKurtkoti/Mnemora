@@ -53,3 +53,12 @@ export const fetchHealthServices = async () => {
   if (!res.ok) throw new Error('Failed to fetch health services');
   return res.json();
 };
+
+export const runEvaluation = async () => {
+  const res = await fetch(`${API_BASE_URL}/evaluation/run`, { 
+    method: 'POST',
+    headers: { "Content-Type": "application/json" }
+  });
+  if (!res.ok) throw new Error('Failed to run evaluation');
+  return res.json();
+};
