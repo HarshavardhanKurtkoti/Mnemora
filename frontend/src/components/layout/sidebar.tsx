@@ -17,7 +17,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-[260px] flex-col border-r border-border/20 bg-[#070b0e]">
+    <div className="flex h-full w-[260px] flex-col border-r border-border/20 bg-black/40 backdrop-blur-md">
       {/* Brand Section */}
       <div className="px-6 py-8">
         <div className="flex items-center gap-3 mb-6">
@@ -66,15 +66,15 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Section */}
-      <div className="mt-auto flex flex-col px-6 py-6 border-t border-border/10">
-        <div className="mb-8">
+      <div className="mt-auto flex flex-col px-6 py-5 border-t border-border/10">
+        <div className="mb-4">
           <h3 className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-2">System Health</h3>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-emerald-500 text-xs font-medium">All systems operational</span>
           </div>
           
           {/* Circular Progress (Mock) */}
-          <div className="relative h-28 w-28 mx-auto mt-6 mb-6 flex items-center justify-center">
+          <div className="relative h-24 w-24 mx-auto mt-4 mb-4 flex items-center justify-center">
             <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
               {/* Background circle */}
               <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-border/30" />
@@ -82,7 +82,7 @@ export function Sidebar() {
               <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="251.2" strokeDashoffset="0" className="text-accent drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-semibold text-foreground">100%</span>
+              <span className="text-xl font-semibold text-foreground">100%</span>
               <span className="text-[9px] text-muted-foreground tracking-widest uppercase">Uptime</span>
             </div>
           </div>
@@ -94,9 +94,9 @@ export function Sidebar() {
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center justify-between cursor-pointer group">
+        <div className="flex items-center justify-between cursor-pointer group pt-3 border-t border-border/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-foreground text-sm font-medium border border-border/20 group-hover:border-border/50 transition-colors">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] backdrop-blur-md text-foreground text-sm font-medium border border-white/10 group-hover:border-white/20 transition-colors">
               N
             </div>
             <div className="flex flex-col">

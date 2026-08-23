@@ -27,13 +27,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="h-screen w-screen overflow-hidden flex flex-col bg-[#05080a] text-foreground relative">
+        <div className="absolute inset-0 z-[-1]">
+          <img src="/bg.jpg" className="w-full h-full object-cover opacity-100" alt="background texture" />
+        </div>
         <Header />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {children}
           </main>
         </div>

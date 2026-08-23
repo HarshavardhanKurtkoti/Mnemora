@@ -2,7 +2,7 @@ import { Settings } from "lucide-react";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-30 flex h-[70px] items-center justify-between border-b border-border/10 bg-[#070b0e] px-8">
+    <header className="sticky top-0 z-30 flex h-[70px] shrink-0 items-center justify-between border-b border-border/10 bg-transparent backdrop-blur-sm px-8">
       <div className="flex items-center gap-2 text-sm text-muted-foreground font-light tracking-wide">
         <span>/</span>
         <span className="uppercase">Command Center</span>
