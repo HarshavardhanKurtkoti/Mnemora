@@ -40,10 +40,11 @@ IN PROGRESS
 ## Current Task
 
 Completed Frontend Milestone 1 (Product UI).
+Built Evaluation Page UI with benchmark triggering.
 
 ## Next Step
 
-Begin Frontend Milestone 2 (AI Observability) - connecting the UI to the actual FastAPI backend endpoints for the Retrieval Trace.
+Connect the Evaluation Page UI and Retrieval Trace UI to actual FastAPI backend endpoints for the Retrieval Trace and Ragas evaluation pipeline.
 
 ## Blockers
 
