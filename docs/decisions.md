@@ -175,6 +175,20 @@ We resolved import path issues (`ModuleNotFoundError: No module named 'src'`) fo
 
 Allows scripts to be run directly using `python eval/retrieval_eval.py` from any working directory, both locally by developers and automated within runner environments, without crashing due to PYTHONPATH import resolution mismatch.
 
+## Decision: Auto-Seeding Evaluation Database in clean/CI environments
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added automatic benchmark corpus detection and ingestion directly inside [`eval/retrieval_eval.py`](file:///c:/Local-Disk-D/Projects/Mnemora/eval/retrieval_eval.py) and [`eval/ragas_eval.py`](file:///c:/Local-Disk-D/Projects/Mnemora/eval/ragas_eval.py) when the vector database is found to be empty. It parses the corpus files in `docs/corpus/`, chunks them, and populates both the vector database and the BM25 search index.
+
+### Reason
+
+In fresh CI/CD runner pipelines, the vector database starts in-memory (`QdrantClient(":memory:")`) and empty. Rather than failing or requiring a separate, manual database seeding pipeline step (which would not persist anyway if run in separate processes due to the process-isolated nature of `:memory:` clients), having the evaluation scripts load the corpus on-demand makes the CI checks fully self-sufficient and robust out-of-the-box.
+
+
 
 
 

@@ -19,6 +19,45 @@ def load_dataset():
 
 def run_evaluation():
     hybrid_search = HybridSearchService()
+    
+    # Ensure database is populated
+    try:
+        sample = hybrid_search.vector_store.search("test", top_k=1)
+        if not sample:
+            print("Vector database is empty. Autopopulating with benchmark corpus...")
+            corpus_dir = os.path.join(os.path.dirname(__file__), "..", "docs", "corpus")
+            if not os.path.exists(corpus_dir):
+                print(f"Corpus directory {corpus_dir} not found. Ingestion failed.")
+                sys.exit(1)
+                
+            from src.ingestion.loaders import DocumentLoaderService
+            from src.ingestion.chunking import ChunkingService
+            
+            chunker = ChunkingService()
+            all_chunks = []
+            
+            for filename in os.listdir(corpus_dir):
+                if not filename.endswith(".md"):
+                    continue
+                filepath = os.path.join(corpus_dir, filename)
+                docs = DocumentLoaderService.load_any(filepath)
+                for doc in docs:
+                    doc.metadata["source"] = filename
+                    doc.metadata["document_id"] = filename
+                chunks = chunker.chunk_documents(docs)
+                all_chunks.extend(chunks)
+                
+            if not all_chunks:
+                print("No chunks extracted from corpus.")
+                sys.exit(1)
+                
+            hybrid_search.vector_store.add_documents(all_chunks)
+            hybrid_search.bm25_store.add_documents(all_chunks)
+            print(f"Successfully ingested {len(all_chunks)} chunks into vector store and BM25 index.")
+    except Exception as e:
+        print(f"Error checking/populating database: {e}")
+        sys.exit(1)
+        
     reranker = ReRankerService()
     generation = GenerationService()
     
