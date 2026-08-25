@@ -34,6 +34,8 @@ IN PROGRESS
 - [x] Make system Uptime and Environment dynamic in System Status card (calculated via backend server start time and read from environment variables)
 - [x] Fix ModuleNotFoundError in eval scripts in CI/CD pipeline (import resolution errors for src package)
 - [x] Add auto-seeding of benchmark corpus inside evaluation scripts when vector database is empty (fixing empty database failure in CI/CD pipeline)
+- [x] Fix VertexAI import crash in Ragas library by dynamically mocking `langchain_community.chat_models.vertexai` inside `eval/ragas_eval.py`
+- [x] Fix Ragas metrics import name mismatch (aliased `answer_relevancy` as `answer_relevance` in `eval/ragas_eval.py`)
 
 ## In Progress
 

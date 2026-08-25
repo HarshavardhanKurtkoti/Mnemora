@@ -188,6 +188,22 @@ We added automatic benchmark corpus detection and ingestion directly inside [`ev
 
 In fresh CI/CD runner pipelines, the vector database starts in-memory (`QdrantClient(":memory:")`) and empty. Rather than failing or requiring a separate, manual database seeding pipeline step (which would not persist anyway if run in separate processes due to the process-isolated nature of `:memory:` clients), having the evaluation scripts load the corpus on-demand makes the CI checks fully self-sufficient and robust out-of-the-box.
 
+## Decision: Ragas Dependency and Metric Compatibility Fixes
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We resolved Ragas import errors due to upstream package refactors by:
+1. Injecting a mocked `langchain_community.chat_models.vertexai` module containing a dummy `ChatVertexAI` class into `sys.modules` inside [`eval/ragas_eval.py`](file:///c:/Local-Disk-D/Projects/Mnemora/eval/ragas_eval.py) before `ragas` is imported.
+2. Renaming the import of `answer_relevance` to `answer_relevancy as answer_relevance` from `ragas.metrics` in `eval/ragas_eval.py`.
+
+### Reason
+
+In modern LangChain versions, integrations like VertexAI are moved out of `langchain-community` into separate packages (e.g. `langchain-google-vertexai`), but older Ragas builds hardcode imports from the legacy path, causing `ModuleNotFoundError`. By dynamically mocking the module (which is unused by our code), we bypass the crash without breaking python 3.13 dependencies. Additionally, Ragas renamed `answer_relevance` to `answer_relevancy` in its metrics exports, which required updating the import statement to prevent `ImportError`.
+
+
 
 
 

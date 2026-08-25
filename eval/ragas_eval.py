@@ -1,9 +1,18 @@
 import json
 import os
 import sys
+from types import ModuleType
+
+# Mock missing langchain_community.chat_models.vertexai module to bypass Ragas import bug
+class DummyChatVertexAI:
+    pass
+mock_vertexai = ModuleType("langchain_community.chat_models.vertexai")
+mock_vertexai.ChatVertexAI = DummyChatVertexAI
+sys.modules["langchain_community.chat_models.vertexai"] = mock_vertexai
+
 from datasets import Dataset
 from ragas import evaluate
-from ragas.metrics import faithfulness, answer_relevance
+from ragas.metrics import faithfulness, answer_relevancy as answer_relevance
 
 # Add root directory to python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
