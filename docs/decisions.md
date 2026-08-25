@@ -216,6 +216,20 @@ We added a credential validation check inside [`eval/ragas_eval.py`](file:///c:/
 
 Ragas uses LLM-as-a-judge evaluators (which default to OpenAI) that throw `OpenAIError: Missing credentials` if `OPENAI_API_KEY` is not present. In automated CI/CD runners where keys are not configured or are withheld for safety, this would cause the pipeline to fail. By gracefully skipping the OpenAI-dependent metrics while still saving and committing the locally calculated metrics, we ensure that PR verification checks pass cleanly without requiring API keys.
 
+## Decision: Vercel CLI Root Folder Path Configuration
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We removed the `working-directory: ./frontend` parameter from the Vercel deploy job in [`.github/workflows/ci.yml`](file:///c:/Local-Disk-D/Projects/Mnemora/.github/workflows/ci.yml), allowing Vercel CLI to execute from the root directory `.`.
+
+### Reason
+
+In the Vercel Dashboard project configuration settings, the project's **Root Directory** is already configured as `frontend`. When Vercel CLI is executed inside the `working-directory: ./frontend`, Vercel CLI appends the project settings Root Directory (`frontend`), resulting in looking for a non-existent path `./frontend/frontend` which failed the build. Executing the deploy command from the repository root enables Vercel CLI to correctly locate and resolve the `./frontend` directory based on the Vercel remote settings.
+
+
 
 
 
