@@ -121,3 +121,17 @@ Allows continuous deployment ensuring that new features and fixes are automatica
 
 - Native Git-based auto-deployment on Render/Vercel: Rejected as the primary mechanism because they deploy commits immediately upon push to `main` without waiting for the CI pipeline (such as tests and Ragas evaluation) to verify the build. Orchestrating through GitHub Actions guarantees that only green/passing code gets deployed.
 
+## Decision: Auto-Creation of SQLite Directory
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added automatic parent directory creation inside `src/config/database.py` when using a local SQLite database file URL.
+
+### Reason
+
+In clean CI/CD runner environments, the `data/` directory (which contains the SQLite database) is ignored by `.gitignore` and therefore does not exist at startup. When the tests run, the application imports start the DB engine and try to create tables, which failed with a `sqlalchemy.exc.OperationalError: unable to open database file` error because the directory was missing. Auto-creating the directory at engine setup resolves this issue automatically.
+
+

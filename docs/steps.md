@@ -29,6 +29,7 @@ IN PROGRESS
 - [x] Full Environment Setup & Dependencies Installed (Python venv, PyTorch, Node.js 22, PNPM, DB Seeding, Verified Pytest suite)
 - [x] Fix Vector Store collection auto-creation bug (404 collection not found when Qdrant collection is missing in cloud)
 - [x] Configure automated CD deployment to Vercel and Render in GitHub Actions
+- [x] Fix database path parent directory creation bug in CI/CD pipeline (unable to open database file error during tests)
 
 ## In Progress
 

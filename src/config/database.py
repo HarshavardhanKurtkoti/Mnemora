@@ -12,6 +12,14 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
     "sqlite:///./data/mnemora.db"
 )
 
+# Ensure directory exists for sqlite databases
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///"):
+    db_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+
+
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
