@@ -32,6 +32,7 @@ IN PROGRESS
 - [x] Fix database path parent directory creation bug in CI/CD pipeline (unable to open database file error during tests)
 - [x] Add version_or_info field serialization to `/health/services` endpoint to allow dynamic subtext rendering in frontend
 - [x] Make system Uptime and Environment dynamic in System Status card (calculated via backend server start time and read from environment variables)
+- [x] Fix ModuleNotFoundError in eval scripts in CI/CD pipeline (import resolution errors for src package)
 
 ## In Progress
 

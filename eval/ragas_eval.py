@@ -4,6 +4,10 @@ import sys
 from datasets import Dataset
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevance
+
+# Add root directory to python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.retrieval.hybrid_search import HybridSearchService
 from src.generation.llm import GenerationService
 from src.retrieval.reranker import ReRankerService

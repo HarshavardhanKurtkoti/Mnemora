@@ -160,6 +160,22 @@ We updated the `/health/services` API endpoint response schema to return an obje
 
 Enables production monitoring visibility. Rather than having a static hardcoded placeholder in the frontend layout, users can see the exact runtime environment (e.g., `Production`, `Local Dev`) and how long the FastAPI server has been running since its last container spin-up.
 
+## Decision: Python Path Configuration for Evaluation Scripts
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We resolved import path issues (`ModuleNotFoundError: No module named 'src'`) for evaluation scripts by:
+1. Injecting the parent root directory into `sys.path` dynamically inside [`eval/retrieval_eval.py`](file:///c:/Local-Disk-D/Projects/Mnemora/eval/retrieval_eval.py) and [`eval/ragas_eval.py`](file:///c:/Local-Disk-D/Projects/Mnemora/eval/ragas_eval.py) before importing local source modules.
+2. Specifying `env: PYTHONPATH: .` globally in the GitHub Actions CI workflow config [`ci.yml`](file:///c:/Local-Disk-D/Projects/Mnemora/.github/workflows/ci.yml).
+
+### Reason
+
+Allows scripts to be run directly using `python eval/retrieval_eval.py` from any working directory, both locally by developers and automated within runner environments, without crashing due to PYTHONPATH import resolution mismatch.
+
+
 
 
 

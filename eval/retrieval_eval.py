@@ -4,6 +4,10 @@ import sys
 import time
 import numpy as np
 from typing import List, Dict, Any
+
+# Add root directory to python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.retrieval.hybrid_search import HybridSearchService
 from src.retrieval.reranker import ReRankerService
 from src.config.settings import settings
