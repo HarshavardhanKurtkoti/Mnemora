@@ -32,6 +32,8 @@ function AskPageContent() {
   const [recentQueries, setRecentQueries] = useState<any[]>([]);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [healthServices, setHealthServices] = useState<any[]>([]);
+  const [systemUptime, setSystemUptime] = useState("0m");
+  const [systemEnv, setSystemEnv] = useState("Local Dev");
   const [allQueries, setAllQueries] = useState<any[]>([]);
   const [allActivity, setAllActivity] = useState<any[]>([]);
 
@@ -41,7 +43,7 @@ function AskPageContent() {
       fetchPerformanceStats().catch(() => []),
       fetchRecentQueries().catch(() => []),
       fetchActivityFeed().catch(() => []),
-      fetchHealthServices().catch(() => [])
+      fetchHealthServices().catch(() => ({ services: [], uptime: "0m", environment: "Local Dev" }))
     ]).then(([overview, performance, queries, activity, health]) => {
       setOverviewStats(overview || { documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
       setPerformanceData(performance.map((p: any) => ({
@@ -55,7 +57,9 @@ function AskPageContent() {
       })));
       setRecentQueries(queries);
       setActivityFeed(activity);
-      setHealthServices(health);
+      setHealthServices(health.services || []);
+      setSystemUptime(health.uptime || "0m");
+      setSystemEnv(health.environment || "Local Dev");
     });
   }, []);
 
@@ -241,11 +245,11 @@ function AskPageContent() {
                 <div className="flex justify-between items-center mt-1 lg:mt-1.5 pt-1 border-t border-white/10 shrink-0">
                   <div>
                     <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Uptime</div>
-                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">2h 47m</div>
+                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">{systemUptime}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Environment</div>
-                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">Local Dev</div>
+                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">{systemEnv}</div>
                   </div>
                 </div>
               </div>

@@ -134,4 +134,32 @@ We added automatic parent directory creation inside `src/config/database.py` whe
 
 In clean CI/CD runner environments, the `data/` directory (which contains the SQLite database) is ignored by `.gitignore` and therefore does not exist at startup. When the tests run, the application imports start the DB engine and try to create tables, which failed with a `sqlalchemy.exc.OperationalError: unable to open database file` error because the directory was missing. Auto-creating the directory at engine setup resolves this issue automatically.
 
+## Decision: System Health Version and Info Serialization
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added the `version_or_info` database field to the serialized output dictionary of the `/health/services` API endpoint in `stats_controller.py`.
+
+### Reason
+
+The frontend Next.js application expects this field (`service.version_or_info`) to display details such as database versions or model names (e.g., `ChromaDB`, `Local`, `v0.1.0`) under each system service. Because the backend endpoint did not serialize this field, the subtexts were rendered blank in the UI. Returning this field connects the existing seeded database records directly to the dashboard layout.
+
+## Decision: Dynamic System Uptime and Environment Retrieval
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We updated the `/health/services` API endpoint response schema to return an object wrapping the services list, `uptime`, and `environment`. The backend tracks server start time globally to compute active server uptime dynamically, and reads environment configuration from `APP_ENV`/`APP` environment variables. Corresponding state properties and HTML binding were implemented in the frontend.
+
+### Reason
+
+Enables production monitoring visibility. Rather than having a static hardcoded placeholder in the frontend layout, users can see the exact runtime environment (e.g., `Production`, `Local Dev`) and how long the FastAPI server has been running since its last container spin-up.
+
+
+
 
