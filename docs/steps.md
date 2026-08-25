@@ -38,6 +38,7 @@ IN PROGRESS
 - [x] Fix Ragas metrics import name mismatch (aliased `answer_relevancy` as `answer_relevance` in `eval/ragas_eval.py`)
 - [x] Gracefully skip Ragas LLM metrics (faithfulness, answer relevance) inside `eval/ragas_eval.py` if `OPENAI_API_KEY` is missing in CI/CD pipeline (saving custom metrics baseline only)
 - [x] Fix Vercel deploy directory path in CI/CD pipeline (removed duplicate working-directory configuration)
+- [x] Fix Vercel inspect scope in CI/CD pipeline (configured team scope 'harshavardhankurtkotis-projects')
 
 ## In Progress
 

@@ -229,6 +229,20 @@ We removed the `working-directory: ./frontend` parameter from the Vercel deploy 
 
 In the Vercel Dashboard project configuration settings, the project's **Root Directory** is already configured as `frontend`. When Vercel CLI is executed inside the `working-directory: ./frontend`, Vercel CLI appends the project settings Root Directory (`frontend`), resulting in looking for a non-existent path `./frontend/frontend` which failed the build. Executing the deploy command from the repository root enables Vercel CLI to correctly locate and resolve the `./frontend` directory based on the Vercel remote settings.
 
+## Decision: Vercel Deploy Team Scope Configuration
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added the `scope: harshavardhankurtkotis-projects` input parameter to the Vercel deploy step in [`.github/workflows/ci.yml`](file:///c:/Local-Disk-D/Projects/Mnemora/.github/workflows/ci.yml).
+
+### Reason
+
+Since the project is hosted under a Vercel Team/Organization (`harshavardhankurtkotis-projects`), Vercel CLI commands executed during the post-deployment verification check (specifically `vercel inspect`) require team scoping. Without the scope explicitly set, the CLI defaults to personal scope, throwing `Error: User not found.` and failing the GitHub Action step even though the deployment build had completed successfully.
+
+
 
 
 
