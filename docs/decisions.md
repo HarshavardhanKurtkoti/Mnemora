@@ -232,7 +232,7 @@ In the Vercel Dashboard project configuration settings, the project's **Root Dir
 ## Decision: Vercel Deploy Team Scope Configuration
 
 Date: 2026-08-25
-Status: Accepted
+Status: Superseded
 
 ### Decision
 
@@ -241,6 +241,27 @@ We added the `scope: harshavardhankurtkotis-projects` input parameter to the Ver
 ### Reason
 
 Since the project is hosted under a Vercel Team/Organization (`harshavardhankurtkotis-projects`), Vercel CLI commands executed during the post-deployment verification check (specifically `vercel inspect`) require team scoping. Without the scope explicitly set, the CLI defaults to personal scope, throwing `Error: User not found.` and failing the GitHub Action step even though the deployment build had completed successfully.
+
+## Decision: Standard Vercel CLI Deployment Migration
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We replaced the third-party `amondnet/vercel-action@v20` GitHub Action in [`.github/workflows/ci.yml`](file:///c:/Local-Disk-D/Projects/Mnemora/.github/workflows/ci.yml) with a direct shell invocation of Vercel CLI:
+```yaml
+    - name: Deploy to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      run: npx vercel --prod --token=$VERCEL_TOKEN --yes
+```
+
+### Reason
+
+Passing the `--scope` team slug parameter resulted in authorization failures (`User not found 404`) because project-restricted Vercel API tokens lack permission to query global organization list/slug endpoints. Rather than relying on custom wrapper actions that execute additional inspection steps, invoking the official Vercel CLI directly handles scoping implicitly via standard `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` environment variables. This is the official and most robust way to deploy in non-interactive CI environments.
 
 
 

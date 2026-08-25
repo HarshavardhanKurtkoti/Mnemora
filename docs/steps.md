@@ -39,6 +39,7 @@ IN PROGRESS
 - [x] Gracefully skip Ragas LLM metrics (faithfulness, answer relevance) inside `eval/ragas_eval.py` if `OPENAI_API_KEY` is missing in CI/CD pipeline (saving custom metrics baseline only)
 - [x] Fix Vercel deploy directory path in CI/CD pipeline (removed duplicate working-directory configuration)
 - [x] Fix Vercel inspect scope in CI/CD pipeline (configured team scope 'harshavardhankurtkotis-projects')
+- [x] Replace third-party Vercel action with standard Vercel CLI `npx vercel` deployment to fully bypass scoping/inspection bugs
 
 ## In Progress
 
