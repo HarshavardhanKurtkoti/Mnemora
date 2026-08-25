@@ -36,6 +36,7 @@ IN PROGRESS
 - [x] Add auto-seeding of benchmark corpus inside evaluation scripts when vector database is empty (fixing empty database failure in CI/CD pipeline)
 - [x] Fix VertexAI import crash in Ragas library by dynamically mocking `langchain_community.chat_models.vertexai` inside `eval/ragas_eval.py`
 - [x] Fix Ragas metrics import name mismatch (aliased `answer_relevancy` as `answer_relevance` in `eval/ragas_eval.py`)
+- [x] Gracefully skip Ragas LLM metrics (faithfulness, answer relevance) inside `eval/ragas_eval.py` if `OPENAI_API_KEY` is missing in CI/CD pipeline (saving custom metrics baseline only)
 
 ## In Progress
 

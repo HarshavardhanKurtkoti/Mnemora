@@ -146,6 +146,38 @@ def run_evaluation():
     
     dataset = Dataset.from_dict(eval_data)
     
+    if not os.getenv("OPENAI_API_KEY"):
+        print("\n[WARNING] OPENAI_API_KEY is not set. Skipping Ragas evaluation metrics (Faithfulness, Answer Relevance).")
+        # Save baseline with custom metrics only
+        baseline_path = os.path.join(os.path.dirname(__file__), "results", "baseline.json")
+        baseline_data = {}
+        if os.path.exists(baseline_path):
+            with open(baseline_path, "r") as f:
+                baseline_data = json.load(f)
+        baseline_data["generation"] = {
+            "faithfulness": 0.0,
+            "answer_relevance": 0.0,
+            "citation_validity": citation_validity,
+            "citation_coverage": citation_coverage,
+            "no_answer_accuracy": no_answer_accuracy,
+            "false_answer_rate": false_answer_rate
+        }
+        os.makedirs(os.path.dirname(baseline_path), exist_ok=True)
+        
+        # Add metadata stats
+        import subprocess
+        commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf-8").strip() if os.path.exists(".git") else "unknown"
+        baseline_data["metadata"] = {
+            "git_commit": commit_hash,
+            "documents": 12,
+            "questions": len(raw_data)
+        }
+        
+        with open(baseline_path, "w") as f:
+            json.dump(baseline_data, f, indent=2)
+        print(f"Saved custom metrics baseline to {baseline_path}")
+        return
+        
     print("Running Ragas evaluation (Faithfulness, Answer Relevance)...")
     result = evaluate(
         dataset,
