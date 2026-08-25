@@ -18,9 +18,23 @@ class VectorStoreService:
         else:
             client = QdrantClient(":memory:")
             
+        # Ensure collection exists
+        collection_name = "rag_documents"
+        if not client.collection_exists(collection_name=collection_name):
+            dummy_vector = self.embeddings.embed_query("dummy")
+            vector_size = len(dummy_vector)
+            from qdrant_client.http import models as qdrant_models
+            client.create_collection(
+                collection_name=collection_name,
+                vectors_config=qdrant_models.VectorParams(
+                    size=vector_size,
+                    distance=qdrant_models.Distance.COSINE
+                )
+            )
+            
         self.db = QdrantVectorStore(
             client=client,
-            collection_name="rag_documents",
+            collection_name=collection_name,
             embedding=self.embeddings,
         )
         

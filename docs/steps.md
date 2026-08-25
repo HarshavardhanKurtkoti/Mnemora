@@ -27,6 +27,8 @@ IN PROGRESS
 - [x] Frontend M1: Product UI (Next.js App Router, shadcn/ui, Dark theme)
 - [x] Frontend Redesign: Match Dashboard Command Center Mockup
 - [x] Full Environment Setup & Dependencies Installed (Python venv, PyTorch, Node.js 22, PNPM, DB Seeding, Verified Pytest suite)
+- [x] Fix Vector Store collection auto-creation bug (404 collection not found when Qdrant collection is missing in cloud)
+- [x] Configure automated CD deployment to Vercel and Render in GitHub Actions
 
 ## In Progress
 

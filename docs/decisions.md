@@ -87,3 +87,37 @@ Allows instant local execution, testing, and development without requiring exter
 ### Consequences
 SQLite connection options require `check_same_thread=False` for multi-threaded FastAPI access.
 
+## Decision: Qdrant Collection Auto-Creation
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added collection auto-creation inside `VectorStoreService.__init__` if the collection name `rag_documents` does not exist on the connected Qdrant client (whether it is an in-memory instance or a Qdrant Cloud cluster). The vector dimensions are determined dynamically at runtime by querying the active embedding model.
+
+### Reason
+
+In the cloud environment, if the Qdrant instance is brand-new or the collection is missing, document ingestion failed with a `404 Not Found` collection error resulting in `500 Internal Server Error` API responses. Auto-creating the collection with appropriate dimension parameters based on the active embedding model ensures a seamless onboarding and deployment process.
+
+### Alternatives Considered
+
+- Hardcoding collection dimension sizes (e.g., 1536): Rejected because the system supports multiple embedding models with different dimensions (e.g., OpenAI embeddings have 1536 dimensions, whereas FastEmbed embeddings have 384 dimensions).
+
+## Decision: Orchestrated CI/CD Deployment via GitHub Actions
+
+Date: 2026-08-25
+Status: Accepted
+
+### Decision
+
+We added orchestrated production deployment jobs (`deploy-render` and `deploy-vercel`) directly to the GitHub Actions workflow (`.github/workflows/ci.yml`). These jobs run in parallel after all unit tests (`fast-checks`) and LLM evaluations (`ragas-eval`) succeed on commits pushed to the `main` branch.
+
+### Reason
+
+Allows continuous deployment ensuring that new features and fixes are automatically shipped to Render (for the FastAPI backend) and Vercel (for the Next.js frontend) only after they are fully verified by the testing and evaluation suite, avoiding manual deploy overhead and reducing deployment risks.
+
+### Alternatives Considered
+
+- Native Git-based auto-deployment on Render/Vercel: Rejected as the primary mechanism because they deploy commits immediately upon push to `main` without waiting for the CI pipeline (such as tests and Ragas evaluation) to verify the build. Orchestrating through GitHub Actions guarantees that only green/passing code gets deployed.
+
