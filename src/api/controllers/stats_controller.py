@@ -108,3 +108,73 @@ async def run_evaluation_endpoint():
             "citation_coverage": 0.90
         }
     })
+
+
+@router.get("/system/diagnostics")
+def get_system_diagnostics(db: Session = Depends(get_db)):
+    from src.config.settings import settings
+    import sys
+    import platform
+
+    services = db.query(models.SystemHealth).all()
+    stat = db.query(models.SystemStat).first()
+    
+    # Calculate uptime
+    uptime_seconds = int(time.time() - START_TIME)
+    hours = uptime_seconds // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    uptime_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+    
+    raw_env = (os.getenv("APP_ENV") or os.getenv("APP") or "local").lower()
+    if raw_env in ["prod", "production"]:
+        env_display = "Production"
+    elif raw_env in ["staging", "stage"]:
+        env_display = "Staging"
+    else:
+        env_display = "Local Dev"
+        
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./data/mnemora.db")
+    db_type = "PostgreSQL" if db_url.startswith("postgres") else "SQLite (Local DB)"
+    
+    return success_response({
+        "status": "operational" if all(s.status == "healthy" for s in services) else "degraded",
+        "uptime": uptime_str,
+        "environment": env_display,
+        "server": {
+            "name": settings.APP_NAME,
+            "api_prefix": settings.API_V1_STR,
+            "python_version": platform.python_version(),
+            "os": platform.system(),
+            "database_type": db_type,
+            "pid": os.getpid()
+        },
+        "stats": {
+            "documents_indexed": stat.documents_indexed if stat else 0,
+            "chunks_stored": stat.chunks_stored if stat else 0,
+            "tokens_total": stat.tokens_total if stat else 0
+        },
+        "services": [
+            {
+                "id": s.id,
+                "service_name": s.service_name,
+                "status": s.status,
+                "version_or_info": s.version_or_info,
+                "last_check": s.updated_at.isoformat() if s.updated_at else None
+            }
+            for s in services
+        ],
+        "configuration": {
+            "llm_provider": settings.LLM_PROVIDER,
+            "llm_model": settings.LLM_MODEL_NAME,
+            "embedding_model": settings.EMBEDDING_MODEL_NAME if settings.OPENAI_API_KEY else settings.LOCAL_EMBEDDING_MODEL,
+            "cross_encoder_model": settings.CROSS_ENCODER_MODEL,
+            "vector_db": "Qdrant Cloud" if settings.QDRANT_URL else "Qdrant (In-Memory)",
+            "collection_name": "rag_documents",
+            "chunk_size": settings.CHUNK_SIZE,
+            "chunk_overlap": settings.CHUNK_OVERLAP,
+            "top_k_vector": settings.TOP_K_VECTOR,
+            "top_k_bm25": settings.TOP_K_BM25,
+            "final_top_k_after_rerank": settings.FINAL_TOP_K_AFTER_RERANK
+        }
+    })
+

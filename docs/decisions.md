@@ -263,6 +263,37 @@ We replaced the third-party `amondnet/vercel-action@v20` GitHub Action in [`.git
 
 Passing the `--scope` team slug parameter resulted in authorization failures (`User not found 404`) because project-restricted Vercel API tokens lack permission to query global organization list/slug endpoints. Rather than relying on custom wrapper actions that execute additional inspection steps, invoking the official Vercel CLI directly handles scoping implicitly via standard `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` environment variables. This is the official and most robust way to deploy in non-interactive CI environments.
 
+## Decision: Multi-Strategy Retrieval Inspection Architecture
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We implemented a dedicated `/retrieval/inspect` endpoint on the FastAPI backend and a synchronized 4-column **Retrieval Inspector** view on the frontend (`/retrieval`). The endpoint executes Vector Search, BM25 Search, Hybrid RRF, and Cross-Encoder Re-ranking side-by-side on any given user query, returning candidates, scores, snippets, and step-by-step latency timings (`vector_ms`, `bm25_ms`, `rrf_ms`, `reranker_ms`, `total_ms`).
+
+### Reason
+
+In a production RAG system, engineers need observability into how each retrieval layer behaves for a specific query: which documents are captured by dense vectors vs sparse keywords, how RRF combines them, and how the cross-encoder reranks them. Providing this side-by-side inspection view with an interactive modal viewer enables intuitive debugging of recall and relevance regressions.
+
+### Alternatives Considered
+
+- Only relying on the end-to-end `/query` endpoint: Rejected because it only returns the final generated answer and top reranked citations, hiding the intermediate vector and BM25 candidates.
+
+## Decision: Unified System Observability & Diagnostics
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We added a `/system/diagnostics` FastAPI endpoint and an interactive **System Observability** page (`/system`) exposing overall health status, active service topology, database engine information, live execution pipeline diagram, and sanitized runtime configuration settings.
+
+### Reason
+
+Resolves 404 navigation errors from the sidebar and provides full transparency into running background services (FastAPI, Qdrant/ChromaDB Vector Store, BM25 Index, Embedding Engine, Cross-Encoder Re-ranker, LLM Provider, and Database Engine) alongside live health check diagnostics.
+
+
 
 
 

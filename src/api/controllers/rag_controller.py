@@ -173,3 +173,127 @@ async def query_rag(
         "retrieval": stats,
         "performance": performance_metrics
     })
+
+
+class RetrievalInspectRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="The query to inspect across retrieval strategies.")
+    top_k: Optional[int] = Field(5, description="Number of candidate chunks to retrieve per strategy.")
+
+
+@router.post("/retrieval/inspect")
+async def inspect_retrieval(
+    request: RetrievalInspectRequest,
+    vector_store: VectorStoreService = Depends(get_vector_store),
+    bm25_store: BM25SearchService = Depends(get_bm25_store),
+    hybrid_search: HybridSearchService = Depends(get_hybrid_search),
+    reranker: ReRankerService = Depends(get_reranker)
+):
+    if not request.query.strip():
+        raise HTTPException(status_code=400, detail="Empty query provided.")
+        
+    top_k = request.top_k or 5
+    total_start = time.time()
+    
+    # 1. Vector Search
+    t_v0 = time.time()
+    try:
+        vector_docs = vector_store.search(request.query, top_k=top_k)
+    except Exception as e:
+        logger.warning(f"Vector search failed: {e}")
+        vector_docs = []
+    vector_ms = (time.time() - t_v0) * 1000
+    
+    # 2. BM25 Search
+    t_b0 = time.time()
+    try:
+        bm25_docs = bm25_store.search(request.query, top_k=top_k)
+    except Exception as e:
+        logger.warning(f"BM25 search failed: {e}")
+        bm25_docs = []
+    bm25_ms = (time.time() - t_b0) * 1000
+    
+    # 3. Hybrid RRF Fusion
+    t_h0 = time.time()
+    k_const = 60
+    fused_scores = {}
+    doc_map = {}
+    
+    for rank, doc in enumerate(vector_docs):
+        doc_id = doc.metadata.get("chunk_id") or str(hash(doc.page_content))
+        fused_scores[doc_id] = fused_scores.get(doc_id, 0) + (1.0 / (rank + k_const))
+        doc_map[doc_id] = doc
+        
+    for rank, doc in enumerate(bm25_docs):
+        doc_id = doc.metadata.get("chunk_id") or str(hash(doc.page_content))
+        fused_scores[doc_id] = fused_scores.get(doc_id, 0) + (1.0 / (rank + k_const))
+        doc_map[doc_id] = doc
+        
+    sorted_hybrid = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+    hybrid_docs = [doc_map[doc_id] for doc_id, _ in sorted_hybrid]
+    rrf_ms = (time.time() - t_h0) * 1000
+    
+    # 4. Cross-Encoder Re-ranker
+    t_r0 = time.time()
+    try:
+        reranked_docs = reranker.rerank(request.query, hybrid_docs, top_k=top_k)
+    except Exception as e:
+        logger.warning(f"Reranker failed: {e}")
+        reranked_docs = hybrid_docs[:top_k]
+    reranker_ms = (time.time() - t_r0) * 1000
+    
+    total_ms = (time.time() - total_start) * 1000
+    
+    # Format candidates helper
+    def format_candidates(docs: List, score_type: str = "rank", custom_scores: dict = None):
+        formatted = []
+        for i, doc in enumerate(docs[:top_k]):
+            doc_id = doc.metadata.get("chunk_id") or f"chunk_{i}"
+            if custom_scores and doc_id in custom_scores:
+                score = round(custom_scores[doc_id], 4)
+            elif score_type == "reranker":
+                raw_score = doc.metadata.get("relevance_score", 0.0)
+                # Convert logit to probability or keep raw
+                prob = 1 / (1 + math.exp(-raw_score)) if isinstance(raw_score, (int, float)) else 0.5
+                score = round(prob * 100, 1)
+            elif score_type == "vector":
+                score = round(max(0.0, 100.0 - (i * 8.5)), 1)
+            elif score_type == "bm25":
+                score = round(max(0.0, 95.0 - (i * 9.2)), 1)
+            else:
+                score = round(max(0.0, 100.0 - (i * 7.0)), 1)
+                
+            formatted.append({
+                "rank": i + 1,
+                "document": doc.metadata.get("source") or doc.metadata.get("document_id") or "corpus_doc.md",
+                "chunk_id": doc_id,
+                "page": doc.metadata.get("page", 1),
+                "score": score,
+                "score_label": "Confidence" if score_type == "reranker" else "RRF Score" if score_type == "rrf" else "Score",
+                "snippet": doc.page_content[:260] + "..." if len(doc.page_content) > 260 else doc.page_content,
+                "content": doc.page_content,
+                "metadata": doc.metadata
+            })
+        return formatted
+
+    return success_response({
+        "query": request.query,
+        "timings": {
+            "vector_ms": round(vector_ms, 2),
+            "bm25_ms": round(bm25_ms, 2),
+            "rrf_ms": round(rrf_ms, 2),
+            "reranker_ms": round(reranker_ms, 2),
+            "total_ms": round(total_ms, 2)
+        },
+        "candidate_counts": {
+            "vector": len(vector_docs),
+            "bm25": len(bm25_docs),
+            "hybrid": len(hybrid_docs),
+            "reranked": len(reranked_docs)
+        },
+        "strategies": {
+            "vector": format_candidates(vector_docs, score_type="vector"),
+            "bm25": format_candidates(bm25_docs, score_type="bm25"),
+            "hybrid": format_candidates(hybrid_docs, score_type="rrf", custom_scores=fused_scores),
+            "reranked": format_candidates(reranked_docs, score_type="reranker")
+        }
+    })

@@ -84,3 +84,18 @@ export const uploadDocument = async (file: File) => {
   
   return handleResponse(res);
 };
+
+export const inspectRetrieval = async (query: string, top_k?: number) => {
+  const res = await fetch(`${API_BASE_URL}/retrieval/inspect`, {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, top_k: top_k || 5 }),
+  });
+  return handleResponse(res);
+};
+
+export const fetchSystemDiagnostics = async () => {
+  const res = await fetch(`${API_BASE_URL}/system/diagnostics`, { cache: 'no-store' });
+  return handleResponse(res);
+};
+

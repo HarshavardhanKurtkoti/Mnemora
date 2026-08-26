@@ -40,10 +40,13 @@ IN PROGRESS
 - [x] Fix Vercel deploy directory path in CI/CD pipeline (removed duplicate working-directory configuration)
 - [x] Fix Vercel inspect scope in CI/CD pipeline (configured team scope 'harshavardhankurtkotis-projects')
 - [x] Replace third-party Vercel action with standard Vercel CLI `npx vercel` deployment to fully bypass scoping/inspection bugs
+- [x] Frontend M2: AI Observability (Retrieval Inspector, Multi-Strategy Comparison, Telemetry Trace)
+- [x] Frontend M3: System Observability (Service Topology, Pipeline Visualizer, Diagnostics, Telemetry Log)
+- [x] Add `/retrieval/inspect` and `/system/diagnostics` FastAPI endpoints and verified with Pytest suite
 
 ## In Progress
 
-- [/] Frontend M2: AI Observability (Retrieval Inspector, Trace)
+- [/] Phase 1.6: Connect Ragas Evaluation Pipeline trigger UI with background worker
 
 ## Pending
 
@@ -53,12 +56,13 @@ IN PROGRESS
 
 ## Current Task
 
-All dependencies installed, database seeded, backend and frontend verified, and startup instructions documented.
+All 5 core frontend routes (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`) implemented, verified with Next.js production build, backed by FastAPI endpoints and passing Pytest suite.
 
 ## Next Step
 
-Connect the Evaluation Page UI and Retrieval Trace UI to actual FastAPI backend endpoints for the Retrieval Trace and Ragas evaluation pipeline.
+Connect the Evaluation Page UI and background Ragas evaluation execution to export live benchmark reports.
 
 ## Blockers
 
 None
+
