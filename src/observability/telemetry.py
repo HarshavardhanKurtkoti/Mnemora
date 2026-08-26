@@ -47,7 +47,7 @@ class TelemetryDispatcher:
             "retrieval": retrieval,
             "performance": performance,
             "session_id": session_id,
-            "model": model or os.getenv("LLM_MODEL_NAME", "groq-llama-3.3-70b"),
+            "model": model or os.getenv("LLM_MODEL_NAME", "openai/gpt-oss-120b"),
             "prompt_version": "mnemora_prod_v1",
             "environment": os.getenv("APP_ENV", "Production")
         }

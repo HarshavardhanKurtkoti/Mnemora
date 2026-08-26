@@ -45,6 +45,7 @@ IN PROGRESS
 - [x] Add `/retrieval/inspect` and `/system/diagnostics` FastAPI endpoints and verified with Pytest suite
 - [x] Harmonize typography, serif italic cyan accents, badge pills, and glassmorphic styling across all 5 pages (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`)
 - [x] Add non-blocking background telemetry forwarder (`src/observability/telemetry.py`) on `/query` endpoint to stream live traces into `prod_rag_monitoring`
+- [x] Upgrade Groq LLM integration to active non-deprecated models (`openai/gpt-oss-120b`, `openai/gpt-oss-20b`) and verified with Pytest suite (15/15 tests passing)
 
 ## In Progress
 
@@ -58,7 +59,7 @@ IN PROGRESS
 
 ## Current Task
 
-Live observability, telemetry streaming, and remote health probing connected with the Production RAG Monitoring Platform (`prod_rag_monitoring`), tested and verified with complete test suite passing (15/15 tests).
+Live observability, Langfuse distributed tracing, Groq active model integration (`openai/gpt-oss-120b`), and remote health probing connected with the Production RAG Monitoring Platform (`prod_rag_monitoring`), tested and verified with complete test suites passing in both repositories (15/15 and 22/22 tests).
 
 ## Next Step
 

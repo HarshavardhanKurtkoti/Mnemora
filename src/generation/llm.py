@@ -34,8 +34,11 @@ class GenerationService:
                 temperature=0.0 # strict, factual
             ).with_structured_output(LLMResponse)
         elif settings.LLM_PROVIDER.lower() == "groq" and settings.GROQ_API_KEY:
+            groq_model = settings.LLM_MODEL_NAME
+            if not groq_model or groq_model in ["gpt-4o-mini", "groq-llama-3.3-70b", "llama-3.3-70b"]:
+                groq_model = "openai/gpt-oss-120b"
             self.llm = ChatOpenAI(
-                model_name="openai/gpt-oss-20b",
+                model_name=groq_model,
                 openai_api_key=settings.GROQ_API_KEY,
                 openai_api_base="https://api.groq.com/openai/v1",
                 temperature=0.0

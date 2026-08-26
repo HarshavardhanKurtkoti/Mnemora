@@ -337,7 +337,22 @@ We added component path filtering (`dorny/paths-filter@v3`) and pip caching (`ac
 
 ### Reason
 
-Avoids unnecessary frontend builds when only backend code is modified, and avoids triggering Render container redeploys when only frontend UI or documentation files are changed.
+## Decision: Active Groq Production Model Integration
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We updated Groq LLM integration across `src/generation/llm.py` and `src/observability/telemetry.py` to use active non-deprecated Groq models (`openai/gpt-oss-120b` and `openai/gpt-oss-20b`), dynamically defaulting to `openai/gpt-oss-120b` when `LLM_PROVIDER=groq` is active.
+
+### Reason
+
+Groq sunsetted older model endpoints. `openai/gpt-oss-120b` and `openai/gpt-oss-20b` are active, high-throughput, structured-output capable models hosted on Groq with microsecond latency.
+
+### Consequences
+
+Ensures seamless, zero-deprecation LLM inference with accurate token accounting and telemetry attribution in both local and deployed environments.
 
 
 
