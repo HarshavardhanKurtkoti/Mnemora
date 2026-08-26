@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Ensure project root is in sys.path when executed directly as python src/main.py
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import logging

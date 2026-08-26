@@ -1,0 +1,70 @@
+import os
+import logging
+from typing import Dict, Any, List, Optional
+import requests
+
+logger = logging.getLogger(__name__)
+
+
+class TelemetryDispatcher:
+    """
+    Asynchronous, non-blocking telemetry forwarder that streams query traces,
+    citations, and stage latencies from Mnemora into the Production RAG Monitoring Platform.
+    """
+
+    def __init__(self, monitoring_url: Optional[str] = None, timeout: float = 3.0):
+        self.monitoring_url = (
+            monitoring_url 
+            or os.getenv("MONITORING_URL") 
+            or os.getenv("PROD_RAG_MONITORING_URL")
+            or "http://localhost:8000"
+        ).rstrip("/")
+        self.timeout = timeout
+        self.enabled = os.getenv("ENABLE_MONITORING_TELEMETRY", "true").lower() in ["true", "1", "yes"]
+
+    def emit_query_telemetry(
+        self,
+        query: str,
+        answer: str,
+        citations: List[Dict[str, Any]],
+        retrieval: Dict[str, Any],
+        performance: Dict[str, Any],
+        session_id: Optional[str] = None,
+        model: Optional[str] = None
+    ) -> bool:
+        """
+        Push live trace payload to prod_rag_monitoring /api/telemetry endpoint.
+        Executed in background task to guarantee zero latency overhead on end users.
+        """
+        if not self.enabled or not self.monitoring_url:
+            return False
+
+        endpoint = f"{self.monitoring_url}/api/telemetry"
+        payload = {
+            "query": query,
+            "answer": answer,
+            "citations": citations,
+            "retrieval": retrieval,
+            "performance": performance,
+            "session_id": session_id,
+            "model": model or os.getenv("LLM_MODEL_NAME", "groq-llama-3.3-70b"),
+            "prompt_version": "mnemora_prod_v1",
+            "environment": os.getenv("APP_ENV", "Production")
+        }
+
+        try:
+            res = requests.post(endpoint, json=payload, timeout=self.timeout)
+            if res.status_code == 200:
+                logger.debug(f"Telemetry successfully dispatched to {endpoint}")
+                return True
+            else:
+                logger.warning(f"Telemetry ingestion returned status {res.status_code}: {res.text}")
+                return False
+        except Exception as ex:
+            # Non-blocking soft warning to protect production reliability
+            logger.debug(f"Telemetry dispatch to {endpoint} skipped/failed: {ex}")
+            return False
+
+
+# Global singleton dispatcher
+telemetry_dispatcher = TelemetryDispatcher()

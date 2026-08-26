@@ -29,17 +29,8 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-[260px] flex-col border-r border-border/20 bg-black/40 backdrop-blur-md">
       {/* Brand Section */}
-      <div className="px-6 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-transparent border border-accent/40 shadow-[0_0_15px_rgba(0,229,255,0.15)]">
-            <div className="flex flex-col gap-1.5">
-              <div className="h-[2px] w-5 bg-accent rounded-full"></div>
-              <div className="h-[2px] w-5 bg-accent rounded-full"></div>
-            </div>
-          </div>
-          <h1 className="text-2xl font-light tracking-wide text-foreground">MNEMORA</h1>
-        </div>
-        <p className="text-[10px] tracking-widest text-accent uppercase font-medium">Command Center</p>
+      <div className="px-6 pt-8 pb-4">
+        <h2 className="text-xs font-mono tracking-widest text-muted-foreground uppercase">Navigation</h2>
       </div>
 
       {/* Navigation */}

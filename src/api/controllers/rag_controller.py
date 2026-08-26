@@ -2,7 +2,7 @@ import os
 import tempfile
 import time
 import logging
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import math
@@ -19,6 +19,7 @@ from src.config.settings import settings
 from src.config.database import get_db
 from src.api import models
 from src.api.utils.response import success_response
+from src.observability.telemetry import telemetry_dispatcher
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -99,6 +100,7 @@ async def ingest_file(
 @router.post("/query")
 async def query_rag(
     request: QueryRequest,
+    background_tasks: BackgroundTasks,
     hybrid_search: HybridSearchService = Depends(get_hybrid_search),
     reranker: ReRankerService = Depends(get_reranker),
     generation: GenerationService = Depends(get_generation),
@@ -167,8 +169,21 @@ async def query_rag(
     db.add(db_query)
     db.commit()
     
+    answer_text = response.get("answer", "")
+
+    # Non-blocking telemetry forwarding to production monitoring platform
+    if background_tasks:
+        background_tasks.add_task(
+            telemetry_dispatcher.emit_query_telemetry,
+            query=request.query,
+            answer=answer_text,
+            citations=citations,
+            retrieval=stats,
+            performance=performance_metrics
+        )
+    
     return success_response({
-        "answer": response.get("answer", ""),
+        "answer": answer_text,
         "citations": citations,
         "retrieval": stats,
         "performance": performance_metrics

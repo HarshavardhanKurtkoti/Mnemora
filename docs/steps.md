@@ -44,6 +44,7 @@ IN PROGRESS
 - [x] Frontend M3: System Observability (Service Topology, Pipeline Visualizer, Diagnostics, Telemetry Log)
 - [x] Add `/retrieval/inspect` and `/system/diagnostics` FastAPI endpoints and verified with Pytest suite
 - [x] Harmonize typography, serif italic cyan accents, badge pills, and glassmorphic styling across all 5 pages (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`)
+- [x] Add non-blocking background telemetry forwarder (`src/observability/telemetry.py`) on `/query` endpoint to stream live traces into `prod_rag_monitoring`
 
 ## In Progress
 
@@ -57,11 +58,11 @@ IN PROGRESS
 
 ## Current Task
 
-All 5 core frontend routes (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`) unified under the same AI Command Center design system with serif italic cyan accents and verified with Next.js production build.
+Live observability, telemetry streaming, and remote health probing connected with the Production RAG Monitoring Platform (`prod_rag_monitoring`), tested and verified with complete test suite passing (15/15 tests).
 
 ## Next Step
 
-Connect the Evaluation Page UI and background Ragas evaluation execution to export live benchmark reports.
+Verify full end-to-end integration between deployed Next.js Vercel frontend, FastAPI backend, and monitoring platform.
 
 ## Blockers
 

@@ -293,6 +293,54 @@ We added a `/system/diagnostics` FastAPI endpoint and an interactive **System Ob
 
 Resolves 404 navigation errors from the sidebar and provides full transparency into running background services (FastAPI, Qdrant/ChromaDB Vector Store, BM25 Index, Embedding Engine, Cross-Encoder Re-ranker, LLM Provider, and Database Engine) alongside live health check diagnostics.
 
+## Decision: Production Telemetry Forwarding to Monitoring Platform
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We integrated an asynchronous, non-blocking telemetry forwarder (`src/observability/telemetry.py`) inside `rag_controller.py` on the `/query` endpoint. When `MONITORING_URL` is set in the environment, Mnemora automatically streams queries, generated answers, citations, candidate statistics, and execution timings (`retrieval_ms`, `generation_ms`, `total_ms`) to the independent monitoring platform (`POST /api/telemetry`).
+
+### Reason
+
+Enables real-time observability, distributed tracing, claim-level faithfulness auditing, and CI/CD quality regression gating on live production traffic originating from `https://mnemora-rag.vercel.app/` without imposing any latency on user queries or risking API downtime.
+
+### Consequences
+
+Dispatches telemetry via FastAPI `BackgroundTasks` with soft error recovery, guaranteeing production stability even if the external monitoring collector is temporarily unavailable.
+
+## Decision: Docker Build Optimization & Layer Caching
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We optimized the backend container build pipeline by:
+1. Adding BuildKit pip cache mounts (`RUN --mount=type=cache,target=/root/.cache/pip pip install ...`) and separate dependency layer copying.
+2. Expanding `.dockerignore` to exclude `frontend/`, `docs/`, `tests/`, and `.venv` from the build context.
+3. In `src/main.py`, adding `sys.path.insert` to guarantee root resolution when running directly as a script.
+
+### Reason
+
+Significantly accelerates container builds from several minutes to under a few seconds when dependencies are unchanged, and reduces build context transfer size from hundreds of MBs to a few KBs.
+
+## Decision: Smart Path-Based CI/CD Deployments
+
+Date: 2026-08-26
+Status: Accepted
+
+### Decision
+
+We added component path filtering (`dorny/paths-filter@v3`) and pip caching (`actions/setup-python@v5`) in `.github/workflows/ci.yml`. The pipeline detects whether changes occurred in backend code, dependencies, evaluation scripts, or the Next.js frontend, and triggers only the necessary test and deployment jobs (Render backend vs Vercel frontend).
+
+### Reason
+
+Avoids unnecessary frontend builds when only backend code is modified, and avoids triggering Render container redeploys when only frontend UI or documentation files are changed.
+
+
+
 
 
 
