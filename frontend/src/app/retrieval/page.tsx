@@ -123,15 +123,15 @@ function RetrievalInspectorContent() {
         <div className="flex flex-col gap-2.5 shrink-0">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
                   Retrieval <span className="font-serif italic text-accent opacity-90">Inspector</span>
                 </h1>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-2.5 py-0.5 rounded-full">
                   Observability
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl">
+              <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed max-w-2xl">
                 Compare multi-stage retrieval candidates in real-time across Dense Vector, BM25 Sparse, RRF Fusion, and Cross-Encoder Re-ranker.
               </p>
             </div>

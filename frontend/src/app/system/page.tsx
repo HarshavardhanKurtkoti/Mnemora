@@ -114,39 +114,29 @@ export default function SystemPage() {
 
       <div className="max-w-[1600px] w-full mx-auto space-y-4">
         
-        {/* Top Header & Health Status Banner */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-[#070b0e]/70 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 lg:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-          <div className="flex items-center gap-4">
-            <div className={cn(
-              "h-12 w-12 rounded-xl flex items-center justify-center border shrink-0 transition-colors",
-              isHealthy 
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
-                : "bg-red-500/10 border-red-500/30 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
-            )}>
-              <Server className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
-                  System <span className="font-serif italic text-accent opacity-90">Observability</span>
-                </h1>
-                <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  <span className="text-emerald-400 text-[10px] font-mono uppercase tracking-widest font-medium">
-                    {isHealthy ? "All Systems Operational" : "System Degraded"}
-                  </span>
-                </div>
+        {/* Top Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
+                System <span className="font-serif italic text-accent opacity-90">Observability</span>
+              </h1>
+              <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-emerald-400 text-[10px] font-mono uppercase tracking-widest font-medium">
+                  {isHealthy ? "All Systems Operational" : "System Degraded"}
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 font-light">
-                Mnemora RAG Engine runtime health, service topology, and active indexing infrastructure.
-              </p>
             </div>
+            <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed">
+              Mnemora RAG Engine runtime health, service topology, and active indexing infrastructure.
+            </p>
           </div>
 
-          <div className="flex items-center gap-3 self-end lg:self-center">
+          <div className="flex items-center gap-3 self-end md:self-center">
             {lastCheckTime && (
               <span className="text-[10px] font-mono text-muted-foreground">
                 Last checked: {lastCheckTime}
@@ -155,7 +145,7 @@ export default function SystemPage() {
             <Button
               onClick={handleRunHealthCheck}
               disabled={isRunningCheck}
-              className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-3.5 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all"
+              className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-3.5 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all shrink-0"
             >
               <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isRunningCheck && "animate-spin")} />
               Run Health Check
