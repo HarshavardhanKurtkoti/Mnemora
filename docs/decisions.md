@@ -488,22 +488,26 @@ Status: Accepted
 
 In cloud production environments (e.g. Render), Supabase free-tier projects automatically pause after 7 days of inactivity, causing connection pooler attempts to fail with `psycopg.OperationalError: FATAL: (ENOTFOUND) tenant/user not found`. Hard-crashing the container at startup created an infinite restart loop where no ports could be opened. Falling back to local SQLite guarantees that the FastAPI web service boots up cleanly, stays alive, opens ports, passes health checks, and allows grounded Q&A and vector retrieval to function seamlessly while clearly signaling database status in diagnostics.
 
-## Decision: Neon Lakebase Postgres Integration & CLI Provisioning
+## Decision: Dedicated Project Database ('mnemora') on Neon PostgreSQL
 
 Date: 2026-11-26
 Status: Accepted
 
 ### Decision
 
-1. Installed the Neon CLI (`neon@latest`) and configured user-level Neon agent skills (`neon`, `neon-postgres`, `neon-auth`, etc.) and MCP server integration at `https://mcp.neon.tech/mcp`.
-2. Initialized Neon infrastructure via `neon init` under organization `org-lingering-bird-55026810`, project `quiet-wave-46556808`, on branch `production`. Generated type-safe declaration `neon.ts`.
-3. Executed `neon deploy` which provisioned and verified services against branch `production` (`br-frosty-tree-bi4zhykd`), pulling active connection strings into `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `NEON_BRANCH_ID`).
-4. Wired Neon PostgreSQL into FastAPI / SQLAlchemy (`src/config/database.py`). Verified PostgreSQL 18.7 engine connectivity, schema table creation (`system_stats`, `performance_metrics`, `query_history`, `activity_feed`, `system_health`), and verified full pytest suite (15/15 passing).
-5. Configured root `package.json` build task (`npm --prefix frontend run build`) and verified Next.js production build (`npm run build`) passing with zero errors across all 9 static routes.
+1. Migrated application storage from Neon's default bootstrap database (`neondb`) to a dedicated project-specific database named `mnemora`.
+2. Provisioned `mnemora` via direct unpooled connection using `CREATE DATABASE mnemora` with autocommit isolation.
+3. Updated application database configuration in `.env` to route both connection pooler and unpooled direct traffic to `/mnemora`:
+   - `DATABASE_URL`: `postgresql://neondb_owner:npg_HO7ELX1xaUNW@ep-long-haze-bi4x6nz6-pooler.c-5.ap-southeast-1.aws.neon.tech/mnemora?channel_binding=require&sslmode=require`
+   - `DATABASE_URL_UNPOOLED`: `postgresql://neondb_owner:npg_HO7ELX1xaUNW@ep-long-haze-bi4x6nz6.c-5.ap-southeast-1.aws.neon.tech/mnemora?channel_binding=require&sslmode=require`
+4. Created all application schema tables (`system_stats`, `performance_metrics`, `query_history`, `activity_feed`, `system_health`) within `mnemora`.
+5. Seeded initial telemetry and benchmarking records via `populate_db.py`.
+6. Verified full system health: all 15 pytests passing, `npm run build` passing across all 9 Next.js static routes with 0 errors.
 
 ### Reason
 
-Replaces ephemeral/paused database configurations with permanent, auto-scaling Lakebase PostgreSQL that does not get deleted after 30 days and wakes up seamlessly on-demand.
+Neon projects default to creating a database named `neondb` upon project initialization. For isolation, clean namespace segregation, and operational clarity across multiple microservices or projects, application tables should reside in an explicit project database (`mnemora`).
+
 
 
 

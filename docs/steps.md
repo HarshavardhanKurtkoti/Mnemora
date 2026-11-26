@@ -63,7 +63,8 @@ COMPLETE
 - [x] Eliminate hardcoded mock fallbacks in `frontend/src/app/system/page.tsx` and `header.tsx`, surfacing accurate connection status (`Disconnected / Offline`) and configuration banners when backend is unreachable
 - [x] Implement resilient database connection verification with automatic SQLite fallback in `src/config/database.py` and `main.py` to prevent container boot crash loops when remote Supabase/PostgreSQL is paused or unreachable
 - [x] Install Neon CLI, link project `quiet-wave-46556808` (`production` branch) via `neon.ts`, deploy Neon PostgreSQL with `neon deploy`, and wire connection into FastAPI backend
-- [x] Prove end-to-end functionality on Neon PostgreSQL: verified `npm run build` (9/9 routes), seeded database records, and verified all 15 pytests passing against Neon
+- [x] Create dedicated database `mnemora` on Neon PostgreSQL and migrate application schemas from default `neondb`
+- [x] Prove end-to-end functionality on Neon `mnemora` database: verified `npm run build` (9/9 routes), seeded database records via `populate_db.py`, and verified all 15 pytests passing against Neon
 
 ## In Progress
 
