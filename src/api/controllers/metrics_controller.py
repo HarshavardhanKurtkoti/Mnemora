@@ -158,10 +158,10 @@ def get_prometheus_metrics(db: Session = Depends(get_db)):
     # HTTP API Requests
     lines.append("# HELP mnemora_http_requests_total Total HTTP API calls served")
     lines.append("# TYPE mnemora_http_requests_total counter")
-    lines.append(f'mnemora_http_requests_total{{endpoint="/api/v1/query",status="200"}} {total_queries}')
-    lines.append('mnemora_http_requests_total{endpoint="/api/v1/retrieval/inspect",status="200"} 68')
-    lines.append('mnemora_http_requests_total{endpoint="/api/v1/health/services",status="200"} 312')
-    lines.append('mnemora_http_requests_total{endpoint="/api/v1/system/diagnostics",status="200"} 88')
-    lines.append(f'mnemora_http_requests_total{{endpoint="/api/v1/knowledge",status="200"}} {docs_count * 8}')
+    lines.append(f'mnemora_http_requests_total{{endpoint="/query",status="200"}} {total_queries}')
+    lines.append('mnemora_http_requests_total{endpoint="/retrieval/inspect",status="200"} 68')
+    lines.append('mnemora_http_requests_total{endpoint="/health/services",status="200"} 312')
+    lines.append('mnemora_http_requests_total{endpoint="/system/diagnostics",status="200"} 88')
+    lines.append(f'mnemora_http_requests_total{{endpoint="/knowledge",status="200"}} {docs_count * 8}')
 
     return PlainTextResponse(content="\n".join(lines) + "\n", media_type="text/plain; version=0.0.4; charset=utf-8")
