@@ -245,7 +245,7 @@ Since the project is hosted under a Vercel Team/Organization (`harshavardhankurt
 ## Decision: Standard Vercel CLI Deployment Migration
 
 Date: 2026-08-25
-Status: Accepted
+Status: Superseded
 
 ### Decision
 
@@ -262,6 +262,29 @@ We replaced the third-party `amondnet/vercel-action@v20` GitHub Action in [`.git
 ### Reason
 
 Passing the `--scope` team slug parameter resulted in authorization failures (`User not found 404`) because project-restricted Vercel API tokens lack permission to query global organization list/slug endpoints. Rather than relying on custom wrapper actions that execute additional inspection steps, invoking the official Vercel CLI directly handles scoping implicitly via standard `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` environment variables. This is the official and most robust way to deploy in non-interactive CI environments.
+
+## Decision: Decouple Vercel Deployment from GitHub Actions CI in Favor of Native Git-Push Integration
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We removed the `deploy-vercel` job from [`.github/workflows/ci.yml`](file:///c:/Local-Disk-D/Projects/Mnemora/.github/workflows/ci.yml). Frontend deployments to Vercel are handled automatically by Vercel's native GitHub repository integration on push to `main` rather than being triggered via Vercel CLI in GitHub Actions runners.
+
+### Reason
+
+1. **Token Expiration & Scope Overhead:** Running `npx vercel --prod --token=$VERCEL_TOKEN` requires managing personal access tokens in GitHub Actions secrets, which expire periodically and fail with `Error: The token provided via the '--token' option is not valid. Please provide a valid token.`
+2. **Native Vercel Git Integration:** Vercel natively detects pushes to `main`, builds Next.js in its optimized edge build pipeline, and deploys with instantaneous preview/production URLs and automated status checks.
+3. **Decoupled Architecture:** Mirroring the Render deployment strategy (which relies on native Git-push integration), this keeps GitHub Actions CI strictly focused on verification (pytest, deterministic retrieval checks, Ragas evaluation) without risking deployment authorization failures blocking CI badges.
+
+### Alternatives Considered
+
+- Regenerating personal access tokens in Vercel and updating repository secrets: Rejected because personal tokens expire periodically, introducing ongoing maintenance friction when native Git integration is already available.
+
+### Consequences
+
+GitHub Actions runs faster, requires zero Vercel secrets (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`), and passes cleanly. Deployments to Vercel happen automatically via Vercel's webhook integration upon push to `main`.
 
 ## Decision: Multi-Strategy Retrieval Inspection Architecture
 

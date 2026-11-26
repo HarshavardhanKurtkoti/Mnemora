@@ -101,23 +101,3 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         python eval/ragas_eval.py
-
-  deploy-vercel:
-    name: 🌐 Deploy Frontend to Vercel
-    runs-on: ubuntu-latest
-    needs: [detect-changes, fast-checks, ragas-eval]
-    if: |
-      always() && 
-      github.ref == 'refs/heads/main' && 
-      needs.detect-changes.outputs.frontend == 'true' &&
-      (needs.fast-checks.result == 'success' || needs.fast-checks.result == 'skipped') &&
-      (needs.ragas-eval.result == 'success' || needs.ragas-eval.result == 'skipped')
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Deploy to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      run: npx vercel --prod --token=$VERCEL_TOKEN --yes
