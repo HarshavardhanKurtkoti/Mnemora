@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 import { fetchHealthServices } from "@/lib/api";
 import { Search, ExternalLink, Activity, Sparkles, Terminal } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const pathname = usePathname();
-  const [healthStatus, setHealthStatus] = useState<"healthy" | "degraded" | "checking">("healthy");
-  const [environment, setEnvironment] = useState<string>("Local Dev");
+  const [healthStatus, setHealthStatus] = useState<"healthy" | "degraded" | "checking" | "disconnected">("checking");
+  const [environment, setEnvironment] = useState<string>("");
   const [commandOpen, setCommandOpen] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,8 @@ export function Header() {
         if (data?.environment) setEnvironment(data.environment);
       })
       .catch(() => {
-        setHealthStatus("healthy");
+        setHealthStatus("disconnected");
+        setEnvironment(typeof window !== "undefined" && window.location.hostname.includes("localhost") ? "Local (Offline)" : "Disconnected");
       });
   }, []);
 
@@ -85,15 +87,34 @@ export function Header() {
           {/* Operational Status Badge */}
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface border border-border text-xs">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-signal" />
+              {healthStatus === "healthy" ? (
+                <>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-signal" />
+                </>
+              ) : healthStatus === "degraded" ? (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+              ) : healthStatus === "checking" ? (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-muted-foreground animate-pulse" />
+              ) : (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400" />
+              )}
             </span>
-            <span className="text-[11px] font-mono text-signal font-medium">
-              Operational
+            <span className={cn(
+              "text-[11px] font-mono font-medium",
+              healthStatus === "healthy" ? "text-signal" :
+              healthStatus === "degraded" ? "text-amber-400" :
+              healthStatus === "checking" ? "text-muted-foreground" : "text-red-400"
+            )}>
+              {healthStatus === "healthy" ? "Operational" :
+               healthStatus === "degraded" ? "Degraded" :
+               healthStatus === "checking" ? "Checking..." : "Disconnected"}
             </span>
-            <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60 border-l border-border pl-1.5">
-              {environment}
-            </span>
+            {environment && (
+              <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60 border-l border-border pl-1.5">
+                {environment}
+              </span>
+            )}
           </div>
 
           {/* Harsha Kurtkoti Link */}

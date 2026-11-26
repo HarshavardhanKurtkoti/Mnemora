@@ -71,8 +71,8 @@ def get_health_services(db: Session = Depends(get_db)):
     else:
         uptime_str = f"{minutes}m"
         
-    # Get environment
-    raw_env = (os.getenv("APP_ENV") or os.getenv("APP") or "local").lower()
+    # Get environment (automatically detects Render cloud environment or explicit APP_ENV)
+    raw_env = (os.getenv("APP_ENV") or os.getenv("APP") or ("production" if os.getenv("RENDER") else "local")).lower()
     if raw_env in ["prod", "production"]:
         env_display = "Production"
     elif raw_env in ["staging", "stage"]:
@@ -125,7 +125,7 @@ def get_system_diagnostics(db: Session = Depends(get_db)):
     minutes = (uptime_seconds % 3600) // 60
     uptime_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
     
-    raw_env = (os.getenv("APP_ENV") or os.getenv("APP") or "local").lower()
+    raw_env = (os.getenv("APP_ENV") or os.getenv("APP") or ("production" if os.getenv("RENDER") else "local")).lower()
     if raw_env in ["prod", "production"]:
         env_display = "Production"
     elif raw_env in ["staging", "stage"]:

@@ -24,7 +24,7 @@ import {
   AlertTriangle,
   Radio
 } from "lucide-react";
-import { fetchSystemDiagnostics, fetchHealthServices, fetchActivityFeed } from "@/lib/api";
+import { fetchSystemDiagnostics, fetchHealthServices, fetchActivityFeed, API_BASE_URL } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface ServiceNode {
@@ -114,6 +114,7 @@ const DEFAULT_SERVICES: ServiceNode[] = [
 export default function SystemPage() {
   const [diagnostics, setDiagnostics] = useState<any>(null);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
+  const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isRunningCheck, setIsRunningCheck] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<string>("");
   const [selectedNode, setSelectedNode] = useState<ServiceNode>(DEFAULT_SERVICES[0]);
@@ -127,44 +128,17 @@ export default function SystemPage() {
 
       if (diagData) {
         setDiagnostics(diagData);
+        setIsConnected(true);
       } else {
-        setDiagnostics({
-          status: "operational",
-          uptime: "2h 45m",
-          environment: "Local Dev",
-          server: {
-            name: "Mnemora RAG Engine",
-            api_prefix: "/api/v1",
-            python_version: "3.11.9",
-            os: "Windows",
-            database_type: "SQLite (Local DB)",
-            pid: 14220
-          },
-          stats: {
-            documents_indexed: 12,
-            chunks_stored: 423,
-            tokens_total: 38200
-          },
-          configuration: {
-            llm_provider: "openai",
-            llm_model: "gpt-4o-mini",
-            embedding_model: "all-MiniLM-L6-v2",
-            cross_encoder_model: "cross-encoder/ms-marco-MiniLM-L-6-v2",
-            vector_db: "Qdrant (In-Memory)",
-            collection_name: "rag_documents",
-            chunk_size: 800,
-            chunk_overlap: 100,
-            top_k_vector: 10,
-            top_k_bm25: 10,
-            final_top_k_after_rerank: 5
-          }
-        });
+        setDiagnostics(null);
+        setIsConnected(false);
       }
 
       setActivityFeed(activityData || []);
       setLastCheckTime(new Date().toLocaleTimeString());
     } catch (err) {
       console.error("Failed to load system diagnostics:", err);
+      setIsConnected(false);
     }
   };
 
@@ -220,6 +194,34 @@ export default function SystemPage() {
           </div>
         </div>
 
+        {/* Backend Connection Alert if Unreachable */}
+        {!isConnected && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-amber-200 flex items-center gap-2">
+                  <span>Backend Service Disconnected</span>
+                  <span className="font-mono text-[10px] text-amber-400/80 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                    {API_BASE_URL}
+                  </span>
+                </div>
+                <p className="text-muted-foreground leading-relaxed">
+                  The frontend cannot communicate with the FastAPI backend. If deployed on Vercel, ensure <code className="text-amber-300 font-mono">NEXT_PUBLIC_API_URL</code> is set in Vercel Project Settings to your active Render URL (e.g. <code className="text-amber-300 font-mono">https://&lt;service&gt;.onrender.com/api/v1</code>).
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleRunHealthCheck}
+              disabled={isRunningCheck}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-foreground hover:bg-raised transition-colors cursor-pointer shrink-0 text-xs font-medium"
+            >
+              <RefreshCw className={cn("h-3 w-3", isRunningCheck && "animate-spin")} />
+              <span>Retry</span>
+            </button>
+          </div>
+        )}
+
         {/* 4 Summary Metric Tiles */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
@@ -228,17 +230,20 @@ export default function SystemPage() {
               <span className="font-mono text-[10px] uppercase tracking-wider">Server Uptime</span>
             </div>
             <div className="text-2xl font-normal text-foreground tracking-tight tabular-nums font-mono">
-              {diagnostics?.uptime || "2h 45m"}
+              {diagnostics?.uptime || (isConnected ? "—" : "Offline")}
             </div>
           </div>
 
           <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground text-xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-signal" />
+              <ShieldCheck className={cn("h-3.5 w-3.5", isConnected ? "text-signal" : "text-amber-400")} />
               <span className="font-mono text-[10px] uppercase tracking-wider">Environment</span>
             </div>
-            <div className="text-2xl font-normal text-signal tracking-tight font-mono">
-              {diagnostics?.environment || "Local Dev"}
+            <div className={cn(
+              "text-2xl font-normal tracking-tight font-mono",
+              isConnected ? "text-signal" : "text-amber-400"
+            )}>
+              {diagnostics?.environment || (isConnected ? "Detecting..." : "Disconnected")}
             </div>
           </div>
 
@@ -248,7 +253,7 @@ export default function SystemPage() {
               <span className="font-mono text-[10px] uppercase tracking-wider">Indexed Chunks</span>
             </div>
             <div className="text-2xl font-normal text-foreground tracking-tight tabular-nums font-mono">
-              {diagnostics?.stats?.chunks_stored || 423}
+              {diagnostics?.stats?.chunks_stored !== undefined ? diagnostics.stats.chunks_stored : (isConnected ? "—" : "0")}
             </div>
           </div>
 
@@ -258,7 +263,7 @@ export default function SystemPage() {
               <span className="font-mono text-[10px] uppercase tracking-wider">Database Engine</span>
             </div>
             <div className="text-base font-mono font-medium text-foreground tracking-tight pt-1 truncate">
-              {diagnostics?.server?.database_type || "SQLite Local"}
+              {diagnostics?.server?.database_type || (isConnected ? "—" : "Unreachable")}
             </div>
           </div>
         </div>
@@ -272,9 +277,15 @@ export default function SystemPage() {
                 Connected Service Dependency Topology
               </h3>
             </div>
-            <span className="text-[11px] font-mono text-signal flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-signal animate-pulse" />
-              7/7 Services Operational
+            <span className={cn(
+              "text-[11px] font-mono flex items-center gap-1.5",
+              isConnected ? "text-signal" : "text-amber-400"
+            )}>
+              <span className={cn(
+                "h-2 w-2 rounded-full",
+                isConnected ? "bg-signal animate-pulse" : "bg-amber-400"
+              )} />
+              {isConnected ? "7/7 Services Operational" : "Topology Reference (Backend Offline)"}
             </span>
           </div>
 
@@ -512,8 +523,8 @@ export default function SystemPage() {
                 Sanitized Runtime Configuration
               </h3>
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground">
-              Production Verified
+            <span className={cn("text-[10px] font-mono", isConnected ? "text-muted-foreground" : "text-amber-400")}>
+              {isConnected ? "Production Verified" : "Offline Reference"}
             </span>
           </div>
 

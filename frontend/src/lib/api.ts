@@ -1,5 +1,17 @@
 // API client for FastAPI Backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) {
+    return "http://localhost:8000/api/v1";
+  }
+  const cleanUrl = envUrl.trim().replace(/\/+$/, "");
+  if (cleanUrl.endsWith("/api/v1")) {
+    return cleanUrl;
+  }
+  return `${cleanUrl}/api/v1`;
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 async function handleResponse(res: Response) {
   let data;

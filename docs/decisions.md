@@ -456,6 +456,23 @@ Render's free tier deploy hooks trigger an unauthenticated background git clone 
 
 Vercel frontend deployment remains orchestrated via CLI in GitHub Actions, while Render backend deployment is decoupled from CI curl hooks.
 
+## Decision: Resilient API Base URL Normalization & Disconnected Observability State
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+1. In `frontend/src/lib/api.ts`, implemented `getApiBaseUrl()` to automatically normalize `NEXT_PUBLIC_API_URL` by trimming trailing slashes and ensuring the `/api/v1` prefix is present regardless of whether the user sets `https://api.onrender.com` or `https://api.onrender.com/api/v1`. Defaulted local fallback to `http://localhost:8000/api/v1`.
+2. Removed mock fallback data (`environment: "Local Dev"`, `uptime: "2h 45m"`, `chunks: 423`, `database_type: "SQLite (Local DB)"`) from `frontend/src/app/system/page.tsx`. When the backend is unreachable, the system explicitly displays `Disconnected`, `Offline`, and `Unreachable` states alongside an amber warning banner indicating the exact target backend URL (`API_BASE_URL`) and instructions for configuring Vercel environment variables.
+3. In `frontend/src/components/layout/header.tsx`, replaced blind `"healthy"` catch fallback with true `"disconnected"` badge status and offline labeling.
+4. In `src/api/controllers/stats_controller.py`, added automatic `os.getenv("RENDER")` detection so that when deployed on Render, `raw_env` automatically resolves to `"Production"` even if `APP_ENV` is not manually defined.
+
+### Reason
+
+In production on `https://mnemora.harshakurtkoti.in`, the UI previously displayed `"Local Dev"`, `"2h 45m"` uptime, and `"SQLite Local"` because client-side network requests to `NEXT_PUBLIC_API_URL` failed (due to missing Vercel environment variable or Render sleeping), triggering a hardcoded mock object. Fabricating operational metrics when disconnected violated PRD Rule #1 and caused user confusion. Explicitly surfacing connection state and auto-detecting cloud runtime environments guarantees true observability.
+
+
 
 
 
