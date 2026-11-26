@@ -133,8 +133,8 @@ def get_system_diagnostics(db: Session = Depends(get_db)):
     else:
         env_display = "Local Dev"
         
-    db_url = os.getenv("DATABASE_URL", "sqlite:///./data/mnemora.db")
-    db_type = "PostgreSQL" if db_url.startswith("postgres") else "SQLite (Local DB)"
+    from src.config.database import ACTIVE_DB_TYPE
+    db_type = ACTIVE_DB_TYPE
     
     return success_response({
         "status": "operational" if all(s.status == "healthy" for s in services) else "degraded",

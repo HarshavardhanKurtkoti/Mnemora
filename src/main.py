@@ -14,10 +14,13 @@ from src.api import models
 from src.api.controllers import rag_controller, stats_controller
 from src.api.utils.response import error_response
 
-# Ensure database tables exist
-Base.metadata.create_all(bind=engine)
-
 logger = logging.getLogger(__name__)
+
+# Ensure database tables exist with soft error handling
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    logger.error(f"Error during database table creation: {e}")
 
 app = FastAPI(
     title=settings.APP_NAME,

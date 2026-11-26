@@ -472,6 +472,23 @@ Status: Accepted
 
 In production on `https://mnemora.harshakurtkoti.in`, the UI previously displayed `"Local Dev"`, `"2h 45m"` uptime, and `"SQLite Local"` because client-side network requests to `NEXT_PUBLIC_API_URL` failed (due to missing Vercel environment variable or Render sleeping), triggering a hardcoded mock object. Fabricating operational metrics when disconnected violated PRD Rule #1 and caused user confusion. Explicitly surfacing connection state and auto-detecting cloud runtime environments guarantees true observability.
 
+## Decision: Resilient Database Startup & Automatic SQLite Fallback for Unreachable Remote PostgreSQL
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+1. In `src/config/database.py`, added connection verification with a 5-second connection timeout (`connect_timeout=5`, `pool_pre_ping=True`) when `DATABASE_URL` specifies a remote PostgreSQL instance (e.g. Supabase, AWS RDS, Neon).
+2. If the remote database connection fails (such as Supabase free-tier project paused, deleted, or credentials misconfigured with `FATAL: tenant/user not found`), the system logs a descriptive warning and automatically falls back to the local SQLite database (`sqlite:///./data/mnemora.db`), setting `ACTIVE_DB_TYPE = "SQLite (Fallback - Remote DB Unreachable)"`.
+3. In `src/main.py`, wrapped `Base.metadata.create_all(bind=engine)` in safe error handling to prevent module-level import crashes during container spin-up.
+4. In `src/api/controllers/stats_controller.py`, dynamically bound the `server.database_type` response to `ACTIVE_DB_TYPE` so observability endpoints and UI reflect the active database engine accurately.
+
+### Reason
+
+In cloud production environments (e.g. Render), Supabase free-tier projects automatically pause after 7 days of inactivity, causing connection pooler attempts to fail with `psycopg.OperationalError: FATAL: (ENOTFOUND) tenant/user not found`. Hard-crashing the container at startup created an infinite restart loop where no ports could be opened. Falling back to local SQLite guarantees that the FastAPI web service boots up cleanly, stays alive, opens ports, passes health checks, and allows grounded Q&A and vector retrieval to function seamlessly while clearly signaling database status in diagnostics.
+
+
 
 
 

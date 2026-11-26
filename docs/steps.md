@@ -61,6 +61,7 @@ COMPLETE
 - [x] Remove `deploy-render` curl deploy hook job from `.github/workflows/ci.yml` to decouple Render CD from unauthenticated background git clone failures on Render free tier
 - [x] Normalize `NEXT_PUBLIC_API_URL` with `/api/v1` resolution in `frontend/src/lib/api.ts` and add automatic Render cloud environment detection (`os.getenv("RENDER")`) in `stats_controller.py`
 - [x] Eliminate hardcoded mock fallbacks in `frontend/src/app/system/page.tsx` and `header.tsx`, surfacing accurate connection status (`Disconnected / Offline`) and configuration banners when backend is unreachable
+- [x] Implement resilient database connection verification with automatic SQLite fallback in `src/config/database.py` and `main.py` to prevent container boot crash loops when remote Supabase/PostgreSQL is paused or unreachable
 
 ## In Progress
 
