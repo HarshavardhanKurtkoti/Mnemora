@@ -76,6 +76,8 @@ COMPLETE
 - [x] Configure Prometheus scrape target `host.docker.internal:8080/metrics` with `honor_labels: true`, verified all 30 panels actively populate real data without 0/No Data errors
 - [x] Eliminate root-level dashboard duplicate: structured Grafana into 3 clean project folders (`Mnemora`, `Portfolio`, `Infrastructure`) with exactly one canonical dashboard per folder and zero loose root duplicates
 - [x] Fix donut chart label clutter: disabled slice text overlay (`displayLabels: []`) and simplified endpoint labels so breakdown tables render crisply without overlapping text
+- [x] Integrate Orbit Spatial OS (`c:\Local-Disk-D\Projects\orbit`) with `master-grafana`: created dedicated Grafana project folder `Orbit` containing `Orbit — Spatial Productivity Operating System & Knowledge Graph` (UID `orbit-spatial-os`), configured Prometheus scrape job `orbit_api`, and implemented live FastAPI Prometheus `/metrics` endpoint
+- [x] Refactor Orbit URL routing & loading performance: migrated from monolithic tab state to Next.js App Router subroutes (`/` for Overview, `/universe`, `/tasks`, `/notes`, `/timeline`, `/analytics`), eliminated full-screen blocking loader on Universe canvas, implemented SWR in-memory store caching for instant 0ms tab transitions
 
 ## In Progress
 
@@ -89,11 +91,11 @@ None
 
 ## Current Task
 
-Resolved dashboard data ingestion and restructured Grafana hierarchy: Mnemora dashboard is now at Root (`[ROOT / GENERAL]`) with breadcrumb `Home > Dashboards > Mnemora...`, and project folders (`Mnemora`, `Portfolio`, `Infrastructure`) are cleanly organized. All metrics actively ingest live database and telemetry data.
+Completed full Orbit UX performance refactoring (App Router subroutes, instant Universe canvas loading, Zustand SWR caching) and integrated Orbit into `master-grafana` with a dedicated `Orbit` folder, production dashboard, and Prometheus scrape target.
 
 ## Next Step
 
-Submit updated branch and commit `master-grafana` changes to GitHub for deployment to Render.
+Submit updated branches and push commits for Orbit and master-grafana to GitHub.
 
 ## Blockers
 

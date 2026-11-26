@@ -582,22 +582,61 @@ Status: Accepted
    - Replaced static stub with dynamic `src/api/controllers/metrics_controller.py`, pulling live statistics directly from Neon PostgreSQL models (`SystemStat`, `SystemHealth`, `QueryHistory`) and runtime counters.
    - Configured Prometheus scrape job `mnemora_rag` targeting `host.docker.internal:8080/metrics` with `honor_labels: true` so all 30 panels immediately render real production metrics in local Grafana (`http://localhost:3000`) and live Grafana.
 
+## Decision: Cross-Project Grafana Observability Dashboard & Folder Architecture for Orbit Spatial OS
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+1. **Dedicated Grafana Folder (`Orbit`):**
+   - Created folder `master-grafana/grafana/provisioning/dashboards/json/folders/Orbit/`.
+   - Placed 24-panel production dashboard `Orbit — Spatial Productivity Operating System & Knowledge Graph` (`orbit-spatial-os.json`, UID `orbit-spatial-os`) in the `Orbit` folder.
+   - Preserved standalone project copy in `c:\Local-Disk-D\Projects\orbit\dashboards\orbit-spatial-os.json`.
+2. **Prometheus Scraping for Orbit API:**
+   - Configured Prometheus scrape job `orbit_api` in `master-grafana/prometheus/prometheus.yml` targeting `host.docker.internal:8000/metrics`.
+   - Implemented dynamic Prometheus `/metrics` endpoint in Orbit FastAPI (`apps/api/app/api/v1/metrics.py` and `app/main.py`), pulling live counts directly from Neon PostgreSQL models (`workspaces`, `projects`, `tasks`, `notes`, `graph_nodes`, `graph_edges`).
+3. **Orbit Next.js App Router & SWR Performance Refactor:**
+   - Restructured Orbit navigation from monolithic state to first-class App Router subroutes: `/` (Overview landing page), `/universe`, `/tasks`, `/notes`, `/timeline`, `/analytics`, with automatic deep-linking and browser history support.
+   - Eliminated blocking full-screen loader on Universe canvas by caching graph coordinates in Zustand and hydrating on frame 0, with non-intrusive background revalidation.
 
 
+## Decision: Cross-Project Grafana Observability Dashboard & Folder Architecture for Orbit Spatial OS
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+1. **Dedicated Grafana Folder (`Orbit`):**
+   - Created folder `master-grafana/grafana/provisioning/dashboards/json/folders/Orbit/`.
+   - Placed 24-panel production dashboard `Orbit — Spatial Productivity Operating System & Knowledge Graph` (`orbit-spatial-os.json`, UID `orbit-spatial-os`) in the `Orbit` folder.
+   - Preserved standalone project copy in `c:\Local-Disk-D\Projects\orbit\dashboards\orbit-spatial-os.json`.
+2. **Prometheus Scraping for Orbit API:**
+   - Configured Prometheus scrape job `orbit_api` in `master-grafana/prometheus/prometheus.yml` targeting `host.docker.internal:8000/metrics`.
+   - Implemented dynamic Prometheus `/metrics` endpoint in Orbit FastAPI (`apps/api/app/api/v1/metrics.py` and `app/main.py`), pulling live counts directly from Neon PostgreSQL models (`workspaces`, `projects`, `tasks`, `notes`, `graph_nodes`, `graph_edges`).
+3. **Orbit Next.js App Router & SWR Performance Refactor:**
+   - Restructured Orbit navigation from monolithic state to first-class App Router subroutes: `/` (Overview landing page), `/universe`, `/tasks`, `/notes`, `/timeline`, `/analytics`, with automatic deep-linking and browser history support.
+   - Eliminated blocking full-screen loader on Universe canvas by caching graph coordinates in Zustand and hydrating on frame 0, with non-intrusive background revalidation.
 
 
+## Decision: Cross-Project Grafana Observability Dashboard & Folder Architecture for Orbit Spatial OS
 
+Date: 2026-11-26
+Status: Accepted
 
+### Decision
 
-
-
-
-
-
-
-
-
-
+1. **Dedicated Grafana Folder (`Orbit`):**
+   - Created folder `master-grafana/grafana/provisioning/dashboards/json/folders/Orbit/`.
+   - Placed 24-panel production dashboard `Orbit — Spatial Productivity Operating System & Knowledge Graph` (`orbit-spatial-os.json`, UID `orbit-spatial-os`) in the `Orbit` folder.
+   - Preserved standalone project copy in `c:\Local-Disk-D\Projects\orbit\dashboards\orbit-spatial-os.json`.
+2. **Prometheus Scraping for Orbit API:**
+   - Configured Prometheus scrape job `orbit_api` in `master-grafana/prometheus/prometheus.yml` targeting `host.docker.internal:8000/metrics`.
+   - Implemented dynamic Prometheus `/metrics` endpoint in Orbit FastAPI (`apps/api/app/api/v1/metrics.py` and `app/main.py`), pulling live counts directly from Neon PostgreSQL models (`workspaces`, `projects`, `tasks`, `notes`, `graph_nodes`, `graph_edges`).
+3. **Orbit Next.js App Router & SWR Performance Refactor:**
+   - Restructured Orbit navigation from monolithic state to first-class App Router subroutes: `/` (Overview landing page), `/universe`, `/tasks`, `/notes`, `/timeline`, `/analytics`, with automatic deep-linking and browser history support.
+   - Eliminated blocking full-screen loader on Universe canvas by caching graph coordinates in Zustand and hydrating on frame 0, with non-intrusive background revalidation.
 
 
 
