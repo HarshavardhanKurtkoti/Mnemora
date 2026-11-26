@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 1.7 - Complete UI/UX Refactor & Shared Portfolio Design System (HK Design System)
+Phase 1.8 - Final Premium UI/UX Refactor & Interactive Architecture Experience (HK Design System)
 
 ## Status
 
@@ -47,17 +47,15 @@ COMPLETE
 - [x] Add non-blocking background telemetry forwarder (`src/observability/telemetry.py`) on `/query` endpoint to stream live traces into `prod_rag_monitoring`
 - [x] Upgrade Groq LLM integration to active non-deprecated models (`openai/gpt-oss-120b`, `openai/gpt-oss-20b`) and verified with Pytest suite (15/15 tests passing)
 - [x] Phase 1.7: Create dedicated branch `refactor/portfolio-design-system`
-- [x] Phase 1.7: Extract design tokens directly from Harsha Kurtkoti's portfolio (`Portflio_website/src/index.css`)
-- [x] Phase 1.7: Eliminate AI-generated cyberpunk aesthetic (removed `/bg.jpg`, neon cyan/purple glow drop-shadows, fake circular uptime rings, command-center sci-fi branding)
-- [x] Phase 1.7: Rebuild application shell (`layout.tsx`, `header.tsx`, `sidebar.tsx`) with compact responsive navigation
-- [x] Phase 1.7: Redesign `/ask` page: hero question composer, grounded answers, expandable source passages, latency breakdown
-- [x] Phase 1.7: Redesign `/knowledge` page: professional document workspace, clean table, format badges, upload modal, document preview drawer
-- [x] Phase 1.7: Redesign `/retrieval` page: flagship inspectable multi-stage pipeline across Dense Vector, Sparse BM25, RRF Fusion, and Cross-Encoder Re-ranker
-- [x] Phase 1.7: Redesign `/evaluation` page: Ragas quality standards, strategy comparison chart & benchmark table
-- [x] Phase 1.7: Redesign `/system` page: service topology, pipeline execution flow, runtime configuration inspector, audit log
-- [x] Phase 1.7: Document reusable HK Design System in `docs/DESIGN_SYSTEM.md`
-- [x] Phase 1.7: Verified full production frontend build (`pnpm build`) with zero TypeScript errors
-- [x] Phase 1.7: Verified backend test suite with 15/15 tests passing
+- [x] Phase 1.7: Initial token extraction and styling refactor
+- [x] Phase 1.8: Refine Application Shell & Sidebar (stronger branding, proportional navigation, command palette `⌘K`, keyboard shortcuts `⌘1`–`⌘5`)
+- [x] Phase 1.8: Redesign `/ask` page as centerpiece (editorial hierarchy, centerpiece question composer, suggested inquiries, interactive pipeline explainer, graceful error recovery & demo answer state)
+- [x] Phase 1.8: Refine `/knowledge` page (improved table typography, row rhythm, format filter pills, human-readable metadata drawer replacing raw JSON-first previews)
+- [x] Phase 1.8: Build flagship `/retrieval` inspector (Systems in Motion architecture visualization, interactive stage selection, split-pane results, and candidate rank shift indicators)
+- [x] Phase 1.8: Refine `/evaluation` and `/system` observability pages (structured metric hierarchy, question-level benchmark inspection, interactive connected service dependency topology)
+- [x] Phase 1.8: Verified Next.js production build (`pnpm build`) with zero errors across all 9 static routes
+- [x] Phase 1.8: Verified backend pytest suite with 15/15 tests passing
+- [x] Add `psycopg[binary]>=3.1.18` and PostgreSQL URI normalization in `src/config/database.py` to fix `ModuleNotFoundError: No module named 'psycopg'` in Docker container runtime
 
 ## In Progress
 
@@ -71,7 +69,7 @@ None
 
 ## Current Task
 
-Complete UI/UX refactor aligning Mnemora with Harsha Kurtkoti's portfolio identity (`refactor/portfolio-design-system`), with all 5 pages redesigned, shared design system documented in `docs/DESIGN_SYSTEM.md`, and all tests passing.
+Phase 1.8 completed: The Mnemora frontend has been thoroughly redesigned beyond color swapping into an authentic, interactive, portfolio-grade engineering workspace.
 
 ## Next Step
 

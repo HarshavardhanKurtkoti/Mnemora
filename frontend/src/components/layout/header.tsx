@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchHealthServices } from "@/lib/api";
-import { Search, ExternalLink } from "lucide-react";
+import { Search, ExternalLink, Activity, Sparkles, Terminal } from "lucide-react";
+import { CommandPalette } from "@/components/command-palette";
 
 export function Header() {
   const pathname = usePathname();
   const [healthStatus, setHealthStatus] = useState<"healthy" | "degraded" | "checking">("healthy");
   const [environment, setEnvironment] = useState<string>("Local Dev");
+  const [commandOpen, setCommandOpen] = useState(false);
 
   useEffect(() => {
     fetchHealthServices()
@@ -24,52 +26,91 @@ export function Header() {
       });
   }, []);
 
-  const getActiveSection = () => {
-    if (pathname.startsWith("/ask") || pathname === "/") return "Ask";
-    if (pathname.startsWith("/knowledge")) return "Knowledge";
-    if (pathname.startsWith("/retrieval")) return "Retrieval";
-    if (pathname.startsWith("/evaluation")) return "Evaluation";
-    if (pathname.startsWith("/system")) return "System";
-    return "Workspace";
+  const getActiveSectionInfo = () => {
+    if (pathname.startsWith("/ask") || pathname === "/") {
+      return { kicker: "01", name: "Ask", subtitle: "Grounded Retrieval & Answers" };
+    }
+    if (pathname.startsWith("/knowledge")) {
+      return { kicker: "02", name: "Knowledge", subtitle: "Document Corpus & Chunks" };
+    }
+    if (pathname.startsWith("/retrieval")) {
+      return { kicker: "03", name: "Retrieval", subtitle: "Multi-Stage Pipeline Inspector" };
+    }
+    if (pathname.startsWith("/evaluation")) {
+      return { kicker: "04", name: "Evaluation", subtitle: "Ragas Quality Standards" };
+    }
+    if (pathname.startsWith("/system")) {
+      return { kicker: "05", name: "System", subtitle: "Topology & Diagnostics" };
+    }
+    return { kicker: "00", name: "Workspace", subtitle: "RAG Platform" };
   };
 
+  const section = getActiveSectionInfo();
+
   return (
-    <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center justify-between border-b border-border bg-[#090f0e]/95 backdrop-blur-md px-5 sm:px-6">
-      {/* Brand & Workspace Breadcrumb matching Section 3 */}
-      <div className="flex items-center gap-3">
-        <Link href="/ask" className="flex items-center gap-2 group">
-          <span className="font-semibold text-sm tracking-tight text-foreground group-hover:text-accent transition-colors">
-            Mnemora
-          </span>
-        </Link>
+    <>
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-[#090f0e]/95 backdrop-blur-md px-5 sm:px-6">
+        {/* Brand & Workspace Breadcrumb */}
+        <div className="flex items-center gap-3">
+          <Link href="/ask" className="flex items-center gap-2 group">
+            <span className="font-semibold text-sm tracking-tight text-foreground group-hover:text-accent transition-colors">
+              Mnemora<span className="text-accent">.</span>
+            </span>
+          </Link>
 
-        <span className="text-muted-foreground/40 text-xs font-mono">/</span>
+          <span className="text-muted-foreground/40 text-xs font-mono">/</span>
 
-        <span className="text-xs text-muted-foreground font-mono">
-          Workspace / <span className="text-foreground font-medium">{getActiveSection()}</span>
-        </span>
-      </div>
-
-      {/* Right Operational Status */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-secondary/80 border border-border text-xs">
-          <span className="h-1.5 w-1.5 rounded-full bg-signal" />
-          <span className="text-[11px] font-mono text-signal font-medium">
-            Operational
-          </span>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-muted-foreground">Workspace</span>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="text-accent font-medium">{section.kicker}</span>
+            <span className="text-foreground font-medium hidden sm:inline">{section.name}</span>
+          </div>
         </div>
 
-        <a
-          href="https://www.harshakurtkoti.in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-accent transition-colors px-1.5 py-1 rounded"
-          title="Harsha Kurtkoti Portfolio"
-        >
-          <span>HK</span>
-          <ExternalLink className="h-2.5 w-2.5" />
-        </a>
-      </div>
-    </header>
+        {/* Global Action Controls */}
+        <div className="flex items-center gap-3">
+          {/* Quick Search Button */}
+          <button
+            onClick={() => setCommandOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-xs text-muted-foreground hover:text-foreground hover:border-line transition-all group"
+          >
+            <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors" />
+            <span className="hidden md:inline text-[11px]">Command Palette</span>
+            <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded border border-border bg-raised text-muted-foreground">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Operational Status Badge */}
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface border border-border text-xs">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-signal" />
+            </span>
+            <span className="text-[11px] font-mono text-signal font-medium">
+              Operational
+            </span>
+            <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60 border-l border-border pl-1.5">
+              {environment}
+            </span>
+          </div>
+
+          {/* Harsha Kurtkoti Link */}
+          <a
+            href="https://www.harshakurtkoti.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground hover:text-accent transition-colors px-2 py-1 rounded bg-raised/40 hover:bg-raised border border-border/60"
+            title="Harsha Kurtkoti — Backend, AI & Infrastructure"
+          >
+            <span className="font-semibold text-accent">HK</span>
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </header>
+
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+    </>
   );
 }

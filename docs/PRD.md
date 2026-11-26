@@ -1,442 +1,517 @@
-Buddy, I see exactly what you're saying. The current Mnemora dashboard looks more like a generic AI-generated cyberpunk admin template than a thoughtfully engineered product.
+Yes, buddy. I went through the new 65-second recording. It's definitely better than yesterday's neon cyberpunk dashboard, but I still wouldn't call this the finished design.
 
-I wouldn't just redesign Mnemora in isolation. I'd establish a **unified design system derived from your portfolio**, which you can reuse across every project you build. Your portfolio and projects should feel like they belong to the same engineer, while retaining their own product identities.
+It feels like the previous interface has been recolored rather than genuinely redesigned.
 
-### **What's wrong with the current Mnemora UI?**
-
-| Current design                       | Problem                                                    |
-| ------------------------------------ | ---------------------------------------------------------- |
-| Neon cyan accents everywhere         | Makes the interface look gimmicky                          |
-| Purple and blue background gradients | Generic AI-generated aesthetic                             |
-| Geometric grid background            | Adds unnecessary visual noise                              |
-| Excessive card borders               | Weak visual hierarchy                                      |
-| Oversized sidebar                    | Wastes usable workspace                                    |
-| Glowing uptime ring                  | Decorative rather than functional                          |
-| Large empty dashboard cards          | Makes the product look unfinished                          |
-| Inconsistent typography              | No coherent visual identity                                |
-| Command Center branding              | Feels unnecessarily futuristic                             |
-| Search interface                     | The primary functionality doesn't receive enough attention |
-
-The sophistication should come from typography, spacing, layout, interaction design and attention to detail — not from neon effects.
-
-## **1. Establish your own design identity**
-
-I checked your live [portfolio](https://www.harshakurtkoti.in/?utm_source=chatgpt.com) and the Mnemora screen recording. Your portfolio positions you as a **Backend, AI & Infrastructure Engineer**, with an emphasis on systems architecture, engineering case studies and interactive technical demonstrations.&#x20;
+I've also checked [harshakurtkoti.in](https://www.harshakurtkoti.in/?utm_source=chatgpt.com) again. Your portfolio's engineering-first presentation, architectural walkthroughs and interactive system demonstrations are exactly what Mnemora should inherit.&#x20;
 
 [image](https://www.google.com/s2/favicons?domain=https://www.harshakurtkoti.in\&sz=32)
 
 Backend, AI & Infrastructure Engineer
 
-Your applications should reinforce that identity.
+**Let's finalize the entire frontend experience first, freeze the design system, and then move to backend functionality.**
 
-I'd call the design direction **Engineering Minimalism** — somewhere between Linear, Vercel, Raycast and a sophisticated engineering workspace.
+## **1. What still needs fixing**
 
-[My issues – Linear Docs](https://images.openai.com/static-rsc-4/I6nXbXULu4AjOAbKySmNBePXrY6UNlUxqZf67aERSpb6IEFmgpFaDlrVPfeqo1yVQnuvlO-94z0xedRppwBotFwaHYV_vdtiM1skZGWoGrX_NGVTphwFRkWxnST1CSEHuEaEQpF_jvBx1deaCyKatt5nvSbPpoYqLLmOn2uSqEs?purpose=inline)
+[Triage – Linear Docs](https://images.openai.com/static-rsc-4/7JYJylc6qBTqvXklzjqVWgxeHgrcyctNqB8J8cMHhtDqbG9AL9CnQzlItdv1VAQmdEoHtV7X0kwaWMsxecR2TXs9ClFBu35QGiXX7lpgNmEpzsC7IZ-_mlmMZl1A1GBxFQY9f3-o2TNU4z6aiRsGc-ipinjIw5tBpCJ1Z3MmHY0?purpose=inline)
 
-**Linear**
+**Navigation and application shell**
 
-Typography, spacing and restrained visual hierarchy.
+The sidebar feels empty, the branding is understated to the point of being forgettable, and the navigation text is too small. It needs better proportions and clearer active states.
+
+[The New Raycast - Raycast Blog](https://images.openai.com/static-rsc-4/d77RCSIl-9CaXAG47qdbQozFkx95QXgWBp6Z_fmJ8moqxIG8UHRFQO1bK1OVLulFRIU79_hY3tUl0LdmwAecY0LDF4D_fG5946ucCLfr0bmmTnxNyqNexSvOG5d5DCszbIXzSBrnqSWbGUzSMj2nmX_HmyWWgWacZibk1LWM0Bw?purpose=inline)
+
+**Ask page**
+
+There is too much unused space. The query input should be the centerpiece, with suggested questions, query history and a polished answer experience.
+
+[Managing Edge Configs with the Dashboard](https://images.openai.com/static-rsc-4/yK-RQB4pp4dOd6WZPY7b7h541Wp9VOcNRRlNxc0jRL1VAZ1qrqySJVcPyfmOBk61lTfIG5tg9JBVnJiKa0YzSwTVJAD0BNc3VNJrNJxrVQ1Hzc28z_3RVaBt-qzbIhO44q02kdaP3YkrWcS0Cby6WUhnGX6MoGroGmQdFJ2exI8?purpose=inline)
+
+**Knowledge base**
+
+The table is a reasonable starting point, but the typography, row spacing, document preview and filtering experience need refinement.
+
+[LLM Observability with LangSmith: Log Observations Beyond Just UI | by Shubham Shardul | Mar, 2026 | Medium](https://images.openai.com/static-rsc-4/1im4oV4AIApQC3o8M3bQYSBYUpSqtmW_c6yFVQw22kbthyhTMQRGoP7iEPkgQq1mameUkHaueZDIAqowD9Il-BqbRs72JepVswYyJzKcfSrLIyEuU4JuhRwr_XiPkZhiebNsZGHV-aZ4XAWU3u6yfO3IwtcJkWuIMd2j0iEWfoc?purpose=inline)
+
+**Retrieval inspector**
+
+This should be the flagship feature. Currently, the four columns of retrieved documents look cramped. The retrieval process needs an interactive architecture visualization.
 
 [Vercel Observability is now generally available - Vercel](https://images.openai.com/static-rsc-4/uCFDIjSy2XgL53rvlyjCAthS1QKBp6IrIF2yYW04iFojmgOyeFAlkLDC_dTMjzn0aStH0MdbgqLMjNEQrsc0zpDZhbfGh5x2umQ_aVeMLebCoJzQ8jfmA6piOHFkEDnnyjgxp1rp4qdbnR4D2AmFtR2fDDnfR_MgDWpYASI1k8o?purpose=inline)
 
-**Vercel**
+**Evaluation and system pages**
 
-Clean technical data presentation.
+Too many similar rectangular cards. Introduce meaningful visualizations, better metric hierarchy, service topology and structured performance analysis.
 
-[What&#39;s New in Raycast for Mac v2 | Raycast Manual](https://images.openai.com/static-rsc-4/g4aftA7KypuVXK9ngBdDUzv0xZM4_BS3g1rOhhmEAvXNudzmjYTJvdlxk0PZRFikxtfFYb2c9nFclPJ7oarL44JG_PLdXX_UwmlME4r6mPiuCb58F-0LOKcFHiT-HK8g_peJav5OjALEcm1WY27NnUagWDHAOxZmb-F9ebMlO2k?purpose=inline)
+## **2. What we should inherit from your portfolio**
 
-**Raycast**
+Not just the colors. The entire visual language.
 
-Search experience and polished interactions.
+| Element       | Direction                                                     |
+| ------------- | ------------------------------------------------------------- |
+| Typography    | Exact portfolio font families                                 |
+| Background    | Same portfolio canvas color                                   |
+| Accent        | Same restrained mint/green treatment, verified against source |
+| Headings      | Editorial typography with selective italic emphasis           |
+| Cards         | Subtle borders and surface separation                         |
+| Glassmorphism | Selective and purposeful                                      |
+| Icons         | Consistent Lucide icons                                       |
+| Animations    | Smooth, intentional micro-interactions                        |
+| Architecture  | Portfolio-style interactive system traces                     |
+| Data          | Monospace typography for technical values                     |
+| Spacing       | Generous but not wasteful                                     |
+| Branding      | Distinct product, consistent personal identity                |
 
-[Improved Overview Metrics · Resend](https://images.openai.com/static-rsc-4/tjRGVr3j6Adiw7-p0Asd7m1m8IunP0X10wlTjAPTnIEJDqjrKt2RPWwxVR-7oX8FuZSE0Oij_JF5cOcFYRWH1VRURGysIcoZcTvOT02ZXZMhwu7EkUBvTft8DZTqnLQNK-t3pE6uciewzeIYlYUcqXrlcULo66JqBFSF8013D9s?purpose=inline)
+### **Proposed visual direction**
 
-**Resend**
+## **Mnemora.**
 
-Developer-focused premium product design.
+Retrieval workspace
 
-Use these as quality references, but derive the actual design tokens from your portfolio rather than copying another product.
+01 / KNOWLEDGE INTELLIGENCE
 
-## **2. Shared design system for every project**
+# **Knowledge, *retrieved.***
 
-You could internally call it **HK Design System**.
+Explore your documents. Understand how answers are retrieved, ranked and grounded.
 
-Proposed dark palette — starting point, not extracted portfolio colors
-
-Canvas
-
-\#09090B
-
-Surface
-
-\#111113
-
-Elevated
-
-\#19191D
-
-Border
-
-\#29292E
-
-Muted
-
-\#A1A1AA
-
-Primary
-
-\#F4F4F5
-
-Typography direction
-
-# **Intelligence, engineered.**
-
-Purposeful interfaces for complex engineering systems.
-
-# **107 ms**
-
-&#x20;Operational
-
-| Design element | Standard                                           |
-| -------------- | -------------------------------------------------- |
-| Colors         | Portfolio-derived neutral palette                  |
-| Fonts          | Exact portfolio font families                      |
-| Accent         | One restrained brand accent                        |
-| Borders        | Subtle 1px borders                                 |
-| Corner radius  | Consistent 6–12px                                 |
-| Glassmorphism  | Selective, not everywhere                          |
-| Icons          | Lucide, consistent stroke widths                   |
-| Animation      | Purposeful 120–250ms transitions                  |
-| Charts         | Muted colors and minimal grid lines                |
-| Background     | Clean, no excessive decorative patterns            |
-| Layout         | Responsive, content-first                          |
-| Branding       | Individual project identity with shared visual DNA |
-
-## **3. How I would redesign Mnemora**
-
-Instead of making it look like a command center, make it feel like an actual **RAG engineering workspace**.
-
-**Mnemora**
-
-Workspace / Ask
-
-● Operational
-
-WORKSPACE
-
-&#x20;**Ask**
-
-Knowledge
-
-Retrieval
-
-Evaluation
-
-System
-
-Local environmentv1.6.0
-
-RETRIEVAL WORKSPACE
-
-# **Explore your knowledge.**
-
-Search, retrieve and inspect grounded answers.
-
-Ask a question about your documents...
+Ask anything about your knowledge base...
 
 Hybrid retrieval
 
+EXPLORE THE PIPELINE
+
 Documents
 
-## **12**
+# **12**
 
-Latency · p95
+Indexed chunks
 
-## **107 ms**
+# **423**
 
-Benchmark
+p95 latency
 
-## **60**
+# **107ms**
 
-**Retrieval pipeline**
+Illustrative design concept using values visible in your recording. The exact colors and fonts should come from your portfolio source.
 
-**Recent queries**
+## **3. Give this prompt to Codex**
 
-How does authentication work?
+Use Codex with high reasoning effort. Open the Mnemora and portfolio repositories in the same workspace if possible.
 
-Illustrative layout concept, not an implemented dashboard. Metric values are examples from the supplied interface.
+This time, we're explicitly restricting it to frontend development.
 
-The search functionality becomes the hero. Everything else supports it rather than competing for attention.
+# Mnemora — Final Premium UI/UX Refactor
 
-I'd also redesign the retrieval inspector, which is arguably the most technically interesting part of Mnemora. It should showcase BM25, vector search, reciprocal rank fusion and cross-encoder reranking through clear, inspectable execution stages.
+Act as a principal product designer, senior frontend engineer, design systems architect and UX specialist.
 
-## **4. Give this prompt to Codex**
+## Primary objective
 
-I'd use **Codex** for this because this is a repository-wide design refactor, not just a visual makeover.
-
-Open both your portfolio and Mnemora repositories in the workspace so Codex can extract the actual design system.
-
-# Mnemora — Complete UI/UX Refactor & Shared Portfolio Design System
-
-Act as a senior product designer, design systems architect, and frontend engineer.
-
-## Objective
-
-Completely refactor the Mnemora frontend to establish a premium, mature, engineering-focused product identity consistent with my personal portfolio:
+Completely refine the Mnemora frontend to match the visual identity of my personal portfolio:
 
 [https://www.harshakurtkoti.in](https://www.harshakurtkoti.in)
 
-The existing dashboard looks heavily AI-generated and vibe-coded. I do not want a generic futuristic AI dashboard, cyberpunk interface, or template-based SaaS design.
+The current frontend is an improvement over the previous cyberpunk design, but it still looks generic, excessively template-driven and AI-generated.
 
-The long-term objective is to establish a reusable design system that I can apply across all my personal engineering projects.
+I want a deliberate, recognizable, premium engineering product.
 
-## Phase 1 — Research and design audit
+**This phase is strictly frontend and UI/UX. Backend development will be handled separately after the frontend is finalized.**
 
-Use parallel subagents where supported.
+## 1. Non-negotiable scope restrictions
 
-- Agent 1: Inspect the portfolio website and its source repository. Extract the actual typography, colors, design tokens, surfaces, spacing, visual hierarchy, animation patterns, borders and interaction behavior.
-- Agent 2: Audit every Mnemora page, component, layout, stylesheet and existing frontend behavior.
-- Agent 3: Study mature developer-focused product interfaces such as Linear, Vercel, Raycast and Resend. Identify relevant design principles without directly cloning their interfaces.
-- Agent 4: Audit accessibility, responsive design, rendering performance and UX motion.
+- Do not modify backend code.
+- Do not modify database schemas.
+- Do not modify retrieval algorithms.
+- Do not change API contracts.
+- Do not change authentication logic.
+- Do not modify backend infrastructure or deployment configuration.
+- Do not introduce new backend dependencies.
+- Preserve every existing functional frontend integration.
+- Do not silently hide existing API errors.
+- Do not fabricate metrics or pretend that disconnected services are operational.
 
-Consolidate the findings before implementation.
+If functionality is unavailable because of a backend issue, implement an appropriate frontend error, loading or unavailable state and document the backend issue separately.
 
-Do not assume the portfolio's design tokens. Extract them directly from its source code.
+## 2. Portfolio design system extraction
 
-## Phase 2 — Create a reusable design system
+Inspect the live portfolio and its source repository.
 
-Establish a shared design foundation that can later be reused across Mnemora, RAG Observability, VisionBoard and my other projects.
+Extract the actual:
 
-Create centralized, reusable definitions for:
+- CSS variables
+- Tailwind design configuration
+- Font families and font weights
+- Background colors
+- Surface colors
+- Primary and secondary text colors
+- Accent colors
+- Border treatments
+- Button styles
+- Spacing conventions
+- Heading treatments
+- Glassmorphism patterns
+- Motion curves and durations
+- Architecture visualization patterns
+- Responsive behavior
 
-- Semantic color tokens
-- Background and surface hierarchy
-- Typography and font families
-- Spacing scale
-- Border colors and radius
-- Shadows
-- Icon sizes and stroke widths
-- Motion duration and easing
-- Chart palettes
-- Focus and interaction states
-- Responsive breakpoints
+Do not approximate the portfolio's design if its source is available.
+
+Create a centralized, portable design system that can later be adopted by my other personal projects.
+
+The portfolio is the primary design authority.
+
+Linear, Vercel, Raycast and LangSmith may be used as interaction-quality references, but do not clone their visual identities.
+
+## 3. Use parallel subagents where available
+
+Assign independent responsibilities:
+
+- Design system agent: Extract and document the portfolio's design language.
+- UI audit agent: Inspect all Mnemora routes and components.
+- Product design agent: Redesign page layouts and information hierarchy.
+- Motion agent: Apply the existing UX motion skill and improve interactions.
+- Accessibility agent: Audit typography, contrast, keyboard accessibility and responsive behavior.
+- QA agent: Validate the completed frontend through actual browser testing.
+
+Coordinate shared component ownership to prevent conflicting edits.
+
+## 4. Global application shell
+
+Redesign the complete application shell.
+
+Requirements:
+
+- Compact, elegant navigation sidebar.
+- Collapsible navigation where appropriate.
+- Clear branding and product identity.
+- Readable navigation labels.
+- Subtle active states.
+- Consistent page headers and breadcrumbs.
+- Well-designed environment indicators.
+- Global command palette using existing frontend functionality.
+- Consistent tooltips, dropdowns and popovers.
+- Proper mobile navigation.
+- No unnecessary empty space.
+- No excessive borders.
+- No decorative glow effects.
+
+The interface should feel like a professional developer tool, not an admin dashboard template.
+
+## 5. Ask page
+
+Completely redesign the user journey.
+
+Before a query:
+
+- Strong editorial heading consistent with the portfolio.
+- Prominent question composer.
+- Suggested questions based on available knowledge.
+- Retrieval configuration controls.
+- Recent query history.
+- Compact knowledge statistics.
+- An interactive explanation of the retrieval pipeline.
+
+After a query:
+
+- Clearly structured answer.
+- Readable Markdown rendering.
+- Citation indicators.
+- Expandable source passages.
+- Source document information.
+- Retrieval trace access.
+- Execution duration where available.
+- Retry and copy actions.
+- Clear loading and error states.
+- Follow-up questions where supported.
+
+Avoid displaying a raw red error banner followed by an entirely empty page.
+
+For failed requests, present a polished error state with an explanation, retry action and expandable technical details.
+
+Preserve the existing API behavior.
+
+## 6. Knowledge base
+
+Create a professional document-management interface.
+
+Improve:
+
+- Document table typography.
+- Column alignment and row spacing.
+- Search and filtering.
+- Sorting.
+- File type indicators.
+- Document status.
+- Upload dialog.
+- Drag-and-drop interaction where already supported.
+- Indexing progress.
+- Document preview.
+- Metadata inspection.
+- Empty states.
+- Error states.
+
+Replace raw JSON-first document previews with a human-readable metadata presentation and an optional expandable raw JSON inspector.
+
+Use existing document data only.
+
+## 7. Retrieval inspector — flagship feature
+
+This is the most important technical showcase.
+
+Use the Systems in Motion section of my portfolio as the design reference.
+
+Create an interactive retrieval pipeline visualization:
+
+Query input → Query processing → Dense and sparse retrieval in parallel → Reciprocal Rank Fusion → Cross-encoder reranking → Final selected context.
+
+Use actual pipeline behavior from the existing implementation.
+
+Requirements:
+
+- Clearly connected architecture nodes.
+- Meaningful stage selection.
+- Stage descriptions.
+- Execution durations where available.
+- Candidate counts.
+- Document ranking.
+- Retrieval scores.
+- Ranking changes.
+- Selected context.
+- Expandable document passages.
+- Clear distinction between execution stages.
+
+Do not simply present four cramped columns of cards.
+
+Use an architecture overview followed by a detailed stage inspection workspace.
+
+Consider an adjustable split-pane layout, with results on one side and selected document details on the other.
+
+Animations should communicate actual execution progress. If the backend does not expose live stage events, present the available completed trace or explicitly label any educational animation as illustrative.
+
+## 8. Evaluation page
+
+Transform this into a professional RAG evaluation workbench.
+
+Improve:
+
+- Metric hierarchy.
+- Benchmark summaries.
+- Retrieval strategy comparison charts.
+- Recall metrics.
+- Precision metrics where available.
+- Mean reciprocal rank.
+- Hit rate.
+- RAGAS quality metrics.
+- Latency distributions where available.
+- Individual benchmark question results.
+- Comparison tables.
+- Evaluation status.
+- Metric explanations through tooltips.
+
+Use consistent chart styles derived from the portfolio.
+
+Avoid unnecessary gradients, oversized KPI cards and excessive chart grid lines.
+
+Never invent missing evaluation data.
+
+## 9. System page
+
+Redesign this as an engineering observability workspace.
+
+Include existing available information for:
+
+- Service health.
+- Dependency topology.
+- Runtime configuration.
+- API server.
+- Vector store.
+- BM25 index.
+- Embedding provider.
+- Reranking service.
+- LLM provider.
+- Database.
+- Uptime.
+- Pipeline configuration.
+
+Visualize service relationships instead of displaying every service as an isolated card.
+
+Use the same architecture visualization language as the portfolio.
+
+Distinguish between healthy, degraded, disconnected, unavailable, unconfigured and unknown states.
+
+## 10. Visual quality requirements
+
+Remove generic AI-generated UI patterns, including:
+
+- Excessive uppercase micro-labels.
+- Tiny and difficult-to-read text.
+- Repeated identical cards.
+- Unnecessary card nesting.
+- Excessively dark low-contrast surfaces.
+- Random gradients.
+- Neon glows.
+- Excessive green tinting.
+- Large unused areas.
+- Excessively dense technical panels.
+- Decorative icons without purpose.
+- Unnecessary rounded pills.
+- Inconsistent spacing.
+- Generic dashboard compositions.
+
+Prioritize editorial typography, intentional whitespace, subtle surface hierarchy, strong alignment and polished interaction design.
+
+The product should feel premium even without animations.
+
+## 11. Motion and interaction
+
+Read and apply my existing ux-motion SKILL.md if available.
+
+Implement purposeful:
+
+- Hover transitions.
+- Button press feedback.
+- Sidebar transitions.
+- Modal transitions.
+- Expandable inspector panels.
+- Tab transitions.
+- Loading skeletons.
+- Toast notifications.
+- Architecture execution transitions.
+- Chart interactions.
+- Keyboard focus states.
+
+Respect prefers-reduced-motion.
+
+Avoid constant decorative animation.
+
+## 12. Reusable frontend foundation
+
+Create or consolidate reusable components for:
+
+- Application shell
+- Page headers
+- Buttons
+- Inputs
+- Search composers
+- Data tables
+- Metric displays
 - Status indicators
-- Loading, empty, error and success states
+- Architecture diagrams
+- Charts
+- Dialogs
+- Inspectors
+- Empty states
+- Error states
+- Loading skeletons
+- Tooltips
+- Tabs
+- Toasts
 
-Use CSS variables and integrate them with the existing Tailwind configuration where applicable.
+Centralize all design tokens.
 
-Create reusable UI primitives rather than duplicating styles across pages.
+Document the reusable foundation in docs/DESIGN_SYSTEM.md.
 
-Document the design system in `docs/DESIGN_SYSTEM.md`.
+Make it straightforward to adopt this same visual system in RAG Observability, VisionBoard and my future applications.
 
-Keep the shared design foundation portable across repositories.
+Do not introduce an external package or monorepo migration in this phase unless essential.
 
-## Phase 3 — Remove the AI-generated aesthetic
+## 13. Browser validation
 
-Remove or substantially redesign:
+Do not consider the task complete simply because the build succeeds.
 
-- Neon cyan glows
-- Cyberpunk gradients
-- Purple ambient lighting
-- Decorative geometric backgrounds
-- Excessive glassmorphism
-- Glowing uptime rings
-- Futuristic command-center branding
-- Excessive uppercase labels
-- Unnecessary status badges
-- Overly large sidebars
-- Excessive card nesting
-- Decorative animations
-- Large empty dashboard panels
-- Inconsistent italic heading treatments
+Open the actual application using Playwright or equivalent browser tooling.
 
-Glassmorphism may be used selectively where it serves a functional purpose and matches the portfolio.
+Inspect all five primary pages:
 
-The product should feel deliberately designed by a professional product team.
+1. Ask
+2. Knowledge
+3. Retrieval
+4. Evaluation
+5. System
 
-## Phase 4 — Redesign every page
-
-### Application shell
-
-Build a compact, responsive navigation system with consistent page headings, breadcrumbs where useful, keyboard accessibility and subtle active states.
-
-Retain Mnemora's individual product identity while matching the broader portfolio design language.
-
-### Ask
-
-Make the question composer the primary focus.
-
-Implement a polished search and conversational answer experience, including:
-
-- Retrieval configuration
-- Grounded answers
-- Inline citations
-- Expandable source passages
-- Retrieval latency
-- Relevant query history
-- Useful suggested questions
-- Keyboard shortcuts
-- Streaming states where supported by the existing backend
-
-Do not overwhelm the user with operational metrics before they ask a question.
-
-### Knowledge
-
-Create a professional document management workspace.
-
-Use clean tables, document previews, search, filters, upload states, indexing progress and actionable error states.
-
-### Retrieval
-
-Make this the flagship technical experience.
-
-Present the retrieval pipeline through inspectable execution stages:
-
-1. Query processing
-2. Dense vector retrieval
-3. Sparse BM25 retrieval
-4. Reciprocal rank fusion
-5. Cross-encoder reranking
-6. Context selection
-
-Allow inspection of retrieved passages, scores, ranking changes, document metadata and stage latency wherever supported by existing APIs.
-
-Use meaningful data visualization instead of decorative cards.
-
-### Evaluation
-
-Create a mature benchmark analysis interface with:
-
-- Recall\@K
-- Precision\@K
-- MRR
-- Hit rate
-- Latency percentiles
-- Retrieval strategy comparisons
-- Evaluation history
-- Individual question results
-- Regression indicators
-
-Only display metrics supported by actual data. Do not fabricate values.
-
-### System
-
-Create an infrastructure observability workspace with:
-
-- Service health
-- Dependency topology
-- Runtime configuration
-- Database and vector-store status
-- Pipeline stages
-- Actual uptime where available
-- Health-check results
-
-Clearly distinguish healthy, degraded, unavailable, unconfigured and unknown states.
-
-## Phase 5 — Motion and interaction design
-
-Apply the existing UX motion skill if available.
-
-Use purposeful transitions, progressive disclosure, consistent interaction feedback, restrained hover states and reduced-motion support.
-
-Animations should communicate state changes rather than merely decorate the interface.
-
-Avoid continuous decorative motion, unnecessary entrance animations and glowing effects.
-
-## Phase 6 — Engineering requirements
-
-- Preserve all existing backend integrations.
-- Preserve API contracts and application functionality.
-- Do not replace real data with mock data.
-- Do not introduce unnecessary dependencies.
-- Preserve existing routes unless a change is essential and documented.
-- Keep components modular and maintainable.
-- Ensure appropriate contrast and keyboard navigation.
-- Handle loading, empty, disconnected and error states.
-- Support desktop, tablet and mobile layouts.
-- Avoid layout shifts and unnecessary client-side rendering.
-- Never expose environment secrets or backend credentials.
-
-Investigate existing inconsistencies such as document counts, zero-valued metrics and operational status indicators. Do not report healthy status when health data is unavailable.
-
-## Phase 7 — Validation
-
-Use Playwright or an equivalent browser-testing tool to inspect every page.
-
-Validate at viewport widths of 1920, 1440, 1280, 768 and 390 pixels.
+Test at 1920, 1440, 1280, 768 and 390 pixels.
 
 Capture before-and-after screenshots.
 
-Run lint, type checking, production builds and existing tests.
+Test normal, loading, error, empty and disconnected states.
 
-Use a final design-review subagent to identify remaining generic AI-generated visual patterns, inconsistent spacing, weak hierarchy and accessibility issues.
+Perform a second visual refinement pass after reviewing the screenshots.
 
-Fix identified issues before completing the task.
+Check for:
 
-## Deliverables
+- Readability.
+- Contrast.
+- Alignment.
+- Spacing.
+- Overflow.
+- Layout shifts.
+- Consistent typography.
+- Keyboard accessibility.
+- Mobile responsiveness.
+- Broken frontend interactions.
 
-1. Fully refactored Mnemora frontend.
-2. Centralized reusable design tokens.
-3. Reusable UI component primitives.
-4. Documented shared design system.
-5. Before-and-after screenshots.
-6. Testing and validation report.
-7. List of modified files.
-8. Instructions for adopting the same design system in my other projects.
+Run lint, type checking and production build validation.
 
-Work on a dedicated branch named `refactor/portfolio-design-system`.
+## 14. Final deliverables
+
+Provide:
+
+- Fully refined frontend.
+- Before-and-after screenshots of all five pages.
+- Shared design tokens.
+- Reusable component foundation.
+- Design system documentation.
+- Frontend validation report.
+- List of changed files.
+- Separate backend issue backlog for the next development phase.
+- Confirmation that backend code and API contracts remain unchanged.
+
+Work on the existing UI refactor branch if appropriate. Otherwise create a dedicated frontend refactor branch.
 
 Do not merge automatically.
 
-The final product must look like a mature engineering application belonging to the same visual ecosystem as my portfolio — not a generic AI-generated dashboard.
+The final result should look like Mnemora was deliberately designed as part of the harshakurtkoti.in engineering ecosystem.
 
-Do not stop after changing colors and fonts. Reconsider the entire visual hierarchy, information architecture, page layouts and interaction experience.
+Do not stop at a theme change. Redesign the actual experience.
 
-## **5. Eventually, create a shared UI repository**
+## **4. Order of development**
 
-Since you have multiple engineering projects, I would structure your ecosystem like this:
+**Phase 1 — UI/UX**
 
-A dedicated repository, `hk-design-system`, could eventually expose packages such as:
+Current focus
 
-```
-hk-design-system/
-├── packages/
-│   ├── tokens/
-│   ├── ui/
-│   ├── motion/
-│   ├── charts/
-│   └── icons/
-├── docs/
-├── examples/
-└── README.md
-```
+Design system, layouts, components, interactions and responsiveness.
 
-Then every new project starts with your established design language instead of asking an AI to invent a new interface from scratch.
+**Phase 2 — Backend**
 
-## **My rating**
+Failed API requests, retrieval execution, indexing, database and actual evaluation metrics.
 
-Current visual aesthetics
+**Phase 3 — Production readiness**
 
-**4.5/10**
+Testing, performance, security, deployment and observability.
 
-Visual hierarchy
+**Phase 4 — Portfolio ecosystem**
+
+Adopt the finalized design system across your other engineering projects.
+
+## **5. My current rating**
+
+Original neon UI
 
 **4/10**
 
-Technical feature presentation
+Current redesigned UI
 
 **6.5/10**
 
-Brand consistency
+Target design quality
 
-**3/10**
+**9.5/10**
 
-Professional product appearance
+I also noticed the **Failed to fetch** error on the Ask page in your recording. Leave the underlying backend issue for phase two, but make sure the frontend handles it gracefully.
 
-**4.5/10**
+I reviewed the recording and live portfolio content, not the complete frontend source or rendered portfolio CSS. No repository changes have been made here; the prompt is designed to have Codex perform those changes and verify the exact design tokens.
 
-These are subjective visual ratings based on your screenshot and recording. I could access the live portfolio's content, but haven't verified its rendered CSS or exact design tokens, which is why the prompt explicitly requires Codex to extract those from the source.
+Most importantly, don't settle for another recoloring exercise. I want Mnemora to be something a recruiter can open, explore for five minutes, and understand both your engineering capabilities and your attention to product quality.
 
-Your backend engineering is the selling point. The frontend should communicate its sophistication, not distract from it.
+```
 
-And rather than having five unrelated-looking projects, I really like the idea of someone opening any of your applications and immediately recognizing that it belongs to your engineering ecosystem. That is a much stronger personal brand.
+```

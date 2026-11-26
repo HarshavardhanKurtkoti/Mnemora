@@ -383,6 +383,45 @@ The previous UI exhibited common AI-generated tropes (over-saturated cyan accent
 
 Requires complete redesign of the 5 application pages and shell components while rigorously maintaining all existing FastAPI API contracts, telemetry streaming, and real data bindings.
 
+## Decision: Deep Product Experience Redesign & Interactive Architecture Showcase
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+Rather than stopping at color and token swapping ("recoloring"), we execute a deep UX redesign of the 5 core application flows:
+1. **Application Shell & Sidebar**: Proportional navigation text, clear active indicators, prominent `Mnemora.` brand hierarchy, quick status readout, and a global Command Palette (`Cmd+K`).
+2. **Ask Page**: Centerpiece query composer with keyboard shortcuts, rich suggested prompts, interactive pipeline walkthrough, compact metric tiles (12 docs, 423 chunks, 107ms latency), and graceful error states with interactive demo recovery (eliminating raw red error screens when FastAPI backend is disconnected).
+3. **Knowledge Base**: Clean data table with improved typography, row rhythm, filter controls, and a human-readable metadata drawer (replacing raw JSON-first previews) with optional expandable JSON inspect.
+4. **Retrieval Inspector**: Flagship interactive Systems-in-Motion architecture graph (Query → Dense/Sparse → RRF → Cross-Encoder → Context) with clickable stage execution nodes, candidate count & latency tracking, and a split-pane inspector with rank shift metrics (`+2`, `-1`).
+5. **Observability (System & Evaluation)**: Interactive service dependency topology diagram with health pulses, clear metric hierarchy with tooltips, and benchmark comparisons.
+
+### Reason
+
+Direct feedback in PRD emphasizes that recruiters and engineers should immediately understand both the technical engineering depth and the product design craft. Moving beyond a skin/theme change creates a truly premium developer tool experience.
+
+### Consequences
+
+Strictly frontend-only: No changes to backend code, database schemas, or API contracts. All existing integrations and types are preserved.
+
+## Decision: Dual PostgreSQL Driver Support (`psycopg` v3 & `psycopg2`)
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We added `psycopg[binary]>=3.1.18` to `requirements.txt` alongside `psycopg2-binary>=2.9.9` and added automated `postgres://` to `postgresql://` URI normalization in `src/config/database.py`.
+
+### Reason
+
+In Python 3.12 container and deployment environments (e.g. Docker, Render, Supabase), SQLAlchemy 2.0 defaults to or invokes the `psycopg` (v3) dialect (`sqlalchemy.dialects.postgresql.psycopg`) when connecting to PostgreSQL databases. Without `psycopg` installed, server startup fails with `ModuleNotFoundError: No module named 'psycopg'`. Providing `psycopg[binary]` guarantees zero-dependency binary wheel execution for both modern `postgresql+psycopg://` and traditional `postgresql://` configurations.
+
+### Consequences
+
+Seamless compatibility across local SQLite, containerized PostgreSQL (`docker-compose.yml`), and cloud production databases (Render, Supabase) without requiring external system compilation libraries.
+
 
 
 

@@ -98,6 +98,21 @@ A unified, developer-focused design system derived directly from [harshakurtkoti
 - Focus ring with subtle mint glow (`focus-within:border-accent/50`)
 - Trailing shortcut indicator (`Cmd+K` / `Enter`)
 
+### 5. Interactive Pipeline Visualizer (Systems in Motion)
+- Architectural node strip connecting `Query Input` → `Dense Vector & Sparse BM25` → `Rank Fusion` → `Cross-Encoder Reranker` → `Grounded Context`
+- Clickable stage selection updating candidate lists and deep chunk views
+- Active latency indicators (`vector_ms`, `bm25_ms`, `rrf_ms`, `reranker_ms`, `total_ms`)
+- Real candidate ranking shift signals (`+2`, `-1`, `=`)
+
+### 6. Graceful Degradation & Demonstration Recovery
+- When local or cloud API endpoints are unreachable (`TypeError: Failed to fetch`), avoid blank screens or raw red error bars
+- Render an engineering-grade alert with exception details, retry action, and an interactive demonstration answer state so reviewers can fully evaluate the UX even when disconnected
+
+### 7. Global Command Palette (`⌘K`)
+- Omnipresent keyboard-accessible overlay (`Ctrl+K` / `Cmd+K`)
+- Instant page navigation (`⌘1`–`⌘5`)
+- Pre-configured technical inquiries and deep links into retrieval traces
+
 ---
 
 ## 5. Adoption Guide for Other Projects (e.g. `prod_rag_monitoring`, `VisionBoard`)
