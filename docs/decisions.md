@@ -422,6 +422,23 @@ In Python 3.12 container and deployment environments (e.g. Docker, Render, Supab
 
 Seamless compatibility across local SQLite, containerized PostgreSQL (`docker-compose.yml`), and cloud production databases (Render, Supabase) without requiring external system compilation libraries.
 
+## Decision: CI Pull Request Permission for `dorny/paths-filter`
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We explicitly configured `pull-requests: read` and `contents: read` permissions at both the workflow and `detect-changes` job levels in `.github/workflows/ci.yml`, and passed `token: ${{ secrets.GITHUB_TOKEN }}` to `dorny/paths-filter@v3`.
+
+### Reason
+
+In repositories with default restricted `GITHUB_TOKEN` permissions, the GitHub API endpoint for listing pull request changed files (`GET /repos/{owner}/{repo}/pulls/{number}/files`) returns `403 Forbidden` (`Error: Resource not accessible by integration`). Explicitly declaring `pull-requests: read` grants the required read access to query pull request metadata.
+
+### Consequences
+
+PR-triggered CI pipeline runs can query changed files accurately, preventing false integration permission failures on pull requests.
+
 
 
 

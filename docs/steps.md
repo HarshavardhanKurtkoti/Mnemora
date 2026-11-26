@@ -57,6 +57,7 @@ COMPLETE
 - [x] Phase 1.8: Verified Next.js production build (`pnpm build`) with zero errors across all 9 static routes
 - [x] Phase 1.8: Verified backend pytest suite with 15/15 tests passing
 - [x] Add `psycopg[binary]>=3.1.18` and PostgreSQL URI normalization in `src/config/database.py` to fix `ModuleNotFoundError: No module named 'psycopg'` in Docker container runtime
+- [x] Configure `pull-requests: read` permission in `.github/workflows/ci.yml` to resolve `Error: Resource not accessible by integration` in `dorny/paths-filter@v3` on pull requests
 
 ## In Progress
 
