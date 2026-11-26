@@ -21,6 +21,7 @@ class TelemetryDispatcher:
         ).rstrip("/")
         self.timeout = timeout
         self.enabled = os.getenv("ENABLE_MONITORING_TELEMETRY", "true").lower() in ["true", "1", "yes"]
+        self.grafana_telemetry_url = os.getenv("GRAFANA_TELEMETRY_URL")
 
     def emit_query_telemetry(
         self,
@@ -52,18 +53,46 @@ class TelemetryDispatcher:
             "environment": os.getenv("APP_ENV", "Production")
         }
 
+        success = False
         try:
             res = requests.post(endpoint, json=payload, timeout=self.timeout)
             if res.status_code == 200:
                 logger.debug(f"Telemetry successfully dispatched to {endpoint}")
-                return True
+                success = True
             else:
                 logger.warning(f"Telemetry ingestion returned status {res.status_code}: {res.text}")
-                return False
         except Exception as ex:
             # Non-blocking soft warning to protect production reliability
             logger.debug(f"Telemetry dispatch to {endpoint} skipped/failed: {ex}")
-            return False
+
+        # Dispatch live trace to Master Grafana Prometheus Collector if configured
+        if self.grafana_telemetry_url:
+            grafana_payload = {
+                "type": "query",
+                "data": {
+                    "sessionId": session_id,
+                    "model": model or os.getenv("LLM_MODEL_NAME", "openai/gpt-oss-120b"),
+                    "retrievalMs": performance.get("retrieval_ms") if isinstance(performance, dict) else None,
+                    "generationMs": performance.get("generation_ms") if isinstance(performance, dict) else None,
+                    "totalMs": performance.get("total_ms") if isinstance(performance, dict) else None,
+                    "vectorMs": retrieval.get("vector_ms") if isinstance(retrieval, dict) else None,
+                    "bm25Ms": retrieval.get("bm25_ms") if isinstance(retrieval, dict) else None,
+                    "rrfMs": retrieval.get("rrf_ms") if isinstance(retrieval, dict) else None,
+                    "rerankerMs": retrieval.get("reranker_ms") if isinstance(retrieval, dict) else None,
+                    "citationsCount": len(citations) if isinstance(citations, list) else 0,
+                    "validCitationsCount": len(citations) if isinstance(citations, list) else 0,
+                    "promptTokens": performance.get("prompt_tokens", 0) if isinstance(performance, dict) else 0,
+                    "completionTokens": performance.get("completion_tokens", 0) if isinstance(performance, dict) else 0,
+                    "status": "success"
+                }
+            }
+            try:
+                requests.post(grafana_endpoint, json=grafana_payload, timeout=self.timeout)
+                logger.debug(f"Grafana telemetry dispatched to {grafana_endpoint}")
+            except Exception as ex:
+                logger.debug(f"Grafana telemetry dispatch skipped/failed: {ex}")
+
+        return success
 
 
 # Global singleton dispatcher

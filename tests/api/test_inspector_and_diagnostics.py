@@ -33,3 +33,11 @@ def test_retrieval_inspect_endpoint():
     assert "bm25" in res["strategies"]
     assert "hybrid" in res["strategies"]
     assert "reranked" in res["strategies"]
+
+def test_prometheus_metrics_endpoint():
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "text/plain" in response.headers["content-type"]
+    text = response.text
+    assert "mnemora_api_status 1" in text
+    assert "mnemora_service_info" in text

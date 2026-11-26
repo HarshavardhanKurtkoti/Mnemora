@@ -531,6 +531,36 @@ Status: Accepted
 
 Neon projects default to creating a database named `neondb` upon project initialization. For isolation, clean namespace segregation, and operational clarity across multiple microservices or projects, application tables should reside in an explicit project database (`mnemora`).
 
+## Decision: Production Grafana AI Observability & Prometheus Metrics Architecture
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We integrated Mnemora with the central monitoring platform (`master-grafana` hosted at `https://grafana.harshakurtkoti.in`):
+1. **Dedicated AI Observability Dashboard**: Designed and deployed the Grafana dashboard `Mnemora — AI Observability & RAG Intelligence Platform` (UID `mnemora-observability`) with 30 production-grade panels organized into 6 operational tiers:
+   - **Live Pulse & Executive KPIs**: Active sessions, cumulative RAG queries, total chunks indexed, P95 query latency, grounded citation validity ratio, and engine uptime.
+   - **Throughput & Latency Profile**: Live query execution rate (QPS), average vs P95 latency timeseries.
+   - **Multi-Stage Retrieval Engine Telemetry**: Dense Vector search, sparse BM25 search, hybrid RRF fusion, and cross-encoder reranking latency breakdowns alongside pipeline candidate retention funnels.
+   - **LLM Inference, Model Routing & Token Economics**: Query distribution by model (`openai/gpt-oss-120b`, `openai/gpt-oss-20b`), generation vs reranker latency, and input/output token accounting.
+   - **Ragas Quality & Faithfulness Benchmarks**: Faithfulness, Answer Relevancy, Context Precision, Context Recall, and Citation Validity gauges.
+   - **System Infrastructure & Database Topology**: Health status indicators for Neon PostgreSQL, Qdrant Cloud cluster, BM25 Keyword Search, Cross-Encoder, and Groq LLM API.
+2. **Dashboard Provisioning**:
+   - Saved provisioning JSON to `master-grafana/grafana/provisioning/dashboards/json/mnemora-observability.json`.
+   - Saved project copies to `Mnemora/dashboards/mnemora-observability.json` and `Mnemora/docs/grafana-dashboard.json`.
+   - Uploaded directly to live Grafana (`POST /api/dashboards/db`) in the `Monitoring` folder.
+3. **Telemetry Collector & Scraping**:
+   - Extended `master-grafana/grafana/collector/mnemora-store.mjs` and `server.mjs` to expose `/mnemora-telemetry/metrics` and accept live trace events via `/mnemora-telemetry/events`.
+   - Configured `master-grafana/prometheus/prometheus.yml` with scrape job `mnemora_rag` targeting `/mnemora-telemetry/metrics`.
+   - Exposed native `/metrics` endpoint on Mnemora's FastAPI backend (`src/main.py`) for direct Prometheus scraping.
+   - Connected `TelemetryDispatcher` (`src/observability/telemetry.py`) with `GRAFANA_TELEMETRY_URL` support for non-blocking live query trace streaming.
+
+### Reason
+
+Aligns Mnemora with the existing observability architecture used by Harsha Kurtkoti's portfolio website (`portfolio-analytics`), providing full end-to-end transparency into hybrid retrieval performance, model token consumption, groundedness ratios, and database cluster health.
+
+
 
 
 

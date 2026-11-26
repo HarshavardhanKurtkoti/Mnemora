@@ -53,6 +53,25 @@ def health_check():
     from src.api.utils.response import success_response
     return success_response({"status": "healthy"})
 
+@app.get("/metrics")
+def prometheus_metrics():
+    """
+    Exposes Prometheus-formatted metrics directly from FastAPI backend
+    for scraping by Prometheus or Grafana Agent.
+    """
+    from fastapi.responses import PlainTextResponse
+    import time
+
+    lines = [
+        "# HELP mnemora_api_status Operational status of FastAPI backend (1=healthy)",
+        "# TYPE mnemora_api_status gauge",
+        "mnemora_api_status 1",
+        "# HELP mnemora_service_info System metadata",
+        "# TYPE mnemora_service_info gauge",
+        f'mnemora_service_info{{version="1.0.0",app="{settings.APP_NAME}"}} 1',
+    ]
+    return PlainTextResponse(content="\n".join(lines) + "\n", media_type="text/plain; version=0.0.4; charset=utf-8")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

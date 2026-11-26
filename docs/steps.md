@@ -67,6 +67,12 @@ COMPLETE
 - [x] Prove end-to-end functionality on Neon `mnemora` database: verified `npm run build` (9/9 routes), seeded database records via `populate_db.py`, and verified all 15 pytests passing against Neon
 - [x] Add scheme normalization in `frontend/src/lib/api.ts` to automatically prepend `https://` when `NEXT_PUBLIC_API_URL` is set without protocol scheme, preventing relative URL resolution on Vercel
 - [x] Remove `deploy-vercel` job from `.github/workflows/ci.yml` to rely on Vercel's native Git repository auto-deployment on push to `main`, eliminating expired CLI token failures
+- [x] Configure Grafana Service Account & API credentials for automated dashboard provisioning on `https://grafana.harshakurtkoti.in`
+- [x] Build 30-panel production Grafana AI Observability dashboard for Mnemora covering executive KPIs, hybrid retrieval latency, candidate funnels, token accounting, Ragas benchmarks, and infrastructure topology
+- [x] Provision dashboard in `master-grafana` (`grafana/provisioning/dashboards/json/mnemora-observability.json`) and export into `Mnemora/dashboards/mnemora-observability.json` and `Mnemora/docs/grafana-dashboard.json`
+- [x] Deploy dashboard to live Grafana (`https://grafana.harshakurtkoti.in`) in folder `Monitoring` (UID `mnemora-observability`)
+- [x] Extend `master-grafana` telemetry collector (`mnemora-store.mjs`, `server.mjs`, `nginx.conf`) and Prometheus config (`prometheus.yml`) with `mnemora_rag` scrape job
+- [x] Expose native `/metrics` Prometheus endpoint in FastAPI backend (`src/main.py`) and wire `GRAFANA_TELEMETRY_URL` into `src/observability/telemetry.py`
 
 ## In Progress
 
@@ -80,11 +86,11 @@ None
 
 ## Current Task
 
-Phase 1.8 completed: The Mnemora frontend has been thoroughly redesigned beyond color swapping into an authentic, interactive, portfolio-grade engineering workspace.
+Completed Grafana AI Observability dashboard provisioning and telemetry integration for Mnemora across live Grafana (`https://grafana.harshakurtkoti.in`), `master-grafana`, and `Mnemora`.
 
 ## Next Step
 
-Submit branch `refactor/portfolio-design-system` for review and adopt the same design tokens in `prod_rag_monitoring` and `VisionBoard`.
+Deploy updated `master-grafana` container to Render so the embedded Prometheus and telemetry collector scrape `/mnemora-telemetry/metrics` continuously in production.
 
 ## Blockers
 
