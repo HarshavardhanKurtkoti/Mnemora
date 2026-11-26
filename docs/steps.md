@@ -65,6 +65,7 @@ COMPLETE
 - [x] Install Neon CLI, link project `quiet-wave-46556808` (`production` branch) via `neon.ts`, deploy Neon PostgreSQL with `neon deploy`, and wire connection into FastAPI backend
 - [x] Create dedicated database `mnemora` on Neon PostgreSQL and migrate application schemas from default `neondb`
 - [x] Prove end-to-end functionality on Neon `mnemora` database: verified `npm run build` (9/9 routes), seeded database records via `populate_db.py`, and verified all 15 pytests passing against Neon
+- [x] Add scheme normalization in `frontend/src/lib/api.ts` to automatically prepend `https://` when `NEXT_PUBLIC_API_URL` is set without protocol scheme, preventing relative URL resolution on Vercel
 
 ## In Progress
 

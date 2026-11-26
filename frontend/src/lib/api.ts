@@ -4,7 +4,14 @@ function getApiBaseUrl(): string {
   if (!envUrl) {
     return "http://localhost:8000/api/v1";
   }
-  const cleanUrl = envUrl.trim().replace(/\/+$/, "");
+  let cleanUrl = envUrl.trim().replace(/\/+$/, "");
+  
+  // Ensure protocol scheme is present; without http(s)://, browsers interpret the domain as a relative path
+  if (!/^https?:\/\//i.test(cleanUrl)) {
+    const isLocalhost = cleanUrl.startsWith("localhost") || cleanUrl.startsWith("127.0.0.1");
+    cleanUrl = `${isLocalhost ? "http" : "https"}://${cleanUrl}`;
+  }
+
   if (cleanUrl.endsWith("/api/v1")) {
     return cleanUrl;
   }
