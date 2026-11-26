@@ -102,29 +102,6 @@ jobs:
       run: |
         python eval/ragas_eval.py
 
-  deploy-render:
-    name: 🚀 Deploy Backend to Render
-    runs-on: ubuntu-latest
-    needs: [detect-changes, fast-checks, ragas-eval]
-    if: |
-      always() && 
-      github.ref == 'refs/heads/main' && 
-      (needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.backend_deps == 'true') &&
-      (needs.fast-checks.result == 'success' || needs.fast-checks.result == 'skipped') &&
-      (needs.ragas-eval.result == 'success' || needs.ragas-eval.result == 'skipped')
-    steps:
-    - name: Inspect Change Type
-      run: |
-        if [ "${{ needs.detect-changes.outputs.backend_deps }}" = "true" ]; then
-          echo "📦 Dependency / Dockerfile changes detected -> Full container rebuild triggered on Render."
-        else
-          echo "⚡ Backend application code changes detected -> Live service update triggered on Render."
-        fi
-
-    - name: Trigger Render Deploy Hook
-      run: |
-        curl -f -X GET "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-
   deploy-vercel:
     name: 🌐 Deploy Frontend to Vercel
     runs-on: ubuntu-latest

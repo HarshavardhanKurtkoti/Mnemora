@@ -439,6 +439,23 @@ In repositories with default restricted `GITHUB_TOKEN` permissions, the GitHub A
 
 PR-triggered CI pipeline runs can query changed files accurately, preventing false integration permission failures on pull requests.
 
+## Decision: Native Git-Push Deployment for Render Backend
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We removed the `deploy-render` curl deploy hook job from `.github/workflows/ci.yml`. Backend deployment to Render relies on native Git-push integration / Render dashboard triggers rather than invoking an external deploy hook during CI runs.
+
+### Reason
+
+Render's free tier deploy hooks trigger an unauthenticated background git clone (`https://github.com/HarshavardhanKurtkoti/Mnemora`) which fails with `fatal: could not read Username for 'https://github.com': terminal prompts disabled` on private repositories. Removing the deploy hook from GitHub Actions avoids these clone failures; code is deployed directly via push.
+
+### Consequences
+
+Vercel frontend deployment remains orchestrated via CLI in GitHub Actions, while Render backend deployment is decoupled from CI curl hooks.
+
 
 
 

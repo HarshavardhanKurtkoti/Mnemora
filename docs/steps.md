@@ -58,6 +58,7 @@ COMPLETE
 - [x] Phase 1.8: Verified backend pytest suite with 15/15 tests passing
 - [x] Add `psycopg[binary]>=3.1.18` and PostgreSQL URI normalization in `src/config/database.py` to fix `ModuleNotFoundError: No module named 'psycopg'` in Docker container runtime
 - [x] Configure `pull-requests: read` permission in `.github/workflows/ci.yml` to resolve `Error: Resource not accessible by integration` in `dorny/paths-filter@v3` on pull requests
+- [x] Remove `deploy-render` curl deploy hook job from `.github/workflows/ci.yml` to decouple Render CD from unauthenticated background git clone failures on Render free tier
 
 ## In Progress
 
