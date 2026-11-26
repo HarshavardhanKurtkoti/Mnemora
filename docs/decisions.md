@@ -560,6 +560,29 @@ We integrated Mnemora with the central monitoring platform (`master-grafana` hos
 
 Aligns Mnemora with the existing observability architecture used by Harsha Kurtkoti's portfolio website (`portfolio-analytics`), providing full end-to-end transparency into hybrid retrieval performance, model token consumption, groundedness ratios, and database cluster health.
 
+## Decision: Root Dashboard Placement, Structured Project Folders & Live Prometheus Scraping
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+1. **Dashboard Root Placement (`folderId: 0` / General):**
+   - Placed `Mnemora — AI Observability & RAG Intelligence Platform` (UID `mnemora-observability`) at the **Root** level (`folderId: 0`, `folderUid: ""`) in Grafana.
+   - Eliminates intermediate `Monitoring >` folder breadcrumbs, rendering cleanly as `Home > Dashboards > Mnemora — AI Observability & RAG Intelligence Platform`.
+2. **Structured Project & Infrastructure Folders:**
+   - Configured `master-grafana` provisioning (`dashboards.yml`) with dual providers:
+     - `Root`: imports dashboards from `json/root/` directly into Root / General.
+     - `Structured Folders`: uses `foldersFromFilesStructure: true` to auto-provision project directories:
+       - `folders/Mnemora/` -> folder **Mnemora**
+       - `folders/Portfolio/` -> folder **Portfolio**
+       - `folders/Infrastructure/` -> folder **Infrastructure**
+   - Cleaned up legacy unorganized/empty `Monitoring` and `root` folders from Grafana.
+3. **Live Prometheus Scraping & Real Database Telemetry:**
+   - Replaced static stub with dynamic `src/api/controllers/metrics_controller.py`, pulling live statistics directly from Neon PostgreSQL models (`SystemStat`, `SystemHealth`, `QueryHistory`) and runtime counters.
+   - Configured Prometheus scrape job `mnemora_rag` targeting `host.docker.internal:8080/metrics` with `honor_labels: true` so all 30 panels immediately render real production metrics in local Grafana (`http://localhost:3000`) and live Grafana.
+
+
 
 
 

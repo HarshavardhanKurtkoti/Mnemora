@@ -70,9 +70,10 @@ COMPLETE
 - [x] Configure Grafana Service Account & API credentials for automated dashboard provisioning on `https://grafana.harshakurtkoti.in`
 - [x] Build 30-panel production Grafana AI Observability dashboard for Mnemora covering executive KPIs, hybrid retrieval latency, candidate funnels, token accounting, Ragas benchmarks, and infrastructure topology
 - [x] Provision dashboard in `master-grafana` (`grafana/provisioning/dashboards/json/mnemora-observability.json`) and export into `Mnemora/dashboards/mnemora-observability.json` and `Mnemora/docs/grafana-dashboard.json`
-- [x] Deploy dashboard to live Grafana (`https://grafana.harshakurtkoti.in`) in folder `Monitoring` (UID `mnemora-observability`)
-- [x] Extend `master-grafana` telemetry collector (`mnemora-store.mjs`, `server.mjs`, `nginx.conf`) and Prometheus config (`prometheus.yml`) with `mnemora_rag` scrape job
-- [x] Expose native `/metrics` Prometheus endpoint in FastAPI backend (`src/main.py`) and wire `GRAFANA_TELEMETRY_URL` into `src/observability/telemetry.py`
+- [x] Deploy dashboard to live Grafana (`https://grafana.harshakurtkoti.in`) and local Grafana (`http://localhost:3000`) at Root level (`folderId: 0`, `folderUid: ""`)
+- [x] Structure Grafana folders cleanly (`Mnemora`, `Portfolio`, `Infrastructure`) via dual provisioning providers in `master-grafana/grafana/provisioning/dashboards/dashboards.yml`
+- [x] Implement live dynamic Prometheus metrics in `src/api/controllers/metrics_controller.py` exposing real Neon DB models (`SystemStat`, `SystemHealth`), latencies, and candidate counts
+- [x] Configure Prometheus scrape target `host.docker.internal:8080/metrics` with `honor_labels: true`, verified all 30 panels actively populate real data without 0/No Data errors
 
 ## In Progress
 
@@ -86,11 +87,11 @@ None
 
 ## Current Task
 
-Completed Grafana AI Observability dashboard provisioning and telemetry integration for Mnemora across live Grafana (`https://grafana.harshakurtkoti.in`), `master-grafana`, and `Mnemora`.
+Resolved dashboard data ingestion and restructured Grafana hierarchy: Mnemora dashboard is now at Root (`[ROOT / GENERAL]`) with breadcrumb `Home > Dashboards > Mnemora...`, and project folders (`Mnemora`, `Portfolio`, `Infrastructure`) are cleanly organized. All metrics actively ingest live database and telemetry data.
 
 ## Next Step
 
-Deploy updated `master-grafana` container to Render so the embedded Prometheus and telemetry collector scrape `/mnemora-telemetry/metrics` continuously in production.
+Submit updated branch and commit `master-grafana` changes to GitHub for deployment to Render.
 
 ## Blockers
 
