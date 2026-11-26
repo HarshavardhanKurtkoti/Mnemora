@@ -7,16 +7,18 @@ import { Sidebar } from "@/components/layout/sidebar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Mnemora | Developer Console",
-  description: "Visual RAG Engineering Platform",
+  title: "Mnemora — RAG Engineering Platform",
+  description: "Production Retrieval-Augmented Generation engineering workspace and observability console.",
 };
 
 export default function RootLayout({
@@ -29,14 +31,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} dark`}
     >
-      <body className="h-screen w-screen overflow-hidden flex flex-col bg-[#05080a] text-foreground relative">
-        <div className="absolute inset-0 z-[-1]">
-          <img src="/bg.jpg" className="w-full h-full object-cover opacity-100" alt="background texture" />
-        </div>
+      <body className="h-screen w-screen overflow-hidden flex flex-col bg-background text-foreground antialiased selection:bg-mint/20">
         <Header />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden min-h-0">
           <Sidebar />
-          <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <main className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden bg-background">
             {children}
           </main>
         </div>

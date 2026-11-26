@@ -12,6 +12,10 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
     "sqlite:///./data/mnemora.db"
 )
 
+# Normalize legacy postgres:// scheme to postgresql:// for SQLAlchemy 2.0+
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Ensure directory exists for sqlite databases
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///"):
     db_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:///", "")

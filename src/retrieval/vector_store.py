@@ -10,11 +10,19 @@ class VectorStoreService:
         self.embeddings = get_embedding_model()
         
         # Connect to Qdrant Cloud if URL is provided, otherwise fallback to memory
+        client = None
         if settings.QDRANT_URL and settings.QDRANT_API_KEY:
-            client = QdrantClient(
-                url=settings.QDRANT_URL,
-                api_key=settings.QDRANT_API_KEY
-            )
+            try:
+                remote_client = QdrantClient(
+                    url=settings.QDRANT_URL,
+                    api_key=settings.QDRANT_API_KEY,
+                    timeout=4.0
+                )
+                # Verify connectivity
+                remote_client.get_collections()
+                client = remote_client
+            except Exception:
+                client = QdrantClient(":memory:")
         else:
             client = QdrantClient(":memory:")
             

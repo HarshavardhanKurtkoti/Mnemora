@@ -5,3 +5,5 @@
 - Experiment with smaller local LLMs (e.g., Llama-3-8B) for Generation.
 - Implement `llama.cpp` grammar or `outlines` integration to support strict structured JSON output for local LLMs in `GenerationService`.
 - Migrate BM25 to a persistent index backend (e.g. Elasticsearch or Qdrant Hybrid) for better multi-instance scaling.
+- Shared design system package (`hk-design-system`) extraction across personal engineering repositories (`Mnemora`, `prod_rag_monitoring`, `VisionBoard`).
+- Backend streaming evaluation metrics and live query tracing via WebSocket or SSE.

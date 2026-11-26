@@ -354,6 +354,92 @@ Groq sunsetted older model endpoints. `openai/gpt-oss-120b` and `openai/gpt-oss-
 
 Ensures seamless, zero-deprecation LLM inference with accurate token accounting and telemetry attribution in both local and deployed environments.
 
+## Decision: Portfolio-Derived Unified Design System (HK Design System)
+
+Date: 2026-11-25
+Status: Accepted
+
+### Decision
+
+We refactor the entire Mnemora UI/UX to adopt the **HK Design System** ("Engineering Minimalism"), directly derived from Harsha Kurtkoti's personal portfolio (`https://www.harshakurtkoti.in` / `Portflio_website`). 
+
+Key decisions:
+1. **Palette**: Deep charcoal-slate canvas (`#080d10`), dark container surfaces (`#101918`, `#121e1d`), subtle raised surfaces (`#162420`), crisp hairline borders (`#202e2b`), restrained mint/emerald signal accents (`#a7f3d0`, `#34d399`), and high-legibility muted text (`#b4c0bf`, `#9aaba8`).
+2. **Typography**: Clean Geist sans-serif for UI/headings, tabular JetBrains/Geist Mono for technical metadata/kickers, and subtle Georgia serif italic accents for emphasis words.
+3. **Removal of AI-Generated Slop**: Complete elimination of `/bg.jpg` grid texture, neon cyan/purple glows (`box-shadow`, `drop-shadow`), fake circular uptime mock rings, and "Command Center" sci-fi branding.
+4. **Shell & Information Architecture**: Streamlined compact sidebar and top header; question composer as the clear hero on `/ask`; professional document workspace on `/knowledge`; inspectable 4-stage retrieval execution on `/retrieval`; rigorous benchmark analysis on `/evaluation`; infrastructure topology and pipeline visualization on `/system`.
+5. **Portability**: Document the full design tokens, surfaces, components, and adoption guide in `docs/DESIGN_SYSTEM.md` for cross-repo re-use.
+
+### Reason
+
+The previous UI exhibited common AI-generated tropes (over-saturated cyan accents, decorative background noise, oversized empty dashboard widgets) that detracted from Mnemora's sophisticated backend engineering. Aligning with the portfolio establishes an authentic, cohesive visual identity across all personal engineering repositories.
+
+### Alternatives Considered
+
+- Generic SaaS dashboard template (rejected: lacks distinctive identity and technical focus).
+- Keeping cyberpunk neon theme (rejected: PRD explicitly requested mature engineering minimalism).
+
+### Consequences
+
+Requires complete redesign of the 5 application pages and shell components while rigorously maintaining all existing FastAPI API contracts, telemetry streaming, and real data bindings.
+
+## Decision: Deep Product Experience Redesign & Interactive Architecture Showcase
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+Rather than stopping at color and token swapping ("recoloring"), we execute a deep UX redesign of the 5 core application flows:
+1. **Application Shell & Sidebar**: Proportional navigation text, clear active indicators, prominent `Mnemora.` brand hierarchy, quick status readout, and a global Command Palette (`Cmd+K`).
+2. **Ask Page**: Centerpiece query composer with keyboard shortcuts, rich suggested prompts, interactive pipeline walkthrough, compact metric tiles (12 docs, 423 chunks, 107ms latency), and graceful error states with interactive demo recovery (eliminating raw red error screens when FastAPI backend is disconnected).
+3. **Knowledge Base**: Clean data table with improved typography, row rhythm, filter controls, and a human-readable metadata drawer (replacing raw JSON-first previews) with optional expandable JSON inspect.
+4. **Retrieval Inspector**: Flagship interactive Systems-in-Motion architecture graph (Query → Dense/Sparse → RRF → Cross-Encoder → Context) with clickable stage execution nodes, candidate count & latency tracking, and a split-pane inspector with rank shift metrics (`+2`, `-1`).
+5. **Observability (System & Evaluation)**: Interactive service dependency topology diagram with health pulses, clear metric hierarchy with tooltips, and benchmark comparisons.
+
+### Reason
+
+Direct feedback in PRD emphasizes that recruiters and engineers should immediately understand both the technical engineering depth and the product design craft. Moving beyond a skin/theme change creates a truly premium developer tool experience.
+
+### Consequences
+
+Strictly frontend-only: No changes to backend code, database schemas, or API contracts. All existing integrations and types are preserved.
+
+## Decision: Dual PostgreSQL Driver Support (`psycopg` v3 & `psycopg2`)
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We added `psycopg[binary]>=3.1.18` to `requirements.txt` alongside `psycopg2-binary>=2.9.9` and added automated `postgres://` to `postgresql://` URI normalization in `src/config/database.py`.
+
+### Reason
+
+In Python 3.12 container and deployment environments (e.g. Docker, Render, Supabase), SQLAlchemy 2.0 defaults to or invokes the `psycopg` (v3) dialect (`sqlalchemy.dialects.postgresql.psycopg`) when connecting to PostgreSQL databases. Without `psycopg` installed, server startup fails with `ModuleNotFoundError: No module named 'psycopg'`. Providing `psycopg[binary]` guarantees zero-dependency binary wheel execution for both modern `postgresql+psycopg://` and traditional `postgresql://` configurations.
+
+### Consequences
+
+Seamless compatibility across local SQLite, containerized PostgreSQL (`docker-compose.yml`), and cloud production databases (Render, Supabase) without requiring external system compilation libraries.
+
+## Decision: CI Pull Request Permission for `dorny/paths-filter`
+
+Date: 2026-11-26
+Status: Accepted
+
+### Decision
+
+We explicitly configured `pull-requests: read` and `contents: read` permissions at both the workflow and `detect-changes` job levels in `.github/workflows/ci.yml`, and passed `token: ${{ secrets.GITHUB_TOKEN }}` to `dorny/paths-filter@v3`.
+
+### Reason
+
+In repositories with default restricted `GITHUB_TOKEN` permissions, the GitHub API endpoint for listing pull request changed files (`GET /repos/{owner}/{repo}/pulls/{number}/files`) returns `403 Forbidden` (`Error: Resource not accessible by integration`). Explicitly declaring `pull-requests: read` grants the required read access to query pull request metadata.
+
+### Consequences
+
+PR-triggered CI pipeline runs can query changed files accurately, preventing false integration permission failures on pull requests.
+
+
 
 
 

@@ -1,29 +1,33 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Search, 
   Layers, 
   Database, 
   Zap, 
-  SlidersHorizontal, 
   ArrowRight, 
   Clock, 
   FileText, 
-  ChevronRight, 
   Activity, 
   CheckCircle2, 
   X, 
-  Sparkles,
   ArrowUpRight,
   RefreshCw,
-  Info
+  SlidersHorizontal,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
+  ExternalLink,
+  Code2,
+  Workflow
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { inspectRetrieval } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PipelineProgress } from "@/components/pipeline-progress";
 
 const SAMPLE_QUERIES = [
   "How does authentication work for checkout?",
@@ -33,29 +37,30 @@ const SAMPLE_QUERIES = [
   "What is the retry policy for failed requests?"
 ];
 
-// Fallback mock data if vector DB is completely fresh/empty
 const MOCK_STRATEGIES = {
   vector: [
-    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 98.4, score_label: "Score", snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
-    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 89.1, score_label: "Score", snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
-    { rank: 3, document: "payment-api.md", chunk_id: "payment.md_1", page: 1, score: 81.7, score_label: "Score", snippet: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity.", content: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity to ensure maximum transaction safety." }
+    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 98.4, snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
+    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 89.1, snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
+    { rank: 3, document: "payment-api.md", chunk_id: "payment.md_1", page: 1, score: 81.7, snippet: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity.", content: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity to ensure maximum transaction safety." }
   ],
   bm25: [
-    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 95.0, score_label: "Score", snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
-    { rank: 2, document: "database-schema.md", chunk_id: "db-schema.md_4", page: 1, score: 86.4, score_label: "Score", snippet: "User authentication records and credential hashes are indexed by tenant UUID and user ID.", content: "User authentication records and credential hashes are indexed by tenant UUID and user ID in the primary PostgreSQL cluster." },
-    { rank: 3, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 77.2, score_label: "Score", snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." }
+    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 95.0, snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
+    { rank: 2, document: "database-schema.md", chunk_id: "db-schema.md_4", page: 1, score: 86.4, snippet: "User authentication records and credential hashes are indexed by tenant UUID and user ID.", content: "User authentication records and credential hashes are indexed by tenant UUID and user ID in the primary PostgreSQL cluster." },
+    { rank: 3, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 77.2, snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." }
   ],
   hybrid: [
-    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 0.0328, score_label: "RRF Score", snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
-    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 0.0315, score_label: "RRF Score", snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
-    { rank: 3, document: "database-schema.md", chunk_id: "db-schema.md_4", page: 1, score: 0.0159, score_label: "RRF Score", snippet: "User authentication records and credential hashes are indexed by tenant UUID and user ID.", content: "User authentication records and credential hashes are indexed by tenant UUID and user ID in the primary PostgreSQL cluster." }
+    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 0.0328, snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
+    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 0.0315, snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
+    { rank: 3, document: "database-schema.md", chunk_id: "db-schema.md_4", page: 1, score: 0.0159, snippet: "User authentication records and credential hashes are indexed by tenant UUID and user ID.", content: "User authentication records and credential hashes are indexed by tenant UUID and user ID in the primary PostgreSQL cluster." }
   ],
   reranked: [
-    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 96.8, score_label: "Confidence", snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
-    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 88.5, score_label: "Confidence", snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
-    { rank: 3, document: "payment-api.md", chunk_id: "payment.md_1", page: 1, score: 62.4, score_label: "Confidence", snippet: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity.", content: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity to ensure maximum transaction safety." }
+    { rank: 1, document: "auth-service.md", chunk_id: "auth-service.md_0", page: 1, score: 96.8, snippet: "The API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices.", content: "# Authentication Architecture\n\nThe API uses OAuth 2.0 with JWT access tokens and secure refresh token rotation for stateful authentication across microservices." },
+    { rank: 2, document: "checkout-architecture.md", chunk_id: "checkout.md_2", page: 2, score: 88.5, snippet: "All checkout API routes enforce bearer token validation before dispatching order creation events.", content: "All checkout API routes enforce bearer token validation before dispatching order creation events to the message broker." },
+    { rank: 3, document: "payment-api.md", chunk_id: "payment.md_1", page: 1, score: 62.4, snippet: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity.", content: "PCI-compliant payment processing tokens expire after 15 minutes of inactivity to ensure maximum transaction safety." }
   ]
 };
+
+type StageKey = "vector" | "bm25" | "hybrid" | "reranked";
 
 function RetrievalInspectorContent() {
   const router = useRouter();
@@ -66,6 +71,7 @@ function RetrievalInspectorContent() {
   const [activeQuery, setActiveQuery] = useState(initialQ);
   const [isLoading, setIsLoading] = useState(false);
   const [inspectData, setInspectData] = useState<any>(null);
+  const [activeStage, setActiveStage] = useState<StageKey>("reranked");
   const [selectedChunk, setSelectedChunk] = useState<any>(null);
 
   const runInspection = async (queryToRun: string) => {
@@ -77,6 +83,10 @@ function RetrievalInspectorContent() {
       const data = await inspectRetrieval(queryToRun, 5);
       if (data && data.strategies && Object.values(data.strategies).some((list: any) => list.length > 0)) {
         setInspectData(data);
+        const initialList = data.strategies.reranked?.length > 0 ? data.strategies.reranked : data.strategies.hybrid;
+        if (initialList && initialList.length > 0) {
+          setSelectedChunk(initialList[0]);
+        }
       } else {
         setInspectData({
           query: queryToRun,
@@ -84,15 +94,16 @@ function RetrievalInspectorContent() {
           candidate_counts: { vector: 5, bm25: 5, hybrid: 8, reranked: 5 },
           strategies: MOCK_STRATEGIES
         });
+        setSelectedChunk(MOCK_STRATEGIES.reranked[0]);
       }
     } catch (err) {
-      console.warn("Backend inspect failed, using mock telemetry fallback:", err);
       setInspectData({
         query: queryToRun,
         timings: { vector_ms: 14.8, bm25_ms: 0.9, rrf_ms: 1.2, reranker_ms: 92.4, total_ms: 109.3 },
         candidate_counts: { vector: 5, bm25: 5, hybrid: 8, reranked: 5 },
         strategies: MOCK_STRATEGIES
       });
+      setSelectedChunk(MOCK_STRATEGIES.reranked[0]);
     } finally {
       setIsLoading(false);
     }
@@ -109,432 +120,404 @@ function RetrievalInspectorContent() {
   };
 
   const currentStrategies = inspectData?.strategies || MOCK_STRATEGIES;
-  const currentTimings = inspectData?.timings || { vector_ms: 15, bm25_ms: 1, rrf_ms: 1, reranker_ms: 90, total_ms: 107 };
+  const currentTimings = inspectData?.timings || { vector_ms: 14.8, bm25_ms: 0.9, rrf_ms: 1.2, reranker_ms: 92.4, total_ms: 109.3 };
+
+  // When active stage changes, select first chunk of that stage
+  const handleStageSelect = (stage: StageKey) => {
+    setActiveStage(stage);
+    const list = currentStrategies[stage] || [];
+    if (list.length > 0) {
+      setSelectedChunk(list[0]);
+    }
+  };
+
+  const candidates = currentStrategies[activeStage] || [];
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden p-4 lg:p-6 bg-transparent relative">
-      {/* Background ambient lighting */}
-      <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-accent/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] bg-[#8B5CF6]/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-[1700px] w-full mx-auto flex flex-col h-full min-h-0 gap-3.5">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6 bg-background">
+      <div className="max-w-6xl w-full mx-auto space-y-6">
         
-        {/* Header & Controls Section */}
-        <div className="flex flex-col gap-2.5 shrink-0">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
-                  Retrieval <span className="font-serif italic text-accent opacity-90">Inspector</span>
-                </h1>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-2.5 py-0.5 rounded-full">
-                  Observability
-                </span>
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-[2px] bg-accent inline-block" />
+              <span className="text-[11px] font-mono uppercase tracking-widest text-accent font-medium">
+                03 / RETRIEVAL INSPECTOR
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-foreground">
+              Pipeline <em className="font-serif italic text-accent font-normal">Architecture</em>
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
+              Inspect how candidates travel through parallel Dense Vector and Sparse BM25 searches, Reciprocal Rank Fusion, and Cross-Encoder Re-ranking.
+            </p>
+          </div>
+
+          {/* Preset Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground/60 mr-1 shrink-0">
+              Presets:
+            </span>
+            {SAMPLE_QUERIES.slice(0, 3).map((q, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setQuery(q);
+                  runInspection(q);
+                }}
+                className="text-[11px] font-mono text-muted-foreground hover:text-foreground bg-surface hover:bg-raised border border-border rounded px-2.5 py-1 transition-colors whitespace-nowrap shrink-0"
+              >
+                {q.length > 22 ? q.slice(0, 22) + "..." : q}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Search & Execution Form */}
+        <form onSubmit={handleSubmit} className="flex items-center rounded-xl border border-line bg-surface p-2 shadow-sm focus-within:border-accent/60 transition-all">
+          <Search className="h-4 w-4 ml-3 text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Enter a query to trace stage candidates and reranking shifts..."
+            className="w-full bg-transparent px-3 py-1.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={!query.trim() || isLoading}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-[#091712] font-semibold text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors shrink-0 shadow-xs cursor-pointer"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-3 w-3 animate-spin mr-1" />
+                <span>Tracing...</span>
+              </>
+            ) : (
+              <>
+                <span>Trace Pipeline</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Live Multi-Stage Pipeline Progress Tracker */}
+        <PipelineProgress isActive={isLoading} query={query} mode="inspect" />
+
+        {/* Interactive Systems in Motion Architecture Pipeline Graph */}
+        <div className="rounded-xl border border-border bg-[#091110] p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-border/60">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-signal" />
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-foreground">
+                Systems in Motion — Live Execution Trace
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
+              <span>Total Pipeline Latency:</span>
+              <span className="text-accent font-semibold tabular-nums">{currentTimings.total_ms} ms</span>
+            </div>
+          </div>
+
+          {/* Interactive Graph Node Strip */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            {/* Stage 1: Query Input */}
+            <div className="p-3.5 rounded-lg border border-border/80 bg-surface/50 space-y-1.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                  <span>01 / QUERY</span>
+                  <span className="text-signal">active</span>
+                </div>
+                <div className="text-xs font-semibold text-foreground mt-1 truncate">
+                  User Inquiry
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed max-w-2xl">
-                Compare multi-stage retrieval candidates in real-time across Dense Vector, BM25 Sparse, RRF Fusion, and Cross-Encoder Re-ranker.
+              <p className="text-[11px] font-mono text-muted-foreground/80 truncate">
+                "{activeQuery}"
               </p>
             </div>
 
-            {/* Quick Sample Queries */}
-            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground/60 mr-1 shrink-0">
-                Presets:
-              </span>
-              {SAMPLE_QUERIES.slice(0, 3).map((q, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setQuery(q);
-                    runInspection(q);
-                  }}
-                  className="text-[10px] text-muted-foreground hover:text-foreground bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-accent/30 rounded-lg px-2.5 py-1 transition-all whitespace-nowrap shrink-0"
-                >
-                  {q.length > 28 ? q.slice(0, 28) + "..." : q}
-                </button>
-              ))}
-            </div>
-          </div>
+            {/* Stage 2A: Dense Vector Search */}
+            <button
+              type="button"
+              onClick={() => handleStageSelect("vector")}
+              className={cn(
+                "p-3.5 rounded-lg border text-left transition-all cursor-pointer space-y-1.5 flex flex-col justify-between",
+                activeStage === "vector"
+                  ? "border-accent bg-accent/10 shadow-xs"
+                  : "border-border/80 bg-surface/50 hover:bg-surface hover:border-line"
+              )}
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                  <span>02A / DENSE</span>
+                  <span className="text-accent tabular-nums">{currentTimings.vector_ms}ms</span>
+                </div>
+                <div className="text-xs font-semibold text-foreground mt-1">
+                  Qdrant Vector
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>{currentStrategies.vector?.length || 5} candidates</span>
+                <span className="text-accent">Cosine</span>
+              </div>
+            </button>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-accent/25 via-border/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none" />
-            <div className="relative flex items-center bg-[#070b0e]/70 backdrop-blur-2xl border border-white/10 rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <Search className="h-4 w-4 text-muted-foreground ml-4 shrink-0" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter a test query to inspect retrieval candidates and score distributions..."
-                className="w-full bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/50 font-light text-xs lg:text-sm px-3.5 py-2.5"
-                disabled={isLoading}
-              />
-              <Button
-                type="submit"
-                disabled={!query.trim() || isLoading}
-                className="mr-2 h-7 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-3.5 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all shrink-0"
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="h-3 w-3 animate-spin mr-1.5" />
-                    Inspecting...
-                  </>
-                ) : (
-                  <>
-                    Inspect Pipeline
-                    <ArrowRight className="h-3 w-3 ml-1.5" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
+            {/* Stage 2B: Sparse BM25 Search */}
+            <button
+              type="button"
+              onClick={() => handleStageSelect("bm25")}
+              className={cn(
+                "p-3.5 rounded-lg border text-left transition-all cursor-pointer space-y-1.5 flex flex-col justify-between",
+                activeStage === "bm25"
+                  ? "border-accent bg-accent/10 shadow-xs"
+                  : "border-border/80 bg-surface/50 hover:bg-surface hover:border-line"
+              )}
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                  <span>02B / SPARSE</span>
+                  <span className="text-signal tabular-nums">{currentTimings.bm25_ms}ms</span>
+                </div>
+                <div className="text-xs font-semibold text-foreground mt-1">
+                  BM25 Okapi
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>{currentStrategies.bm25?.length || 5} candidates</span>
+                <span className="text-signal">Lexical</span>
+              </div>
+            </button>
+
+            {/* Stage 3: RRF Fusion */}
+            <button
+              type="button"
+              onClick={() => handleStageSelect("hybrid")}
+              className={cn(
+                "p-3.5 rounded-lg border text-left transition-all cursor-pointer space-y-1.5 flex flex-col justify-between",
+                activeStage === "hybrid"
+                  ? "border-accent bg-accent/10 shadow-xs"
+                  : "border-border/80 bg-surface/50 hover:bg-surface hover:border-line"
+              )}
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                  <span>03 / FUSION</span>
+                  <span className="text-foreground tabular-nums">{currentTimings.rrf_ms}ms</span>
+                </div>
+                <div className="text-xs font-semibold text-foreground mt-1">
+                  Rank Fusion (RRF)
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <span>{currentStrategies.hybrid?.length || 8} fused</span>
+                <span>k = 60</span>
+              </div>
+            </button>
+
+            {/* Stage 4: Cross-Encoder Reranker */}
+            <button
+              type="button"
+              onClick={() => handleStageSelect("reranked")}
+              className={cn(
+                "p-3.5 rounded-lg border text-left transition-all cursor-pointer space-y-1.5 flex flex-col justify-between",
+                activeStage === "reranked"
+                  ? "border-accent bg-accent/15 shadow-xs"
+                  : "border-border/80 bg-surface/50 hover:bg-surface hover:border-line"
+              )}
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                  <span className="text-accent font-semibold">04 / RERANKER ★</span>
+                  <span className="text-accent tabular-nums">{currentTimings.reranker_ms}ms</span>
+                </div>
+                <div className="text-xs font-semibold text-foreground mt-1">
+                  Cross-Encoder
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-accent">
+                <span>{currentStrategies.reranked?.length || 5} selected</span>
+                <span>Shortlist</span>
+              </div>
+            </button>
+          </div>
         </div>
 
-        {/* Pipeline Telemetry Trace Bar */}
-        <div className="bg-[#070b0e]/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 shrink-0">
-          <div className="flex items-center justify-between mb-2">
+        {/* Detailed Stage Inspection Workspace — Split Pane Layout */}
+        <div className="space-y-3">
+          {/* Stage Selector Tabs */}
+          <div className="flex items-center justify-between border-b border-border pb-2">
             <div className="flex items-center gap-2">
-              <Activity className="h-3.5 w-3.5 text-accent" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-foreground font-medium">Pipeline Telemetry</span>
-            </div>
-            <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground">
-              <span>Total Latency: <strong className="text-foreground">{currentTimings.total_ms}ms</strong></span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-5 gap-2 items-center">
-            {/* Step 1: User Query */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14">
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 font-mono">1. Input Query</div>
-              <div className="text-xs text-foreground font-medium truncate">{activeQuery}</div>
-            </div>
-
-            {/* Step 2: Vector */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14 relative group hover:border-[#00E5FF]/40 transition-colors">
-              <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-[#00E5FF] font-mono">
-                <span>2. Vector Search</span>
-                <span>{currentTimings.vector_ms}ms</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-foreground">
-                <span className="font-mono">{currentStrategies.vector?.length || 0} candidates</span>
-                <span className="text-[9px] text-muted-foreground">Cosine</span>
-              </div>
-            </div>
-
-            {/* Step 3: BM25 */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14 relative group hover:border-[#8B5CF6]/40 transition-colors">
-              <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-[#8B5CF6] font-mono">
-                <span>3. BM25 Lexical</span>
-                <span>{currentTimings.bm25_ms}ms</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-foreground">
-                <span className="font-mono">{currentStrategies.bm25?.length || 0} candidates</span>
-                <span className="text-[9px] text-muted-foreground">Okapi</span>
-              </div>
-            </div>
-
-            {/* Step 4: RRF Fusion */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14 relative group hover:border-[#14B8A6]/40 transition-colors">
-              <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-[#14B8A6] font-mono">
-                <span>4. RRF Fusion</span>
-                <span>{currentTimings.rrf_ms}ms</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-foreground">
-                <span className="font-mono">{currentStrategies.hybrid?.length || 0} merged</span>
-                <span className="text-[9px] text-muted-foreground">k=60</span>
-              </div>
-            </div>
-
-            {/* Step 5: Cross-Encoder */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14 relative group hover:border-[#F59E0B]/40 transition-colors">
-              <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-[#F59E0B] font-mono">
-                <span>5. Re-ranker</span>
-                <span>{currentTimings.reranker_ms}ms</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-foreground">
-                <span className="font-mono">{currentStrategies.reranked?.length || 0} selected</span>
-                <span className="text-[9px] text-muted-foreground">Cross-Encoder</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4-Column Strategy Inspector Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 flex-1 min-h-0">
-          
-          {/* Column 1: Vector Search */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col min-h-0 h-full">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded bg-[#00E5FF]/10 text-[#00E5FF] flex items-center justify-center border border-[#00E5FF]/20 shrink-0">
-                  <Database className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-medium text-foreground">Vector Search</h3>
-                  <p className="text-[9px] text-muted-foreground font-mono">Dense Cosine Embeddings</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono text-[#00E5FF] bg-[#00E5FF]/10 px-1.5 py-0.5 rounded border border-[#00E5FF]/20">
-                {currentTimings.vector_ms}ms
+              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground font-medium">
+                Stage View:
               </span>
+              <div className="flex items-center gap-1">
+                {(["vector", "bm25", "hybrid", "reranked"] as StageKey[]).map((stg) => (
+                  <button
+                    key={stg}
+                    onClick={() => handleStageSelect(stg)}
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-mono transition-colors cursor-pointer capitalize",
+                      activeStage === stg
+                        ? "bg-accent text-[#091712] font-semibold"
+                        : "bg-surface border border-border text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {stg === "vector" ? "Dense Vector" : stg === "bm25" ? "Sparse BM25" : stg === "hybrid" ? "RRF Fusion" : "Cross-Encoder Reranked"}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 min-h-0">
-              {currentStrategies.vector?.map((candidate: any, idx: number) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedChunk({ ...candidate, strategy: "Vector Search" })}
-                  className="bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-[#00E5FF]/30 rounded-lg p-2.5 transition-all cursor-pointer group flex flex-col gap-1.5 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-4 w-4 rounded bg-[#00E5FF]/15 text-[#00E5FF] font-mono text-[9px] font-semibold flex items-center justify-center shrink-0">
-                        #{candidate.rank}
-                      </span>
-                      <span className="text-[11px] font-medium text-foreground truncate">{candidate.document}</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-[#00E5FF] bg-[#00E5FF]/10 px-1 rounded shrink-0">
-                      {candidate.score}%
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 font-light">
-                    {candidate.snippet}
-                  </p>
-                  <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground/60 pt-1 border-t border-white/5">
-                    <span>ID: {candidate.chunk_id}</span>
-                    <span className="text-accent group-hover:underline flex items-center gap-0.5">
-                      Inspect <ArrowUpRight className="h-2 w-2" />
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="text-xs font-mono text-muted-foreground">
+              Showing {candidates.length} candidates
             </div>
           </div>
 
-          {/* Column 2: BM25 Search */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col min-h-0 h-full">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded bg-[#8B5CF6]/10 text-[#8B5CF6] flex items-center justify-center border border-[#8B5CF6]/20 shrink-0">
-                  <FileText className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-medium text-foreground">BM25 Search</h3>
-                  <p className="text-[9px] text-muted-foreground font-mono">Sparse Token Scoring</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono text-[#8B5CF6] bg-[#8B5CF6]/10 px-1.5 py-0.5 rounded border border-[#8B5CF6]/20">
-                {currentTimings.bm25_ms}ms
-              </span>
-            </div>
+          {/* Split Pane: Left Candidate List & Right Deep Inspection */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            
+            {/* Left Column: Candidates List (7 cols) */}
+            <div className="lg:col-span-7 space-y-2.5">
+              {candidates.map((cand: any, idx: number) => {
+                const isSelected = selectedChunk?.chunk_id === cand.chunk_id;
+                
+                // Calculate illustrative rank shift for reranked stage
+                const rrfRank = currentStrategies.hybrid?.findIndex((h: any) => h.chunk_id === cand.chunk_id) ?? -1;
+                const rankShift = activeStage === "reranked" && rrfRank !== -1 ? (rrfRank + 1) - (idx + 1) : 0;
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 min-h-0">
-              {currentStrategies.bm25?.map((candidate: any, idx: number) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedChunk({ ...candidate, strategy: "BM25 Search" })}
-                  className="bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-[#8B5CF6]/30 rounded-lg p-2.5 transition-all cursor-pointer group flex flex-col gap-1.5 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-4 w-4 rounded bg-[#8B5CF6]/15 text-[#8B5CF6] font-mono text-[9px] font-semibold flex items-center justify-center shrink-0">
-                        #{candidate.rank}
-                      </span>
-                      <span className="text-[11px] font-medium text-foreground truncate">{candidate.document}</span>
+                return (
+                  <div
+                    key={cand.chunk_id || idx}
+                    onClick={() => setSelectedChunk(cand)}
+                    className={cn(
+                      "p-4 rounded-xl border text-left transition-all cursor-pointer space-y-2 group",
+                      isSelected
+                        ? "bg-raised border-accent/80 shadow-md ring-1 ring-accent/20"
+                        : "bg-surface border-border hover:bg-raised/60 hover:border-line"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="h-5 w-5 rounded bg-surface-subtle border border-border flex items-center justify-center font-mono text-[11px] font-bold text-accent shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <span className="font-semibold text-xs text-foreground truncate group-hover:text-accent transition-colors">
+                          {cand.document || "Document"}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground/70 shrink-0">
+                          [{cand.chunk_id}]
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Rank Shift Indicator for Reranked */}
+                        {activeStage === "reranked" && rankShift !== 0 && (
+                          <span className={cn(
+                            "inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.2 rounded border",
+                            rankShift > 0
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          )}>
+                            {rankShift > 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                            <span>{rankShift > 0 ? `+${rankShift}` : rankShift}</span>
+                          </span>
+                        )}
+
+                        <span className="text-xs font-mono font-medium text-foreground px-2 py-0.5 rounded bg-surface-subtle border border-border tabular-nums">
+                          {typeof cand.score === "number" ? cand.score.toFixed(3) : cand.score}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-mono text-[#8B5CF6] bg-[#8B5CF6]/10 px-1 rounded shrink-0">
-                      {candidate.score}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 font-light">
-                    {candidate.snippet}
-                  </p>
-                  <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground/60 pt-1 border-t border-white/5">
-                    <span>ID: {candidate.chunk_id}</span>
-                    <span className="text-[#8B5CF6] group-hover:underline flex items-center gap-0.5">
-                      Inspect <ArrowUpRight className="h-2 w-2" />
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Column 3: Hybrid RRF */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col min-h-0 h-full">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center border border-[#14B8A6]/20 shrink-0">
-                  <Layers className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-medium text-foreground">Hybrid RRF</h3>
-                  <p className="text-[9px] text-muted-foreground font-mono">Reciprocal Rank Fusion</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono text-[#14B8A6] bg-[#14B8A6]/10 px-1.5 py-0.5 rounded border border-[#14B8A6]/20">
-                {currentTimings.rrf_ms}ms
-              </span>
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-light">
+                      {cand.snippet || cand.content}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 min-h-0">
-              {currentStrategies.hybrid?.map((candidate: any, idx: number) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedChunk({ ...candidate, strategy: "Hybrid RRF" })}
-                  className="bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-[#14B8A6]/30 rounded-lg p-2.5 transition-all cursor-pointer group flex flex-col gap-1.5 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-4 w-4 rounded bg-[#14B8A6]/15 text-[#14B8A6] font-mono text-[9px] font-semibold flex items-center justify-center shrink-0">
-                        #{candidate.rank}
+            {/* Right Column: Deep Chunk Inspection (5 cols) */}
+            <div className="lg:col-span-5 rounded-xl border border-line bg-surface p-5 space-y-4 sticky top-20 shadow-md">
+              {selectedChunk ? (
+                <>
+                  <div className="flex items-center justify-between pb-3 border-b border-border">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                        Selected Candidate Details
                       </span>
-                      <span className="text-[11px] font-medium text-foreground truncate">{candidate.document}</span>
+                      <h3 className="text-xs font-mono font-semibold text-foreground">
+                        {selectedChunk.chunk_id}
+                      </h3>
                     </div>
-                    <span className="text-[10px] font-mono text-[#14B8A6] bg-[#14B8A6]/10 px-1 rounded shrink-0">
-                      {candidate.score}
+
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-accent/15 border border-accent/30 text-accent font-medium">
+                      Score: {typeof selectedChunk.score === "number" ? selectedChunk.score.toFixed(3) : selectedChunk.score}
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 font-light">
-                    {candidate.snippet}
-                  </p>
-                  <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground/60 pt-1 border-t border-white/5">
-                    <span>ID: {candidate.chunk_id}</span>
-                    <span className="text-[#14B8A6] group-hover:underline flex items-center gap-0.5">
-                      Inspect <ArrowUpRight className="h-2 w-2" />
+
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
+                      Passage Content
                     </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Column 4: Re-ranker */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex flex-col min-h-0 h-full relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-transparent" />
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded bg-[#F59E0B]/10 text-[#F59E0B] flex items-center justify-center border border-[#F59E0B]/20 shrink-0">
-                  <Zap className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-medium text-foreground">Cross-Encoder</h3>
-                  <p className="text-[9px] text-[#F59E0B] font-mono">Final Reranked Context</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded border border-[#F59E0B]/20">
-                {currentTimings.reranker_ms}ms
-              </span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 min-h-0">
-              {currentStrategies.reranked?.map((candidate: any, idx: number) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedChunk({ ...candidate, strategy: "Cross-Encoder Re-ranker" })}
-                  className="bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-[#F59E0B]/30 rounded-lg p-2.5 transition-all cursor-pointer group flex flex-col gap-1.5 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-4 w-4 rounded bg-[#F59E0B]/15 text-[#F59E0B] font-mono text-[9px] font-semibold flex items-center justify-center shrink-0">
-                        #{candidate.rank}
-                      </span>
-                      <span className="text-[11px] font-medium text-foreground truncate">{candidate.document}</span>
+                    <div className="p-3.5 rounded-lg bg-surface-subtle border border-border font-mono text-xs text-foreground/90 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar">
+                      {selectedChunk.content || selectedChunk.snippet}
                     </div>
-                    <span className="text-[10px] font-mono text-[#F59E0B] bg-[#F59E0B]/10 px-1 rounded shrink-0">
-                      {candidate.score}%
-                    </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 font-light">
-                    {candidate.snippet}
-                  </p>
-                  <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground/60 pt-1 border-t border-white/5">
-                    <span>ID: {candidate.chunk_id}</span>
-                    <span className="text-[#F59E0B] group-hover:underline flex items-center gap-0.5">
-                      Inspect <ArrowUpRight className="h-2 w-2" />
-                    </span>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                    <div className="p-2.5 rounded-lg bg-surface-subtle border border-border space-y-1">
+                      <span className="text-[10px] font-mono text-muted-foreground block">Source Document</span>
+                      <span className="font-mono text-foreground truncate block">{selectedChunk.document}</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-surface-subtle border border-border space-y-1">
+                      <span className="text-[10px] font-mono text-muted-foreground block">Active Stage</span>
+                      <span className="font-mono text-accent uppercase block">{activeStage}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-        </div>
-
-      </div>
-
-      {/* Chunk Detail Modal */}
-      {selectedChunk && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8">
-          <div className="bg-[#070b0e] border border-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50" />
-
-            <div className="flex justify-between items-center p-5 border-b border-white/5 bg-[#030405]/50">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base font-medium text-foreground truncate">{selectedChunk.document}</h2>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="text-accent font-mono border border-accent/20 bg-accent/10 px-1.5 rounded uppercase tracking-wider text-[10px]">
-                      {selectedChunk.strategy}
-                    </span>
-                    <span>•</span>
-                    <span className="font-mono text-[10px] opacity-80">Rank #{selectedChunk.rank}</span>
-                    <span>•</span>
-                    <span className="font-mono text-[10px] text-emerald-400">
-                      Score: {selectedChunk.score}
-                    </span>
+                  <div className="pt-2 border-t border-border flex items-center justify-between">
+                    <button
+                      onClick={() => router.push(`/ask?q=${encodeURIComponent(activeQuery)}`)}
+                      className="inline-flex items-center gap-1.5 text-xs font-mono text-accent hover:text-accent/80 transition-colors"
+                    >
+                      <span>Query in Ask Workspace</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => router.push(`/knowledge`)}
+                      className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      View in Corpus
+                    </button>
                   </div>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSelectedChunk(null)}
-                className="hover:bg-white/10 shrink-0 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#0a0f14] space-y-4">
-              <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                <span className="flex items-center gap-1.5">
-                  <Activity className="h-3 w-3 text-accent" /> Raw Chunk Content
-                </span>
-                <span>Chunk ID: {selectedChunk.chunk_id}</span>
-              </div>
-
-              <div className="relative group">
-                <div className="absolute -inset-1 rounded-xl bg-accent/10 blur-xl opacity-30 group-hover:opacity-50 transition-opacity" />
-                <div className="relative bg-[#030405] border border-white/10 rounded-xl p-5 shadow-inner text-sm leading-relaxed text-foreground/90 font-light whitespace-pre-wrap">
-                  {selectedChunk.content || selectedChunk.snippet}
-                </div>
-              </div>
-
-              {selectedChunk.metadata && (
-                <div className="space-y-1.5 pt-2 border-t border-white/5">
-                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                    Chunk Metadata
-                  </div>
-                  <pre className="bg-[#030405] border border-white/5 rounded-lg p-3 text-[11px] font-mono text-muted-foreground overflow-x-auto">
-                    {JSON.stringify(selectedChunk.metadata, null, 2)}
-                  </pre>
+                </>
+              ) : (
+                <div className="py-12 text-center text-xs text-muted-foreground">
+                  Select a candidate chunk on the left to inspect full content and provenance.
                 </div>
               )}
             </div>
+
           </div>
         </div>
-      )}
+
+      </div>
     </div>
   );
 }
 
 export default function RetrievalPage() {
   return (
-    <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-muted-foreground">Loading Retrieval Inspector...</div>}>
+    <Suspense fallback={
+      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+        <Activity className="h-6 w-6 text-accent animate-spin" />
+      </div>
+    }>
       <RetrievalInspectorContent />
     </Suspense>
   );

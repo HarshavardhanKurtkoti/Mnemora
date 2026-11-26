@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Phase 1.6 - Real Retrieval & Generation Benchmark
+Phase 1.8 - Final Premium UI/UX Refactor & Interactive Architecture Experience (HK Design System)
 
 ## Status
 
-IN PROGRESS
+COMPLETE
 
 ## Completed
 
@@ -46,10 +46,22 @@ IN PROGRESS
 - [x] Harmonize typography, serif italic cyan accents, badge pills, and glassmorphic styling across all 5 pages (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`)
 - [x] Add non-blocking background telemetry forwarder (`src/observability/telemetry.py`) on `/query` endpoint to stream live traces into `prod_rag_monitoring`
 - [x] Upgrade Groq LLM integration to active non-deprecated models (`openai/gpt-oss-120b`, `openai/gpt-oss-20b`) and verified with Pytest suite (15/15 tests passing)
+- [x] Phase 1.7: Create dedicated branch `refactor/portfolio-design-system`
+- [x] Phase 1.7: Initial token extraction and styling refactor
+- [x] Phase 1.8: Refine Application Shell & Sidebar (stronger branding, proportional navigation, command palette `⌘K`, keyboard shortcuts `⌘1`–`⌘5`)
+- [x] Phase 1.8: Redesign `/ask` page as centerpiece (editorial hierarchy, centerpiece question composer, suggested inquiries, interactive pipeline explainer, graceful error recovery & demo answer state)
+- [x] Phase 1.8: Refine `/knowledge` page (improved table typography, row rhythm, format filter pills, human-readable metadata drawer replacing raw JSON-first previews)
+- [x] Phase 1.8: Build flagship `/retrieval` inspector (Systems in Motion architecture visualization, interactive stage selection, split-pane results, and candidate rank shift indicators)
+- [x] Phase 1.8: Refine `/evaluation` and `/system` observability pages (structured metric hierarchy, question-level benchmark inspection, interactive connected service dependency topology)
+- [x] Add live multi-stage pipeline progress tracker component (`pipeline-progress.tsx`) displaying step-by-step FastEmbed model caching, vector & lexical search, RRF fusion, and cross-encoder scoring on `/ask`, `/retrieval`, and `/knowledge`
+- [x] Phase 1.8: Verified Next.js production build (`pnpm build`) with zero errors across all 9 static routes
+- [x] Phase 1.8: Verified backend pytest suite with 15/15 tests passing
+- [x] Add `psycopg[binary]>=3.1.18` and PostgreSQL URI normalization in `src/config/database.py` to fix `ModuleNotFoundError: No module named 'psycopg'` in Docker container runtime
+- [x] Configure `pull-requests: read` permission in `.github/workflows/ci.yml` to resolve `Error: Resource not accessible by integration` in `dorny/paths-filter@v3` on pull requests
 
 ## In Progress
 
-- [/] Phase 1.6: Connect Ragas Evaluation Pipeline trigger UI with background worker
+None
 
 ## Pending
 
@@ -59,14 +71,12 @@ IN PROGRESS
 
 ## Current Task
 
-Live observability, Langfuse distributed tracing, Groq active model integration (`openai/gpt-oss-120b`), and remote health probing connected with the Production RAG Monitoring Platform (`prod_rag_monitoring`), tested and verified with complete test suites passing in both repositories (15/15 and 22/22 tests).
+Phase 1.8 completed: The Mnemora frontend has been thoroughly redesigned beyond color swapping into an authentic, interactive, portfolio-grade engineering workspace.
 
 ## Next Step
 
-Verify full end-to-end integration between deployed Next.js Vercel frontend, FastAPI backend, and monitoring platform.
+Submit branch `refactor/portfolio-design-system` for review and adopt the same design tokens in `prod_rag_monitoring` and `VisionBoard`.
 
 ## Blockers
 
 None
-
-

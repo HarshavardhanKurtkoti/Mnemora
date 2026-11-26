@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 env:
   PYTHONPATH: .
 
@@ -13,6 +17,9 @@ jobs:
   detect-changes:
     name: 🔍 Detect Changed Components
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       backend_deps: ${{ steps.filter.outputs.backend_deps }}
@@ -23,6 +30,7 @@ jobs:
     - uses: dorny/paths-filter@v3
       id: filter
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         filters: |
           backend:
             - 'src/**'

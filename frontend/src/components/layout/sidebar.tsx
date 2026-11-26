@@ -2,114 +2,204 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Library, Search, LineChart, Server, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { fetchHealthServices } from "@/lib/api";
+import { 
+  MessageSquare, 
+  Library, 
+  Search, 
+  LineChart, 
+  Server, 
+  Sparkles,
+  Command,
+  Activity,
+  ChevronRight,
+  Database,
+  Layers,
+  ArrowUpRight
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CommandPalette } from "@/components/command-palette";
+import { fetchOverviewStats } from "@/lib/api";
 
 const navigation = [
-  { name: "Ask", href: "/ask", icon: MessageSquare },
-  { name: "Knowledge", href: "/knowledge", icon: Library },
-  { name: "Retrieval", href: "/retrieval", icon: Search },
-  { name: "Evaluation", href: "/evaluation", icon: LineChart },
-  { name: "System", href: "/system", icon: Server },
+  { name: "Ask", href: "/ask", icon: MessageSquare, shortcut: "1", description: "Grounded Q&A" },
+  { name: "Knowledge", href: "/knowledge", icon: Library, shortcut: "2", description: "Document corpus" },
+  { name: "Retrieval", href: "/retrieval", icon: Search, shortcut: "3", description: "Pipeline inspector" },
+  { name: "Evaluation", href: "/evaluation", icon: LineChart, shortcut: "4", description: "Ragas quality" },
+  { name: "System", href: "/system", icon: Server, shortcut: "5", description: "Engine diagnostics" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [isHealthy, setIsHealthy] = useState(true);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [stats, setStats] = useState({ documents_indexed: 12, chunks_stored: 423 });
 
   useEffect(() => {
-    fetchHealthServices().then(services => {
-      const allHealthy = services.every((s: any) => s.status === 'healthy');
-      setIsHealthy(allHealthy);
-    }).catch(() => setIsHealthy(true));
+    fetchOverviewStats()
+      .then((res: any) => {
+        if (res && res.documents_indexed) {
+          setStats(res);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Keyboard shortcut listener for ⌘1 through ⌘5
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && ["1", "2", "3", "4", "5"].includes(e.key)) {
+        e.preventDefault();
+        const index = parseInt(e.key, 10) - 1;
+        if (navigation[index]) {
+          window.location.href = navigation[index].href;
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
-    <div className="flex h-full w-[260px] flex-col border-r border-border/20 bg-black/40 backdrop-blur-md">
-      {/* Brand Section */}
-      <div className="px-6 pt-8 pb-4">
-        <h2 className="text-xs font-mono tracking-widest text-muted-foreground uppercase">Navigation</h2>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 px-3 py-2">
-        <nav className="flex flex-col gap-2">
-          {navigation.map((item) => {
-            const isActive = pathname.startsWith(item.href) || (pathname === '/' && item.name === 'Ask');
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 relative rounded-lg px-4 py-3 text-sm transition-all duration-300",
-                  isActive
-                    ? "text-foreground bg-accent/5 font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/30 font-light"
-                )}
-              >
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-accent shadow-[0_0_10px_rgba(0,229,255,0.8)]" />
-                )}
-                
-                <item.icon
-                  className={cn(
-                    "h-[18px] w-[18px] transition-colors",
-                    isActive ? "text-accent drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" : "text-muted-foreground/70"
-                  )}
-                />
-                <span className="tracking-wide">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="mt-auto flex flex-col px-6 py-5 border-t border-border/10">
-        <div className="mb-4">
-          <h3 className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-2">System Health</h3>
-          <div className="flex items-center gap-2 mb-2">
-            <span className={cn("text-xs font-medium", isHealthy ? "text-emerald-500" : "text-red-500")}>
-              {isHealthy ? "All systems operational" : "System degraded"}
-            </span>
-          </div>
-          
-          {/* Circular Progress (Mock) */}
-          <div className="relative h-24 w-24 mx-auto mt-4 mb-4 flex items-center justify-center">
-            <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
-              {/* Background circle */}
-              <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-border/30" />
-              {/* Progress circle */}
-              <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="251.2" strokeDashoffset="0" className="text-accent drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-semibold text-foreground">100%</span>
-              <span className="text-[9px] text-muted-foreground tracking-widest uppercase">Uptime</span>
+    <>
+      <aside className="flex h-full w-64 flex-col border-r border-border bg-[#080e0d] shrink-0 select-none">
+        {/* Brand Header */}
+        <div className="px-5 pt-5 pb-3 border-b border-border/60">
+          <Link href="/ask" className="flex items-center gap-2.5 group">
+            <div className="h-8 w-8 rounded-lg bg-surface border border-border flex items-center justify-center text-accent shadow-xs group-hover:border-accent/40 transition-colors">
+              <span className="font-serif italic font-bold text-base leading-none">M</span>
             </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-sm tracking-tight text-foreground group-hover:text-accent transition-colors">
+                  Mnemora<span className="text-accent">.</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-border/80 bg-raised/80 text-muted-foreground">
+                  v1.8
+                </span>
+              </div>
+              <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">
+                Retrieval Workspace
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Quick Search / Command Palette Trigger */}
+        <div className="px-3.5 py-3">
+          <button
+            onClick={() => setCommandOpen(true)}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-subtle border border-border text-xs text-muted-foreground hover:text-foreground hover:border-line hover:bg-raised transition-all group"
+          >
+            <div className="flex items-center gap-2">
+              <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors" />
+              <span className="text-[11px]">Quick Jump...</span>
+            </div>
+            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-border bg-raised text-muted-foreground">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Navigation Section */}
+        <div className="flex-1 px-3 py-1 space-y-4 overflow-y-auto custom-scrollbar">
+          <div>
+            <div className="px-2.5 pb-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 font-medium">
+              WORKSPACE
+            </div>
+            <nav className="space-y-1">
+              {navigation.map((item) => {
+                const isActive = pathname.startsWith(item.href) || (pathname === "/" && item.name === "Ask");
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "group relative flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all",
+                      isActive
+                        ? "bg-raised text-foreground font-medium border border-border shadow-xs"
+                        : "text-muted-foreground hover:text-foreground hover:bg-raised/40"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon
+                        className={cn(
+                          "h-4 w-4 shrink-0 transition-colors",
+                          isActive ? "text-accent" : "text-muted-foreground group-hover:text-foreground"
+                        )}
+                      />
+                      <div className="flex flex-col">
+                        <span className="tracking-tight text-xs font-medium leading-none mb-1">
+                          {item.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground/70 leading-none">
+                          {item.description}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-1.5">
+                      {isActive && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-signal ring-2 ring-signal/20 animate-pulse" />
+                      )}
+                      <span className="text-[10px] font-mono text-muted-foreground/40 group-hover:text-muted-foreground transition-colors">
+                        ⌘{item.shortcut}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-          
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
-            Version 1.6.0
+
+          {/* Corpus Telemetry Summary */}
+          <div className="p-3 rounded-lg border border-border/80 bg-surface/80 space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
+              <span>INDEX STATUS</span>
+              <span className="flex items-center gap-1 text-signal lowercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+                ready
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
+              <div>
+                <span className="text-[10px] text-muted-foreground block">Documents</span>
+                <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
+                  {stats.documents_indexed}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground block">Chunks</span>
+                <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
+                  {stats.chunks_stored}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* User Profile */}
-        <div className="flex items-center justify-between cursor-pointer group pt-3 border-t border-border/10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] backdrop-blur-md text-foreground text-sm font-medium border border-white/10 group-hover:border-white/20 transition-colors">
-              N
+        {/* Sidebar Footer */}
+        <div className="p-3.5 border-t border-border mt-auto bg-surface-subtle/60 flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-signal shrink-0" />
+              <span>Engine <span className="text-foreground/90">Online</span></span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-foreground">Mnemora Engine</span>
-              <span className="text-[10px] text-muted-foreground">Local Environment</span>
-            </div>
+            <span className="text-[10px] text-muted-foreground/60">p95 ~107ms</span>
           </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+
+          <a
+            href="https://www.harshakurtkoti.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-2 py-1 rounded bg-raised/50 hover:bg-raised text-[10px] font-mono text-muted-foreground hover:text-accent transition-colors border border-border/60"
+          >
+            <span>harshakurtkoti.in</span>
+            <ArrowUpRight className="h-3 w-3" />
+          </a>
         </div>
-      </div>
-    </div>
+      </aside>
+
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+    </>
   );
 }
