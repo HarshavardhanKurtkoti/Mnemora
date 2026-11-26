@@ -1,639 +1,442 @@
+Buddy, I see exactly what you're saying. The current Mnemora dashboard looks more like a generic AI-generated cyberpunk admin template than a thoughtfully engineered product.
 
-# Project 1 — Production-Grade Retrieval-Augmented Generation (RAG) System
+I wouldn't just redesign Mnemora in isolation. I'd establish a **unified design system derived from your portfolio**, which you can reuse across every project you build. Your portfolio and projects should feel like they belong to the same engineer, while retaining their own product identities.
 
-## 🎯 Goal
+### **What's wrong with the current Mnemora UI?**
 
-Build a **production-grade, domain-specific "Ask My Documents" RAG system**.
+| Current design                       | Problem                                                    |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Neon cyan accents everywhere         | Makes the interface look gimmicky                          |
+| Purple and blue background gradients | Generic AI-generated aesthetic                             |
+| Geometric grid background            | Adds unnecessary visual noise                              |
+| Excessive card borders               | Weak visual hierarchy                                      |
+| Oversized sidebar                    | Wastes usable workspace                                    |
+| Glowing uptime ring                  | Decorative rather than functional                          |
+| Large empty dashboard cards          | Makes the product look unfinished                          |
+| Inconsistent typography              | No coherent visual identity                                |
+| Command Center branding              | Feels unnecessarily futuristic                             |
+| Search interface                     | The primary functionality doesn't receive enough attention |
 
-The system should:
+The sophistication should come from typography, spacing, layout, interaction design and attention to detail — not from neon effects.
 
-* Ingest documents such as PDFs, Markdown files, and web pages.
-* Parse and clean the documents.
-* Split documents into meaningful chunks.
-* Generate embeddings and store them in a vector database.
-* Retrieve relevant information for a user query.
-* Combine semantic and keyword-based retrieval.
-* Re-rank retrieved chunks for better precision.
-* Generate answers grounded only in retrieved evidence.
-* Provide **citations pointing to the exact source/chunk** used for the answer.
-* Refuse to answer when sufficient evidence is unavailable.
-* Include an evaluation pipeline to measure RAG quality.
-* Run evaluations automatically in CI so quality regressions can block a build.
+## **1. Establish your own design identity**
 
-The goal is **not to build another basic chatbot**.
+I checked your live [portfolio](https://www.harshakurtkoti.in/?utm_source=chatgpt.com) and the Mnemora screen recording. Your portfolio positions you as a **Backend, AI & Infrastructure Engineer**, with an emphasis on systems architecture, engineering case studies and interactive technical demonstrations.&#x20;
 
-The goal is to demonstrate that I understand how to build, evaluate, and operate a real-world RAG system.
+[image](https://www.google.com/s2/favicons?domain=https://www.harshakurtkoti.in\&sz=32)
 
----
+Backend, AI & Infrastructure Engineer
 
-# Phase 1 — RAG Fundamentals
+Your applications should reinforce that identity.
 
-## 1. Document Ingestion
+I'd call the design direction **Engineering Minimalism** — somewhere between Linear, Vercel, Raycast and a sophisticated engineering workspace.
 
-Support multiple document types:
+[My issues – Linear Docs](https://images.openai.com/static-rsc-4/I6nXbXULu4AjOAbKySmNBePXrY6UNlUxqZf67aERSpb6IEFmgpFaDlrVPfeqo1yVQnuvlO-94z0xedRppwBotFwaHYV_vdtiM1skZGWoGrX_NGVTphwFRkWxnST1CSEHuEaEQpF_jvBx1deaCyKatt5nvSbPpoYqLLmOn2uSqEs?purpose=inline)
 
-* PDF
-* Markdown
-* TXT
-* Web pages
+**Linear**
 
-Pipeline:
+Typography, spacing and restrained visual hierarchy.
 
-```text
-Document
-   ↓
-Loader
-   ↓
-Text Extraction
-   ↓
-Cleaning / Normalization
-   ↓
-Chunking
-   ↓
-Metadata Enrichment
-   ↓
-Embedding
-   ↓
-Vector Database
-```
+[Vercel Observability is now generally available - Vercel](https://images.openai.com/static-rsc-4/uCFDIjSy2XgL53rvlyjCAthS1QKBp6IrIF2yYW04iFojmgOyeFAlkLDC_dTMjzn0aStH0MdbgqLMjNEQrsc0zpDZhbfGh5x2umQ_aVeMLebCoJzQ8jfmA6piOHFkEDnnyjgxp1rp4qdbnR4D2AmFtR2fDDnfR_MgDWpYASI1k8o?purpose=inline)
 
-Each chunk should contain metadata such as:
+**Vercel**
 
-```text
-document_id
-document_name
-source
-page_number
-chunk_id
-section
-created_at
-```
+Clean technical data presentation.
 
-This metadata will later be used for citations and debugging.
+[What&#39;s New in Raycast for Mac v2 | Raycast Manual](https://images.openai.com/static-rsc-4/g4aftA7KypuVXK9ngBdDUzv0xZM4_BS3g1rOhhmEAvXNudzmjYTJvdlxk0PZRFikxtfFYb2c9nFclPJ7oarL44JG_PLdXX_UwmlME4r6mPiuCb58F-0LOKcFHiT-HK8g_peJav5OjALEcm1WY27NnUagWDHAOxZmb-F9ebMlO2k?purpose=inline)
 
----
+**Raycast**
 
-## 2. Chunking
+Search experience and polished interactions.
 
-Start with approximately:
+[Improved Overview Metrics · Resend](https://images.openai.com/static-rsc-4/tjRGVr3j6Adiw7-p0Asd7m1m8IunP0X10wlTjAPTnIEJDqjrKt2RPWwxVR-7oX8FuZSE0Oij_JF5cOcFYRWH1VRURGysIcoZcTvOT02ZXZMhwu7EkUBvTft8DZTqnLQNK-t3pE6uciewzeIYlYUcqXrlcULo66JqBFSF8013D9s?purpose=inline)
 
-* **500–800 tokens per chunk**
-* **~100 token overlap**
+**Resend**
 
-The overlap prevents important context from being lost at chunk boundaries.
+Developer-focused premium product design.
 
-However, chunking should eventually become **structure-aware** rather than blindly splitting every N tokens.
+Use these as quality references, but derive the actual design tokens from your portfolio rather than copying another product.
 
-For example:
+## **2. Shared design system for every project**
 
-```text
-Document
- ├── Section
- │    ├── Paragraph
- │    ├── Paragraph
- │    └── Paragraph
- └── Section
-      ├── Paragraph
-      └── Paragraph
-```
+You could internally call it **HK Design System**.
 
-The system should attempt to keep related content together.
+Proposed dark palette — starting point, not extracted portfolio colors
 
----
+Canvas
 
-## 3. Embeddings
+\#09090B
 
-Convert each chunk into a vector representation.
+Surface
 
-```text
-Chunk
-  ↓
-Embedding Model
-  ↓
-Vector
-  ↓
-Vector Database
-```
+\#111113
 
-The embedding model should be configurable so that it can be changed without rewriting the entire pipeline.
+Elevated
 
----
+\#19191D
 
-## 4. Vector Store
+Border
 
-Possible choices:
+\#29292E
 
-* ChromaDB
-* Weaviate
-* Qdrant
+Muted
 
-For the first implementation, choose one and keep the storage layer abstract enough that another vector database can be substituted later.
+\#A1A1AA
 
----
+Primary
 
-# Phase 1 Retrieval Pipeline
+\#F4F4F5
 
-For every user query:
+Typography direction
 
-```text
-User Query
-    ↓
-Query Embedding
-    ↓
-Vector Search
-    ↓
-Top-K Chunks
-    ↓
-Prompt Construction
-    ↓
-LLM
-    ↓
-Answer + Citations
-```
+# **Intelligence, engineered.**
 
-The system should retrieve the most relevant chunks before asking the LLM to answer.
+Purposeful interfaces for complex engineering systems.
 
-The LLM should **not be allowed to freely answer from its own knowledge** when the task requires information from the document corpus.
+# **107 ms**
 
----
+&#x20;Operational
 
-# Citation System
+| Design element | Standard                                           |
+| -------------- | -------------------------------------------------- |
+| Colors         | Portfolio-derived neutral palette                  |
+| Fonts          | Exact portfolio font families                      |
+| Accent         | One restrained brand accent                        |
+| Borders        | Subtle 1px borders                                 |
+| Corner radius  | Consistent 6–12px                                 |
+| Glassmorphism  | Selective, not everywhere                          |
+| Icons          | Lucide, consistent stroke widths                   |
+| Animation      | Purposeful 120–250ms transitions                  |
+| Charts         | Muted colors and minimal grid lines                |
+| Background     | Clean, no excessive decorative patterns            |
+| Layout         | Responsive, content-first                          |
+| Branding       | Individual project identity with shared visual DNA |
 
-Every factual claim should be traceable back to retrieved evidence.
+## **3. How I would redesign Mnemora**
 
-Example:
+Instead of making it look like a command center, make it feel like an actual **RAG engineering workspace**.
 
-```text
-Answer:
+**Mnemora**
 
-The system uses X to perform authentication.
+Workspace / Ask
 
-[1] authentication.md — Section 3
-[2] architecture.pdf — Page 14
-```
+● Operational
 
-The citation should ideally contain:
+WORKSPACE
 
-```text
-Document
-Page / Section
-Chunk ID
-Relevant source text
-```
+&#x20;**Ask**
 
-This makes the system auditable.
+Knowledge
 
----
+Retrieval
 
-# Phase 2 — Production-Quality Retrieval
+Evaluation
 
-The biggest upgrade from a basic RAG demo is **hybrid retrieval**.
+System
 
-## Hybrid Search
+Local environmentv1.6.0
 
-Combine:
+RETRIEVAL WORKSPACE
 
-### 1. Semantic Search
+# **Explore your knowledge.**
 
-Uses embeddings to understand meaning.
+Search, retrieve and inspect grounded answers.
 
-Example:
+Ask a question about your documents...
 
-```text
-"How do I reset my password?"
-```
+Hybrid retrieval
 
-can match:
+Documents
 
-```text
-"Procedure for recovering account credentials"
-```
+## **12**
 
-even though the wording is different.
+Latency · p95
 
-### 2. BM25 Keyword Search
+## **107 ms**
 
-Useful when exact terms matter.
+Benchmark
 
-Example:
+## **60**
 
-```text
-"ERR_CONNECTION_RESET"
-```
+**Retrieval pipeline**
 
-A keyword search can be much better at finding an exact technical error code than pure semantic search.
+**Recent queries**
 
----
+How does authentication work?
 
-## Hybrid Retrieval
+Illustrative layout concept, not an implemented dashboard. Metric values are examples from the supplied interface.
 
-```text
-                 ┌── Vector Search ──┐
-User Query ──────┤                   ├──→ Candidate Chunks
-                 └── BM25 Search ────┘
-                           ↓
-                    Merge / Fusion
-                           ↓
-                    Top-N Candidates
-```
+The search functionality becomes the hero. Everything else supports it rather than competing for attention.
 
-The system should combine both retrieval methods instead of relying exclusively on vector similarity.
+I'd also redesign the retrieval inspector, which is arguably the most technically interesting part of Mnemora. It should showcase BM25, vector search, reciprocal rank fusion and cross-encoder reranking through clear, inspectable execution stages.
 
----
+## **4. Give this prompt to Codex**
 
-# Re-Ranking
+I'd use **Codex** for this because this is a repository-wide design refactor, not just a visual makeover.
 
-Initial retrieval should prioritize recall.
+Open both your portfolio and Mnemora repositories in the workspace so Codex can extract the actual design system.
 
-Then use a **cross-encoder / re-ranker** to improve precision.
+# Mnemora — Complete UI/UX Refactor & Shared Portfolio Design System
 
-```text
-Query
-  ↓
-Hybrid Retrieval
-  ↓
-Top 20–50 Candidates
-  ↓
-Cross Encoder
-  ↓
-Re-ranked Top 5–10
-  ↓
-LLM
-```
+Act as a senior product designer, design systems architect, and frontend engineer.
 
-A cross-encoder evaluates:
+## Objective
 
-```text
-(Query, Chunk)
-```
+Completely refactor the Mnemora frontend to establish a premium, mature, engineering-focused product identity consistent with my personal portfolio:
 
-together and assigns a relevance score.
+[https://www.harshakurtkoti.in](https://www.harshakurtkoti.in)
 
-Possible tools:
+The existing dashboard looks heavily AI-generated and vibe-coded. I do not want a generic futuristic AI dashboard, cyberpunk interface, or template-based SaaS design.
 
-* Cohere Rerank
-* Sentence Transformers cross-encoder models
+The long-term objective is to establish a reusable design system that I can apply across all my personal engineering projects.
 
----
+## Phase 1 — Research and design audit
 
-# Citation Enforcement / Anti-Hallucination
+Use parallel subagents where supported.
 
-The system should have an explicit rule:
+- Agent 1: Inspect the portfolio website and its source repository. Extract the actual typography, colors, design tokens, surfaces, spacing, visual hierarchy, animation patterns, borders and interaction behavior.
+- Agent 2: Audit every Mnemora page, component, layout, stylesheet and existing frontend behavior.
+- Agent 3: Study mature developer-focused product interfaces such as Linear, Vercel, Raycast and Resend. Identify relevant design principles without directly cloning their interfaces.
+- Agent 4: Audit accessibility, responsive design, rendering performance and UX motion.
 
-> If the retrieved evidence does not support the answer, do not answer from general model knowledge.
+Consolidate the findings before implementation.
 
-Instead:
+Do not assume the portfolio's design tokens. Extract them directly from its source code.
 
-```text
-"I couldn't find sufficient information in the provided documents
-to answer this question."
-```
+## Phase 2 — Create a reusable design system
 
-This is an important distinction between:
+Establish a shared design foundation that can later be reused across Mnemora, RAG Observability, VisionBoard and my other projects.
 
-```text
-RAG Demo
-```
+Create centralized, reusable definitions for:
 
-and
+- Semantic color tokens
+- Background and surface hierarchy
+- Typography and font families
+- Spacing scale
+- Border colors and radius
+- Shadows
+- Icon sizes and stroke widths
+- Motion duration and easing
+- Chart palettes
+- Focus and interaction states
+- Responsive breakpoints
+- Status indicators
+- Loading, empty, error and success states
 
-```text
-Production RAG System
-```
+Use CSS variables and integrate them with the existing Tailwind configuration where applicable.
 
----
+Create reusable UI primitives rather than duplicating styles across pages.
 
-# Prompt Management
+Document the design system in `docs/DESIGN_SYSTEM.md`.
 
-Prompts should **not be hardcoded throughout the application**.
+Keep the shared design foundation portable across repositories.
 
-Store them as versioned configuration.
+## Phase 3 — Remove the AI-generated aesthetic
 
-Example:
+Remove or substantially redesign:
 
-```text
-prompts/
-├── system_v1.txt
-├── system_v2.txt
-├── answer_v1.txt
-└── citation_v1.txt
-```
+- Neon cyan glows
+- Cyberpunk gradients
+- Purple ambient lighting
+- Decorative geometric backgrounds
+- Excessive glassmorphism
+- Glowing uptime rings
+- Futuristic command-center branding
+- Excessive uppercase labels
+- Unnecessary status badges
+- Overly large sidebars
+- Excessive card nesting
+- Decorative animations
+- Large empty dashboard panels
+- Inconsistent italic heading treatments
 
-Prompt changes should be treated similarly to code changes because they can change system behavior.
+Glassmorphism may be used selectively where it serves a functional purpose and matches the portfolio.
 
----
+The product should feel deliberately designed by a professional product team.
 
-# Phase 3 — Evaluation & Shipping
+## Phase 4 — Redesign every page
 
-## Golden Dataset
+### Application shell
 
-Create a manually verified evaluation dataset.
+Build a compact, responsive navigation system with consistent page headings, breadcrumbs where useful, keyboard accessibility and subtle active states.
 
-Target:
+Retain Mnemora's individual product identity while matching the broader portfolio design language.
 
-**50–200 QA pairs**
+### Ask
 
-Example:
+Make the question composer the primary focus.
 
-```json
-{
-  "question": "How does authentication work?",
-  "expected_answer": "...",
-  "expected_sources": [
-    "authentication.md"
-  ]
-}
-```
+Implement a polished search and conversational answer experience, including:
 
-The dataset should contain different categories:
+- Retrieval configuration
+- Grounded answers
+- Inline citations
+- Expandable source passages
+- Retrieval latency
+- Relevant query history
+- Useful suggested questions
+- Keyboard shortcuts
+- Streaming states where supported by the existing backend
 
-* Easy factual questions
-* Multi-hop questions
-* Questions requiring exact terminology
-* Questions with no answer in the corpus
-* Questions designed to expose hallucinations
-* Questions requiring multiple sources
+Do not overwhelm the user with operational metrics before they ask a question.
 
----
+### Knowledge
 
-# RAG Evaluation
+Create a professional document management workspace.
 
-Measure more than whether the answer "looks good."
-
-Important metrics:
+Use clean tables, document previews, search, filters, upload states, indexing progress and actionable error states.
 
 ### Retrieval
 
-* Context Precision
-* Context Recall
-* Retrieval Hit Rate
-* Re-ranking effectiveness
+Make this the flagship technical experience.
 
-### Generation
+Present the retrieval pipeline through inspectable execution stages:
 
-* Faithfulness
-* Answer Relevance
-* Citation Accuracy
-* Citation Coverage
+1. Query processing
+2. Dense vector retrieval
+3. Sparse BM25 retrieval
+4. Reciprocal rank fusion
+5. Cross-encoder reranking
+6. Context selection
+
+Allow inspection of retrieved passages, scores, ranking changes, document metadata and stage latency wherever supported by existing APIs.
+
+Use meaningful data visualization instead of decorative cards.
+
+### Evaluation
+
+Create a mature benchmark analysis interface with:
+
+- Recall\@K
+- Precision\@K
+- MRR
+- Hit rate
+- Latency percentiles
+- Retrieval strategy comparisons
+- Evaluation history
+- Individual question results
+- Regression indicators
+
+Only display metrics supported by actual data. Do not fabricate values.
 
 ### System
 
-* Latency
-* Token usage
-* Cost per query
-* Failure rate
+Create an infrastructure observability workspace with:
 
-Possible evaluation framework:
+- Service health
+- Dependency topology
+- Runtime configuration
+- Database and vector-store status
+- Pipeline stages
+- Actual uptime where available
+- Health-check results
 
-**Ragas**
+Clearly distinguish healthy, degraded, unavailable, unconfigured and unknown states.
 
----
+## Phase 5 — Motion and interaction design
 
-# Faithfulness
+Apply the existing UX motion skill if available.
 
-One of the most important metrics.
+Use purposeful transitions, progressive disclosure, consistent interaction feedback, restrained hover states and reduced-motion support.
 
-Question:
+Animations should communicate state changes rather than merely decorate the interface.
 
-> Are the claims made by the LLM actually supported by the retrieved context?
+Avoid continuous decorative motion, unnecessary entrance animations and glowing effects.
 
-Example:
+## Phase 6 — Engineering requirements
 
-```text
-Retrieved evidence:
-"The API uses OAuth 2.0."
+- Preserve all existing backend integrations.
+- Preserve API contracts and application functionality.
+- Do not replace real data with mock data.
+- Do not introduce unnecessary dependencies.
+- Preserve existing routes unless a change is essential and documented.
+- Keep components modular and maintainable.
+- Ensure appropriate contrast and keyboard navigation.
+- Handle loading, empty, disconnected and error states.
+- Support desktop, tablet and mobile layouts.
+- Avoid layout shifts and unnecessary client-side rendering.
+- Never expose environment secrets or backend credentials.
 
-Generated answer:
-"The API uses OAuth 2.0 and supports SAML."
+Investigate existing inconsistencies such as document counts, zero-valued metrics and operational status indicators. Do not report healthy status when health data is unavailable.
+
+## Phase 7 — Validation
+
+Use Playwright or an equivalent browser-testing tool to inspect every page.
+
+Validate at viewport widths of 1920, 1440, 1280, 768 and 390 pixels.
+
+Capture before-and-after screenshots.
+
+Run lint, type checking, production builds and existing tests.
+
+Use a final design-review subagent to identify remaining generic AI-generated visual patterns, inconsistent spacing, weak hierarchy and accessibility issues.
+
+Fix identified issues before completing the task.
+
+## Deliverables
+
+1. Fully refactored Mnemora frontend.
+2. Centralized reusable design tokens.
+3. Reusable UI component primitives.
+4. Documented shared design system.
+5. Before-and-after screenshots.
+6. Testing and validation report.
+7. List of modified files.
+8. Instructions for adopting the same design system in my other projects.
+
+Work on a dedicated branch named `refactor/portfolio-design-system`.
+
+Do not merge automatically.
+
+The final product must look like a mature engineering application belonging to the same visual ecosystem as my portfolio — not a generic AI-generated dashboard.
+
+Do not stop after changing colors and fonts. Reconsider the entire visual hierarchy, information architecture, page layouts and interaction experience.
+
+## **5. Eventually, create a shared UI repository**
+
+Since you have multiple engineering projects, I would structure your ecosystem like this:
+
+A dedicated repository, `hk-design-system`, could eventually expose packages such as:
 
 ```
-
-If the retrieved context only supports OAuth 2.0, the second claim is unsupported.
-
-The system should detect this.
-
----
-
-# CI / Regression Testing
-
-Evaluation should become part of the development workflow.
-
-```text
-Developer Push
-      ↓
-CI Pipeline
-      ↓
-Run Tests
-      ↓
-Run RAG Evaluation
-      ↓
-Compare Metrics
-      ↓
-Quality Pass?
-   ↙          ↘
- YES           NO
-  ↓             ↓
-Merge       Fail Build
+hk-design-system/
+├── packages/
+│   ├── tokens/
+│   ├── ui/
+│   ├── motion/
+│   ├── charts/
+│   └── icons/
+├── docs/
+├── examples/
+└── README.md
 ```
 
-Example quality gates:
+Then every new project starts with your established design language instead of asking an AI to invent a new interface from scratch.
 
-```text
-Faithfulness      ≥ 0.85
-Answer Relevance  ≥ 0.80
-Citation Coverage ≥ 0.90
-Retrieval Recall  ≥ 0.85
-```
+## **My rating**
 
-The exact thresholds should be determined from the baseline rather than arbitrarily chosen.
+Current visual aesthetics
 
----
+**4.5/10**
 
-# Proposed Architecture
+Visual hierarchy
 
-```text
-                    ┌─────────────────┐
-                    │      User       │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │    API Layer    │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │ Query Processor │
-                    └────────┬────────┘
-                             ↓
-              ┌──────────────┴──────────────┐
-              ↓                             ↓
-       ┌─────────────┐              ┌─────────────┐
-       │ Vector Search│              │ BM25 Search │
-       └──────┬──────┘              └──────┬──────┘
-              └──────────────┬──────────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │ Result Fusion   │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │    Re-ranker    │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │ Context Builder │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │       LLM       │
-                    └────────┬────────┘
-                             ↓
-                    ┌─────────────────┐
-                    │ Answer + Source │
-                    │   Citations     │
-                    └─────────────────┘
-```
+**4/10**
 
----
+Technical feature presentation
 
-# Recommended Tech Stack
+**6.5/10**
 
-## Backend
+Brand consistency
 
-* Python
-* FastAPI
+**3/10**
 
-## AI / Orchestration
+Professional product appearance
 
-* LangChain or LangGraph
+**4.5/10**
 
-## Embeddings
+These are subjective visual ratings based on your screenshot and recording. I could access the live portfolio's content, but haven't verified its rendered CSS or exact design tokens, which is why the prompt explicitly requires Codex to extract those from the source.
 
-* Configurable embedding model
+Your backend engineering is the selling point. The frontend should communicate its sophistication, not distract from it.
 
-## Vector Database
-
-Choose one:
-
-* Qdrant
-* ChromaDB
-* Weaviate
-
-## Keyword Search
-
-* BM25
-
-## Re-ranking
-
-* Cohere Rerank
-* Sentence Transformers Cross-Encoder
-
-## LLM
-
-Use a configurable provider rather than tightly coupling the application to one model.
-
-## Evaluation
-
-* Ragas
-* Custom evaluation scripts
-
-## Testing
-
-* Pytest
-
-## CI
-
-* GitHub Actions
-
-## Configuration
-
-* Pydantic Settings
-* Versioned YAML/JSON/config files
-
----
-
-# What Makes This Portfolio-Worthy?
-
-A basic RAG project demonstrates:
-
-```text
-"I know how to call an LLM."
-```
-
-This project should demonstrate:
-
-```text
-"I understand retrieval systems,
-information grounding,
-ranking,
-evaluation,
-observability,
-failure handling,
-and production engineering."
-```
-
-The important part is not the UI.
-
-The important part is being able to explain **why every component exists and how changing it affects system quality.**
-
----
-
-# Final Deliverables
-
-The finished project should contain:
-
-* [ ] Document ingestion pipeline
-* [ ] PDF/Markdown/web loaders
-* [ ] Structure-aware chunking
-* [ ] Embedding pipeline
-* [ ] Vector database
-* [ ] Semantic retrieval
-* [ ] BM25 retrieval
-* [ ] Hybrid retrieval
-* [ ] Cross-encoder re-ranking
-* [ ] Citation generation
-* [ ] Citation validation
-* [ ] Evidence-based answering
-* [ ] "Insufficient evidence" refusal behavior
-* [ ] Versioned prompts
-* [ ] 50–200 question golden dataset
-* [ ] RAG evaluation pipeline
-* [ ] Faithfulness measurement
-* [ ] Retrieval metrics
-* [ ] CI quality gates
-* [ ] Tests
-* [ ] API documentation
-* [ ] Architecture diagram
-* [ ] Technical README
-* [ ] Benchmark / evaluation report
-
----
-
-# What I Should Be Able to Explain in an Interview
-
-By the end of this project, I should be able to answer:
-
-1. Why isn't vector search alone enough?
-2. When does BM25 outperform semantic search?
-3. How does hybrid retrieval work?
-4. Why do we need a re-ranker?
-5. How does a cross-encoder differ from a bi-encoder?
-6. How do chunk size and overlap affect retrieval quality?
-7. How do you prevent RAG hallucinations?
-8. How do you determine whether a citation actually supports a claim?
-9. How do you evaluate RAG systems objectively?
-10. What is faithfulness?
-11. What happens when the answer doesn't exist in the corpus?
-12. How would you debug poor retrieval?
-13. How would you reduce RAG latency?
-14. How would you reduce token/cost usage?
-15. How do you prevent a code or prompt change from silently degrading RAG quality?
-
----
-
-# Core Portfolio Story
-
-The project should tell this story:
-
-**Ingest → Retrieve → Rank → Generate → Cite → Evaluate → Gate → Ship**
-
-That is the difference between building an **LLM demo** and demonstrating **AI engineering**.
+And rather than having five unrelated-looking projects, I really like the idea of someone opening any of your applications and immediately recognizing that it belongs to your engineering ecosystem. That is a much stronger personal brand.

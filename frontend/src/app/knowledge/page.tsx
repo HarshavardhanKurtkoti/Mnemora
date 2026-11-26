@@ -5,23 +5,17 @@ import {
   FileUp, 
   FileText, 
   CheckCircle2, 
-  MoreHorizontal, 
-  Loader2, 
-  X, 
   Layers, 
   BookOpen, 
-  Fingerprint, 
-  HardDrive,
+  Database, 
+  Search, 
   ArrowUpRight,
-  Database,
-  Search,
-  Sparkles,
-  RefreshCw,
-  Clock
+  Clock,
+  X,
+  FileCode,
+  HardDrive
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { uploadDocument, fetchOverviewStats } from "@/lib/api";
-import { cn } from "@/lib/utils";
 
 const INITIAL_DOCUMENTS = [
   { id: 1, name: "auth-service.md", chunks: 38, tokens: "3.4K", type: "Markdown", status: "Ready", size: "14.2 KB", updated: "2h ago" },
@@ -33,7 +27,7 @@ const INITIAL_DOCUMENTS = [
 ];
 
 export default function KnowledgePage() {
-  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState("");
@@ -58,13 +52,13 @@ export default function KnowledgePage() {
     if (!file) return;
 
     setSelectedFile(file);
-    setUploadState('uploading');
+    setUploadState("uploading");
     setUploadProgress(0);
     setUploadError("");
 
     const interval = setInterval(() => {
       setUploadProgress((p) => {
-        const next = p + Math.random() * 18;
+        const next = p + Math.random() * 20;
         return next > 95 ? 95 : next;
       });
     }, 200);
@@ -73,9 +67,8 @@ export default function KnowledgePage() {
       await uploadDocument(file);
       clearInterval(interval);
       setUploadProgress(100);
-      setUploadState('success');
+      setUploadState("success");
 
-      // Add to document list
       const newDoc = {
         id: Date.now(),
         name: file.name,
@@ -94,12 +87,12 @@ export default function KnowledgePage() {
       }));
 
       setTimeout(() => {
-        setUploadState('idle');
+        setUploadState("idle");
         setSelectedFile(null);
-      }, 1800);
+      }, 1600);
     } catch (err: any) {
       clearInterval(interval);
-      setUploadState('error');
+      setUploadState("error");
       setUploadError(err.message || "Failed to upload document");
     } finally {
       if (fileInputRef.current) {
@@ -113,30 +106,27 @@ export default function KnowledgePage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-4 lg:p-6 bg-transparent relative">
-      {/* Ambient background lighting */}
-      <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-accent/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] bg-[#00E5FF]/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-[1600px] w-full mx-auto space-y-4">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6 bg-background">
+      <div className="max-w-6xl w-full mx-auto space-y-6">
         
-        {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
-                Knowledge <span className="font-serif italic text-accent opacity-90">Base</span>
-              </h1>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-2.5 py-0.5 rounded-full">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-[2px] bg-accent inline-block" />
+              <span className="text-[11px] font-mono uppercase tracking-widest text-accent">
                 Data Layer
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed">
-              Manage ingested documents, tokenized chunks, and vector embeddings in the active RAG store.
+            <h1 className="text-2xl font-normal tracking-tight text-foreground">
+              Knowledge <em className="font-serif italic text-accent font-normal">Base</em>
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Manage ingested documentation, chunk topologies, and embedding vectors in the active RAG store.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-end md:self-center">
+          <div className="flex items-center gap-3">
             <input
               type="file"
               ref={fileInputRef}
@@ -144,70 +134,69 @@ export default function KnowledgePage() {
               className="hidden"
               accept=".txt,.md,.pdf,.csv,.json"
             />
-            <Button
+            <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadState === 'uploading'}
-              className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-4 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all"
+              disabled={uploadState === "uploading"}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-accent text-[#091712] font-medium text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors cursor-pointer"
             >
-              <FileUp className="mr-1.5 h-3.5 w-3.5" />
-              Upload Document
-            </Button>
+              <FileUp className="h-3.5 w-3.5" />
+              <span>Upload Document</span>
+            </button>
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-accent/10 text-accent border border-accent/20 flex items-center justify-center shrink-0">
-              <FileText className="h-4 w-4" />
+        {/* 4 Metric Tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <BookOpen className="h-3.5 w-3.5 text-accent" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Documents Indexed</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{overviewStats.documents_indexed}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Documents Indexed</div>
-            </div>
-          </div>
-
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/20 flex items-center justify-center shrink-0">
-              <Layers className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{overviewStats.chunks_stored}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Chunks Stored</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {overviewStats.documents_indexed}
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#14B8A6]/10 text-[#14B8A6] border border-[#14B8A6]/20 flex items-center justify-center shrink-0">
-              <Fingerprint className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Layers className="h-3.5 w-3.5 text-signal" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Chunks Stored</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{(overviewStats.tokens_total / 1000).toFixed(1)}K</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Tokens Total</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {overviewStats.chunks_stored}
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 flex items-center justify-center shrink-0">
-              <Database className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <HardDrive className="h-3.5 w-3.5 text-foreground/70" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Tokens Total</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">Cosine / 384d</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Vector Space</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {(overviewStats.tokens_total / 1000).toFixed(1)}K
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Database className="h-3.5 w-3.5 text-amber-400" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Vector Space</span>
+            </div>
+            <div className="text-base font-semibold text-foreground tracking-tight font-mono">
+              Cosine / 384d
             </div>
           </div>
         </div>
 
-        {/* Document Management Table */}
-        <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Document Management Table Card */}
+        <div className="rounded-xl border border-border bg-surface overflow-hidden">
+          <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <FileText className="h-3.5 w-3.5 text-accent" />
-              <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
-                Indexed Documents
-              </h3>
-              <span className="text-[10px] font-mono text-muted-foreground ml-2">
-                ({filteredDocs.length} files)
+              <span className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+                Indexed Files
+              </span>
+              <span className="text-xs font-mono text-muted-foreground">
+                ({filteredDocs.length} documents)
               </span>
             </div>
 
@@ -217,62 +206,66 @@ export default function KnowledgePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter documents..."
-                className="w-full bg-white/[0.02] border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/40 transition-colors"
+                placeholder="Search documents..."
+                className="w-full bg-surface-subtle border border-line rounded-md pl-9 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-accent/40 transition-colors font-light"
               />
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-white/[0.01] text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  <th className="py-3 px-4 font-medium">Document Name</th>
-                  <th className="py-3 px-4 font-medium">Chunks</th>
-                  <th className="py-3 px-4 font-medium">Tokens</th>
-                  <th className="py-3 px-4 font-medium">Format</th>
-                  <th className="py-3 px-4 font-medium">Size</th>
-                  <th className="py-3 px-4 font-medium">Indexed</th>
-                  <th className="py-3 px-4 font-medium text-right">Status</th>
-                  <th className="py-3 px-4 font-medium text-right">Action</th>
+                <tr className="border-b border-border bg-secondary/30 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  <th className="py-2.5 px-4 font-medium">File Name</th>
+                  <th className="py-2.5 px-4 font-medium">Chunks</th>
+                  <th className="py-2.5 px-4 font-medium">Tokens</th>
+                  <th className="py-2.5 px-4 font-medium">Format</th>
+                  <th className="py-2.5 px-4 font-medium">Size</th>
+                  <th className="py-2.5 px-4 font-medium">Indexed</th>
+                  <th className="py-2.5 px-4 font-medium text-right">Status</th>
+                  <th className="py-2.5 px-4 font-medium text-right">Preview</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 font-light">
+              <tbody className="divide-y divide-border/60">
                 {filteredDocs.map((doc) => (
                   <tr
                     key={doc.id}
                     onClick={() => setSelectedDoc(doc)}
-                    className="hover:bg-white/[0.03] transition-colors cursor-pointer group"
+                    className="hover:bg-raised transition-colors cursor-pointer group"
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-7 w-7 rounded bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-accent group-hover:border-accent/30 transition-colors shrink-0">
-                          <FileText className="h-3.5 w-3.5" />
-                        </div>
+                        <FileText className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
                         <span className="font-medium text-foreground group-hover:text-accent transition-colors truncate">
                           {doc.name}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-mono text-muted-foreground">{doc.chunks} chunks</td>
-                    <td className="py-3 px-4 font-mono text-muted-foreground">{doc.tokens}</td>
+                    <td className="py-3 px-4 font-mono text-muted-foreground tabular-nums">
+                      {doc.chunks}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-muted-foreground tabular-nums">
+                      {doc.tokens}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className="text-[10px] font-mono uppercase bg-white/5 border border-white/10 px-2 py-0.5 rounded text-muted-foreground">
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded border border-border bg-secondary text-muted-foreground">
                         {doc.type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-mono text-muted-foreground">{doc.size}</td>
-                    <td className="py-3 px-4 text-muted-foreground text-[11px]">{doc.updated}</td>
+                    <td className="py-3 px-4 font-mono text-muted-foreground tabular-nums">
+                      {doc.size}
+                    </td>
+                    <td className="py-3 px-4 text-muted-foreground text-[11px]">
+                      {doc.updated}
+                    </td>
                     <td className="py-3 px-4 text-right">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 className="h-2.5 w-2.5" />
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-signal">
+                        <span className="h-1.5 w-1.5 rounded-full bg-signal" />
                         {doc.status}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <button className="text-muted-foreground/60 hover:text-accent p-1 transition-colors">
-                        <ArrowUpRight className="h-3.5 w-3.5" />
-                      </button>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors inline" />
                     </td>
                   </tr>
                 ))}
@@ -283,45 +276,40 @@ export default function KnowledgePage() {
 
       </div>
 
-      {/* Upload Progress Modal */}
-      {uploadState !== 'idle' && selectedFile && (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#070b0e] border border-accent/20 shadow-[0_8px_32px_rgba(0,229,255,0.15)] rounded-2xl w-full max-w-md p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-60" />
-
-            <div className="flex justify-between items-start mb-5">
-              <div className="flex items-center gap-3.5">
-                <div className="h-11 w-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
-                  {uploadState === 'success' ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+      {/* Upload State Modal */}
+      {uploadState !== "idle" && selectedFile && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-xl w-full max-w-md p-6 space-y-4 shadow-xl">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-secondary border border-border flex items-center justify-center text-accent">
+                  {uploadState === "success" ? (
+                    <CheckCircle2 className="h-5 w-5 text-signal" />
                   ) : (
                     <FileUp className="h-5 w-5" />
                   )}
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-foreground">
-                    {uploadState === 'uploading'
-                      ? 'Ingesting & Chunking Document...'
-                      : uploadState === 'success'
-                      ? 'Ingestion Complete'
-                      : 'Upload Failed'}
+                    {uploadState === "uploading"
+                      ? "Ingesting & Chunking Document..."
+                      : uploadState === "success"
+                      ? "Ingestion Complete"
+                      : "Upload Failed"}
                   </h3>
-                  <p className="text-xs text-muted-foreground truncate max-w-[220px] mt-0.5">
+                  <p className="text-xs text-muted-foreground truncate max-w-[240px]">
                     {selectedFile.name}
                   </p>
                 </div>
               </div>
-              {uploadState === 'error' && (
-                <button
-                  onClick={() => setUploadState('idle')}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
+              {uploadState === "error" && (
+                <button onClick={() => setUploadState("idle")} className="text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
 
-            {uploadState === 'error' ? (
+            {uploadState === "error" ? (
               <div className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-3">
                 {uploadError}
               </div>
@@ -329,18 +317,11 @@ export default function KnowledgePage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-muted-foreground">Vectorizing Chunks</span>
-                  <span className={uploadState === 'success' ? 'text-emerald-400' : 'text-accent'}>
-                    {Math.round(uploadProgress)}%
-                  </span>
+                  <span className="text-accent">{Math.round(uploadProgress)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                   <div
-                    className={cn(
-                      "h-full transition-all duration-300 ease-out",
-                      uploadState === 'success'
-                        ? "bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                        : "bg-accent shadow-[0_0_10px_rgba(0,229,255,0.5)]"
-                    )}
+                    className="h-full bg-accent transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -350,69 +331,63 @@ export default function KnowledgePage() {
         </div>
       )}
 
-      {/* Document Detail Drawer/Modal */}
+      {/* Document Detail Preview Drawer/Modal */}
       {selectedDoc && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8">
-          <div className="bg-[#070b0e] border border-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50" />
-
-            <div className="flex justify-between items-center p-5 border-b border-white/5 bg-[#030405]/50">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-surface border border-line rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="flex justify-between items-center p-5 border-b border-border bg-surface-subtle">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
+                <FileText className="h-5 w-5 text-accent shrink-0" />
                 <div className="min-w-0">
-                  <h2 className="text-base font-medium text-foreground truncate">{selectedDoc.name}</h2>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="text-accent font-mono text-[10px]">{selectedDoc.chunks} Chunks</span>
+                  <h2 className="text-sm font-medium text-foreground truncate">{selectedDoc.name}</h2>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mt-0.5">
+                    <span>{selectedDoc.chunks} Chunks</span>
                     <span>•</span>
-                    <span className="font-mono text-[10px]">{selectedDoc.tokens} Tokens</span>
+                    <span>{selectedDoc.tokens} Tokens</span>
                     <span>•</span>
-                    <span className="font-mono text-[10px] text-emerald-400">{selectedDoc.status}</span>
+                    <span className="text-signal">{selectedDoc.status}</span>
                   </div>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => setSelectedDoc(null)}
-                className="hover:bg-white/10 shrink-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground p-1 transition-colors"
               >
-                <X className="h-5 w-5" />
-              </Button>
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#0a0f14] space-y-4">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-[#030405] border border-white/5 rounded-lg p-3">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Format</div>
-                  <div className="text-sm font-medium text-foreground mt-0.5">{selectedDoc.type}</div>
+                <div className="bg-surface-subtle border border-border rounded-lg p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Format</div>
+                  <div className="text-xs font-medium text-foreground mt-0.5">{selectedDoc.type}</div>
                 </div>
-                <div className="bg-[#030405] border border-white/5 rounded-lg p-3">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">File Size</div>
-                  <div className="text-sm font-medium text-foreground mt-0.5">{selectedDoc.size}</div>
+                <div className="bg-surface-subtle border border-border rounded-lg p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">File Size</div>
+                  <div className="text-xs font-medium text-foreground mt-0.5">{selectedDoc.size}</div>
                 </div>
-                <div className="bg-[#030405] border border-white/5 rounded-lg p-3">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Last Indexed</div>
-                  <div className="text-sm font-medium text-foreground mt-0.5">{selectedDoc.updated}</div>
+                <div className="bg-surface-subtle border border-border rounded-lg p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Last Indexed</div>
+                  <div className="text-xs font-medium text-foreground mt-0.5">{selectedDoc.updated}</div>
                 </div>
               </div>
 
               <div className="space-y-1.5 pt-2">
-                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                  Document Metadata & Ingestion Config
-                </div>
-                <pre className="bg-[#030405] border border-white/5 rounded-lg p-3 text-[11px] font-mono text-muted-foreground overflow-x-auto">
+                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
+                  Ingestion Metadata & Topology Config
+                </span>
+                <pre className="bg-surface-subtle border border-border rounded-lg p-3 text-[11px] font-mono text-muted-foreground overflow-x-auto leading-relaxed">
                   {JSON.stringify({
                     document_id: selectedDoc.name,
                     source: selectedDoc.name,
                     chunk_strategy: "token-aware-splitter",
                     chunk_size: 800,
                     chunk_overlap: 100,
-                    embedding_model: "BAAI/bge-small-en-v1.5",
+                    embedding_model: "all-MiniLM-L6-v2",
                     vector_dimensions: 384,
                     bm25_indexed: true,
-                    qdrant_collection: "rag_documents"
+                    collection: "rag_documents"
                   }, null, 2)}
                 </pre>
               </div>

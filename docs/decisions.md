@@ -354,6 +354,36 @@ Groq sunsetted older model endpoints. `openai/gpt-oss-120b` and `openai/gpt-oss-
 
 Ensures seamless, zero-deprecation LLM inference with accurate token accounting and telemetry attribution in both local and deployed environments.
 
+## Decision: Portfolio-Derived Unified Design System (HK Design System)
+
+Date: 2026-11-25
+Status: Accepted
+
+### Decision
+
+We refactor the entire Mnemora UI/UX to adopt the **HK Design System** ("Engineering Minimalism"), directly derived from Harsha Kurtkoti's personal portfolio (`https://www.harshakurtkoti.in` / `Portflio_website`). 
+
+Key decisions:
+1. **Palette**: Deep charcoal-slate canvas (`#080d10`), dark container surfaces (`#101918`, `#121e1d`), subtle raised surfaces (`#162420`), crisp hairline borders (`#202e2b`), restrained mint/emerald signal accents (`#a7f3d0`, `#34d399`), and high-legibility muted text (`#b4c0bf`, `#9aaba8`).
+2. **Typography**: Clean Geist sans-serif for UI/headings, tabular JetBrains/Geist Mono for technical metadata/kickers, and subtle Georgia serif italic accents for emphasis words.
+3. **Removal of AI-Generated Slop**: Complete elimination of `/bg.jpg` grid texture, neon cyan/purple glows (`box-shadow`, `drop-shadow`), fake circular uptime mock rings, and "Command Center" sci-fi branding.
+4. **Shell & Information Architecture**: Streamlined compact sidebar and top header; question composer as the clear hero on `/ask`; professional document workspace on `/knowledge`; inspectable 4-stage retrieval execution on `/retrieval`; rigorous benchmark analysis on `/evaluation`; infrastructure topology and pipeline visualization on `/system`.
+5. **Portability**: Document the full design tokens, surfaces, components, and adoption guide in `docs/DESIGN_SYSTEM.md` for cross-repo re-use.
+
+### Reason
+
+The previous UI exhibited common AI-generated tropes (over-saturated cyan accents, decorative background noise, oversized empty dashboard widgets) that detracted from Mnemora's sophisticated backend engineering. Aligning with the portfolio establishes an authentic, cohesive visual identity across all personal engineering repositories.
+
+### Alternatives Considered
+
+- Generic SaaS dashboard template (rejected: lacks distinctive identity and technical focus).
+- Keeping cyberpunk neon theme (rejected: PRD explicitly requested mature engineering minimalism).
+
+### Consequences
+
+Requires complete redesign of the 5 application pages and shell components while rigorously maintaining all existing FastAPI API contracts, telemetry streaming, and real data bindings.
+
+
 
 
 

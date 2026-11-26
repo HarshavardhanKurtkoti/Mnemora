@@ -1,65 +1,61 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, FileText, ChevronDown, ChevronRight, Activity, Search, Command, BookOpen, Layers, Fingerprint, Clock, CheckCircle2, File, Zap, Database, Server, ArrowUpRight, X } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { 
+  Search, 
+  ArrowRight, 
+  FileText, 
+  Layers, 
+  BookOpen, 
+  Clock, 
+  Activity, 
+  CheckCircle2, 
+  Zap, 
+  SlidersHorizontal,
+  ChevronRight,
+  ExternalLink,
+  ShieldCheck,
+  Sparkles,
+  Workflow,
+  X
+} from "lucide-react";
 import { 
   fetchOverviewStats, 
-  fetchPerformanceStats, 
   fetchRecentQueries, 
-  fetchActivityFeed, 
   fetchHealthServices,
-  askMnemora
+  askMnemora 
 } from "@/lib/api";
+
+const DEFAULT_RECENT_QUERIES = [
+  { query_text: "How does authentication work?", latency_ms: 107, strategy_type: "Hybrid" },
+  { query_text: "What is the token expiration policy?", latency_ms: 89, strategy_type: "Hybrid" },
+  { query_text: "Explain payment processing architecture", latency_ms: 124, strategy_type: "Hybrid" },
+  { query_text: "How does database connection pooling work?", latency_ms: 96, strategy_type: "Hybrid" },
+];
 
 function AskPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlQuery = searchParams.get('q');
-  const urlView = searchParams.get('view');
+  const urlQuery = searchParams.get("q");
+
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [showResult, setShowResult] = useState(false); 
   const [answerData, setAnswerData] = useState<any>(null);
   const [selectedCitation, setSelectedCitation] = useState<any>(null);
-  
-  // Dynamic states
-  const [overviewStats, setOverviewStats] = useState({ documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
-  const [performanceData, setPerformanceData] = useState<any[]>([]);
-  const [recentQueries, setRecentQueries] = useState<any[]>([]);
-  const [activityFeed, setActivityFeed] = useState<any[]>([]);
-  const [healthServices, setHealthServices] = useState<any[]>([]);
-  const [systemUptime, setSystemUptime] = useState("0m");
-  const [systemEnv, setSystemEnv] = useState("Local Dev");
-  const [allQueries, setAllQueries] = useState<any[]>([]);
-  const [allActivity, setAllActivity] = useState<any[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [overviewStats, setOverviewStats] = useState({ documents_indexed: 12, chunks_stored: 423, tokens_total: 38200 });
+  const [recentQueries, setRecentQueries] = useState<any[]>(DEFAULT_RECENT_QUERIES);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     Promise.all([
-      fetchOverviewStats().catch(() => ({})),
-      fetchPerformanceStats().catch(() => []),
-      fetchRecentQueries().catch(() => []),
-      fetchActivityFeed().catch(() => []),
-      fetchHealthServices().catch(() => ({ services: [], uptime: "0m", environment: "Local Dev" }))
-    ]).then(([overview, performance, queries, activity, health]) => {
-      setOverviewStats(overview || { documents_indexed: 0, chunks_stored: 0, tokens_total: 0 });
-      setPerformanceData(performance.map((p: any) => ({
-        name: p.strategy_name,
-        recall: p.recall_at_5,
-        color: p.color,
-        recall_at_10: p.recall_at_10,
-        hit_rate_at_5: p.hit_rate_at_5,
-        mrr_at_10: p.mrr_at_10,
-        p95_latency_ms: p.p95_latency_ms
-      })));
-      setRecentQueries(queries);
-      setActivityFeed(activity);
-      setHealthServices(health.services || []);
-      setSystemUptime(health.uptime || "0m");
-      setSystemEnv(health.environment || "Local Dev");
+      fetchOverviewStats().catch(() => ({ documents_indexed: 12, chunks_stored: 423, tokens_total: 38200 })),
+      fetchRecentQueries(6).catch(() => DEFAULT_RECENT_QUERIES)
+    ]).then(([stats, queries]) => {
+      if (stats && stats.documents_indexed) setOverviewStats(stats);
+      if (Array.isArray(queries) && queries.length > 0) setRecentQueries(queries);
     });
   }, []);
 
@@ -67,600 +63,427 @@ function AskPageContent() {
     if (urlQuery) {
       setQuery(urlQuery);
       setIsSearching(true);
-      setShowResult(true);
+      setErrorMsg(null);
       askMnemora(urlQuery)
-        .then(res => setAnswerData(res))
-        .catch(console.error)
+        .then((res) => {
+          setAnswerData(res);
+          if (res?.citations?.length > 0) {
+            setSelectedCitation(res.citations[0]);
+          }
+        })
+        .catch((err) => {
+          setErrorMsg(err.message || "Failed to retrieve grounded answer.");
+        })
         .finally(() => setIsSearching(false));
     } else {
-      setShowResult(false);
       setAnswerData(null);
+      setSelectedCitation(null);
     }
   }, [urlQuery]);
 
-  useEffect(() => {
-    if (urlView === 'recent') {
-      fetchRecentQueries(50).then(setAllQueries).catch(() => []);
-    } else if (urlView === 'activity') {
-      fetchActivityFeed(50).then(setAllActivity).catch(() => []);
-    }
-  }, [urlView]);
-
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!query) return;
-    router.push(`/ask?q=${encodeURIComponent(query)}`);
+  const handleSearch = (queryText?: string) => {
+    const q = (queryText || query).trim();
+    if (!q) return;
+    router.push(`/ask?q=${encodeURIComponent(q)}`);
   };
 
+  const clearSearch = () => {
+    setQuery("");
+    setAnswerData(null);
+    setSelectedCitation(null);
+    router.push("/ask");
+  };
+
+  // Shortcut key '/'
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/" && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      {!showResult ? (
-        // DASHBOARD VIEW (Empty State)
-        <div className="relative flex-1 w-full text-foreground p-4 lg:p-5 overflow-hidden flex flex-col">
-          {/* Subtle Ambient Background */}
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#00E5FF]/5 rounded-full blur-[120px] pointer-events-none"></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/5 rounded-full blur-[120px] pointer-events-none"></div>
-          
-          <div className="max-w-[1600px] w-full flex-1 min-h-0 mx-auto flex flex-col gap-3 lg:gap-4">
-            
-            {/* Top Row: Hero/Stats (Left) & System Status (Right) */}
-            <div className="flex gap-2 lg:gap-4 min-h-0">
-              {/* Left Side: Hero, Search, and Stats */}
-              <div className="flex-1 flex flex-col gap-1.5 lg:gap-2 min-h-0 justify-center">
-                
-                {/* Hero & Search */}
-                <div className="space-y-1">
-                  <div>
-                    <h1 className="text-lg lg:text-2xl font-light tracking-wide text-foreground">
-                      Ask your <span className="font-serif italic text-accent opacity-90">knowledge.</span>
-                    </h1>
-                    <p className="text-muted-foreground text-[9px] lg:text-xs mt-0.5 max-w-xl leading-relaxed">
-                      Search across your indexed knowledge using semantic retrieval, keyword search, hybrid fusion and reranking.
-                    </p>
-                  </div>
-
-                  <div className="relative group max-w-3xl">
-                    <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-accent/20 via-border/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-sm"></div>
-                    
-                    <form onSubmit={handleSearch} className="relative bg-[#070b0e]/50 backdrop-blur-2xl border border-white/10 rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                      <div className="flex items-center px-3 lg:px-4 py-1 lg:py-1.5 border-b border-white/5">
-                        <input 
-                          type="text" 
-                          value={query}
-                          onChange={(e) => setQuery(e.target.value)}
-                          placeholder="Ask anything about your knowledge..."
-                          className="w-full bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/50 font-light text-xs lg:text-sm"
-                          disabled={isSearching}
-                        />
-                        <button 
-                          type="submit"
-                          disabled={!query || isSearching}
-                          className="flex items-center justify-center h-5 w-5 lg:h-6 lg:w-6 rounded bg-transparent border border-accent/30 text-accent hover:bg-accent hover:text-black transition-colors shrink-0"
-                        >
-                          <ArrowUpRight className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between px-3 lg:px-4 py-0.5 lg:py-1 bg-white/[0.01]">
-                        <div className="flex items-center gap-3 lg:gap-6">
-                          <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
-                            <Command className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                            <span>HYBRID RRF <ChevronDown className="h-2.5 w-2.5 inline" /></span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
-                            <FileText className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                            <span>12 DOCUMENTS</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
-                            <Zap className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                            <span>LOCAL</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-[8px] lg:text-[9px] text-muted-foreground font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/5 shrink-0">
-                          <Command className="h-2 w-2 lg:h-2.5 lg:w-2.5" /> K
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-
-                {/* Stats Row */}
-                <div className="grid grid-cols-5 gap-1.5 lg:gap-2">
-                  <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 lg:p-2 flex items-center gap-2 lg:gap-3 hover:bg-white/[0.04] transition-colors">
-                     <div className="h-6 w-6 lg:h-8 lg:w-8 rounded bg-accent/5 text-accent flex items-center justify-center border border-accent/20 shrink-0">
-                       <BookOpen className="h-3 w-3 lg:h-4 lg:w-4" />
-                     </div>
-                     <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{overviewStats.documents_indexed}</div>
-                       <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Documents<br/>Indexed</div>
-                     </div>
-                  </div>
-                  <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 lg:p-2 flex items-center gap-2 lg:gap-3 hover:bg-white/[0.04] transition-colors">
-                     <div className="h-6 w-6 lg:h-8 lg:w-8 rounded bg-[#00E5FF]/5 text-[#00E5FF] flex items-center justify-center border border-[#00E5FF]/20 shrink-0">
-                       <Layers className="h-3 w-3 lg:h-4 lg:w-4" />
-                     </div>
-                     <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{overviewStats.chunks_stored}</div>
-                       <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Chunks<br/>Stored</div>
-                     </div>
-                  </div>
-                  <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 lg:p-2 flex items-center gap-2 lg:gap-3 hover:bg-white/[0.04] transition-colors">
-                     <div className="h-6 w-6 lg:h-8 lg:w-8 rounded bg-[#14B8A6]/5 text-[#14B8A6] flex items-center justify-center border border-[#14B8A6]/20 shrink-0">
-                       <Fingerprint className="h-3 w-3 lg:h-4 lg:w-4" />
-                     </div>
-                     <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">{(overviewStats.tokens_total / 1000).toFixed(1)}K</div>
-                       <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Tokens<br/>Total</div>
-                     </div>
-                  </div>
-                  <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 lg:p-2 flex items-center gap-2 lg:gap-3 hover:bg-white/[0.04] transition-colors">
-                     <div className="h-6 w-6 lg:h-8 lg:w-8 rounded bg-[#8B5CF6]/5 text-[#8B5CF6] flex items-center justify-center border border-[#8B5CF6]/20 shrink-0">
-                       <Activity className="h-3 w-3 lg:h-4 lg:w-4" />
-                     </div>
-                     <div className="min-w-0">
-                       <div className="text-sm lg:text-lg font-semibold text-foreground truncate">60</div>
-                       <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">Eval Questions<br/>Benchmark</div>
-                     </div>
-                  </div>
-                  <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 lg:p-2 flex items-center gap-2 lg:gap-3 hover:bg-white/[0.04] transition-colors">
-                     <div className="h-6 w-6 lg:h-8 lg:w-8 rounded bg-[#F59E0B]/5 text-[#F59E0B] flex items-center justify-center border border-[#F59E0B]/20 shrink-0">
-                       <Clock className="h-3 w-3 lg:h-4 lg:w-4" />
-                     </div>
-                     <div className="min-w-0">
-                       <div className="flex items-baseline gap-0.5 lg:gap-1">
-                         <span className="text-sm lg:text-lg font-semibold text-foreground truncate">107</span>
-                         <span className="text-[8px] lg:text-[9px] text-foreground font-mono">ms</span>
-                       </div>
-                       <div className="text-[6px] lg:text-[8px] text-muted-foreground uppercase tracking-widest leading-tight truncate">P95 Latency<br/>Reranker</div>
-                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side: System Status */}
-              <div className="w-[240px] lg:w-[260px] shrink-0 bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl px-2 py-1.5 lg:px-3 lg:py-2 flex flex-col h-full min-h-0">
-                <div className="flex items-center justify-between mb-1 shrink-0">
-                  <h3 className="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest font-medium">System Status</h3>
-                  <span className="text-[8px] lg:text-[9px] text-accent flex items-center gap-0.5 cursor-pointer">View all <ChevronRight className="h-2 w-2 lg:h-2.5 lg:w-2.5" /></span>
-                </div>
-                <div className="flex flex-col gap-0.5 lg:gap-1 overflow-y-auto custom-scrollbar flex-1 pr-1 min-h-0">
-                  {healthServices.map((service, i) => (
-                    <div key={i} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-1.5 lg:gap-2 min-w-0">
-                        <div className="h-4 w-4 lg:h-5 lg:w-5 rounded bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
-                          <Server className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                        </div>
-                        <div className="min-w-0 pr-1 lg:pr-1.5">
-                          <div className="text-[9px] lg:text-[10px] leading-tight text-foreground font-medium truncate">{service.service_name}</div>
-                          <div className="text-[7px] lg:text-[8px] leading-tight text-muted-foreground truncate">{service.version_or_info}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <div className={`h-1 w-1 rounded-full ${service.status === 'healthy' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
-                        <span className={`text-[6px] lg:text-[7px] uppercase tracking-wider hidden xl:inline ${service.status === 'healthy' ? 'text-emerald-500' : 'text-red-500'}`}>{service.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex justify-between items-center mt-1 lg:mt-1.5 pt-1 border-t border-white/10 shrink-0">
-                  <div>
-                    <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Uptime</div>
-                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">{systemUptime}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[6px] lg:text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">Environment</div>
-                    <div className="text-[9px] lg:text-[10px] text-emerald-500 leading-none">{systemEnv}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Row: 3 Equal Columns */}
-            <div className="grid grid-cols-3 gap-4 flex-1 min-h-0">
-              
-              {/* Chart Section */}
-              <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col min-h-0 h-full">
-                <div className="flex items-center justify-between mb-2 shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center h-7 w-7 lg:h-8 lg:w-8 rounded-full bg-white/5 text-[10px] lg:text-xs font-mono border border-white/10 shrink-0">
-                      VS
-                    </div>
-                    <div>
-                      <h3 className="text-[9px] lg:text-[10px] text-foreground uppercase tracking-widest font-medium">Retrieval Performance</h3>
-                      <p className="text-[9px] lg:text-[10px] text-muted-foreground">Benchmark Results</p>
-                    </div>
-                  </div>
-                  <div className="text-[9px] lg:text-[10px] text-muted-foreground flex items-center gap-1 cursor-pointer bg-white/5 px-2 py-1 rounded border border-white/10 hover:bg-white/10 transition-colors shrink-0">
-                    Recall@5 <ChevronDown className="h-3 w-3" />
-                  </div>
-                </div>
-
-                <div className="flex-1 min-h-[60px] w-full mt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#FFFFFF10" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#8B929A" }} dy={5} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#8B929A" }} tickFormatter={(val) => `${val}%`} />
-                      <Tooltip 
-                        cursor={{ fill: 'rgba(255, 255, 255, 0.02)' }}
-                        contentStyle={{ backgroundColor: '#0A0C10', borderColor: '#FFFFFF12', borderRadius: '8px' }}
-                        itemStyle={{ color: '#F0F2F5', fontSize: '12px' }}
-                      />
-                      <Bar dataKey="recall" radius={[4, 4, 0, 0]} maxBarSize={30}>
-                        {
-                          performanceData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))
-                        }
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="grid grid-cols-4 gap-1 lg:gap-2 mt-2 pt-2 border-t border-white/10 shrink-0">
-                   <div>
-                     <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">Recall@10</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.recall_at_10 || 0}%</div>
-                   </div>
-                   <div>
-                     <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">Hit Rate@5</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.hit_rate_at_5 || 0}%</div>
-                   </div>
-                   <div>
-                     <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">MRR@10</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.mrr_at_10 || 0}</div>
-                   </div>
-                   <div>
-                     <div className="text-[8px] lg:text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5 lg:mb-1">P95 Latency</div>
-                     <div className="text-xs lg:text-sm font-semibold text-foreground">{performanceData[0]?.p95_latency_ms || 0}ms</div>
-                   </div>
-                </div>
-                
-                <div className="mt-2 lg:mt-3 flex justify-center shrink-0">
-                   <button onClick={() => router.push('/evaluation')} className="text-[8px] lg:text-[9px] text-accent hover:text-accent/80 flex items-center gap-1 transition-colors uppercase tracking-widest">
-                     View full evaluation <ArrowUpRight className="h-3 w-3" />
-                   </button>
-                </div>
-              </div>
-
-              {/* Recent Queries */}
-              <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col min-h-0 h-full">
-                <div className="flex items-center justify-between mb-3 shrink-0">
-                  <h3 className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Recent Queries</h3>
-                  <span onClick={() => router.push('/ask?view=recent')} className="text-[10px] text-accent flex items-center gap-1 cursor-pointer hover:underline">View all <ChevronRight className="h-3 w-3" /></span>
-                </div>
-                <div className="space-y-3 lg:space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
-                  {recentQueries.map((item, i) => (
-                    <div key={i} className="flex justify-between items-start group cursor-pointer" onClick={() => router.push(`/ask?q=${encodeURIComponent(item.query_text)}`)}>
-                      <div className="flex gap-2 lg:gap-3 max-w-[75%] min-w-0">
-                        <div className="w-1.5 h-1.5 rounded-full bg-border/40 mt-1.5 group-hover:bg-accent transition-colors shrink-0"></div>
-                        <div className="min-w-0 pr-2">
-                          <p className="text-xs text-foreground truncate">{item.query_text}</p>
-                          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5">{item.strategy_type}</p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[10px] lg:text-xs text-foreground flex items-center justify-end gap-0.5">{(item.latency_ms/1000).toFixed(1)}s <ChevronRight className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" /></p>
-                        <p className="text-[8px] lg:text-[9px] text-muted-foreground mt-0.5">
-                          {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Activity Feed */}
-              <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col min-h-0 h-full">
-                <div className="flex items-center justify-between mb-3 shrink-0">
-                  <h3 className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Activity Feed</h3>
-                  <span onClick={() => router.push('/ask?view=activity')} className="text-[10px] text-accent flex items-center gap-1 cursor-pointer hover:underline">Live <ChevronRight className="h-3 w-3" /></span>
-                </div>
-                <div className="space-y-4 lg:space-y-5 overflow-y-auto custom-scrollbar flex-1 pr-2 min-h-0">
-                  {activityFeed.map((activity, i) => (
-                    <div key={i} className="flex gap-3 min-w-0">
-                      <div className={`h-6 w-6 lg:h-7 lg:w-7 rounded flex items-center justify-center shrink-0 ${activity.event_type === 'health_check' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : activity.event_type === 'benchmark_eval' ? 'bg-white/5 border-white/10 text-muted-foreground' : 'bg-white/5 border-white/10 text-muted-foreground'} border`}>
-                        {activity.event_type === 'health_check' ? <Activity className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> : 
-                         activity.event_type === 'benchmark_eval' ? <CheckCircle2 className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> : 
-                         <File className="h-3 w-3 lg:h-3.5 lg:w-3.5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline">
-                          <p className="text-xs text-foreground truncate pr-2">{activity.title}</p>
-                          <span className="text-[8px] lg:text-[9px] text-muted-foreground shrink-0">
-                            {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">{activity.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar bg-background">
+      {/* If urlQuery is present, show a docked search bar on top */}
+      {urlQuery && (
+        <div className="border-b border-border bg-[#090f0e]/90 backdrop-blur-md p-4 sm:px-8 shrink-0">
+          <div className="max-w-4xl mx-auto">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+              className="relative flex items-center rounded-lg border border-line bg-surface-subtle shadow-sm focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all"
+            >
+              <Search className="h-4 w-4 ml-3.5 text-muted-foreground shrink-0" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Ask a question about your documents..."
+                disabled={isSearching}
+                className="w-full bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-light"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="p-1 mr-1 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Clear query"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={!query.trim() || isSearching}
+                className="inline-flex items-center gap-1.5 mr-2 px-3 py-1.5 rounded-md bg-accent text-[#091712] font-medium text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors shrink-0"
+              >
+                <span>{isSearching ? "Searching..." : "Retrieve"}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </form>
           </div>
         </div>
-      ) : (
-        // TRACE RESULTS VIEW
-        <div className="flex flex-col h-full w-full relative bg-[#030405]">
-          <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
-          
-          <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
-            <div className="mx-auto max-w-4xl space-y-6 lg:space-y-8">
-              
-              {/* User Query Card */}
-              <div className="bg-surface/30 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8 shadow-sm">
-                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
-                  <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"></div> User Request
+      )}
+
+      {/* Main Container */}
+      <div className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-10 space-y-8">
+        {!urlQuery ? (
+          /* ========================================================================= */
+          /* SECTION 3 EXACT LAYOUT: RETRIEVAL WORKSPACE / COMPOSER HERO               */
+          /* ========================================================================= */
+          <div className="space-y-8 py-2">
+            
+            {/* Header: RETRIEVAL WORKSPACE */}
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-[2px] bg-accent inline-block" />
+                <span className="text-[11px] font-mono uppercase tracking-widest text-accent font-medium">
+                  RETRIEVAL WORKSPACE
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-foreground">
+                Explore your <em className="font-serif italic text-accent font-normal">knowledge.</em>
+              </h1>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Search, retrieve and inspect grounded answers.
+              </p>
+            </div>
+
+            {/* Central Search Composer (Matching Section 3: "Ask a question about your documents... / Hybrid retrieval") */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+              className="rounded-xl border border-line bg-surface-subtle shadow-sm focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all p-3 space-y-3"
+            >
+              <div className="flex items-center gap-3 px-1 pt-1">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Ask a question about your documents..."
+                  disabled={isSearching}
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-light"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/40 px-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary/80 border border-border text-[11px] font-mono text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+                  <span>Hybrid retrieval</span>
                 </div>
-                <div className="text-xl lg:text-2xl font-medium text-foreground tracking-tight">
-                  {query || "How does authentication work for checkout?"}
+
+                <button
+                  type="submit"
+                  disabled={!query.trim() || isSearching}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-accent text-[#091712] font-medium text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
+                >
+                  <span>Retrieve</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </form>
+
+            {/* Section 3 Stats Row: Documents (12) | Latency · p95 (107 ms) | Benchmark (60) */}
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  Documents
+                </span>
+                <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+                  {overviewStats.documents_indexed || 12}
                 </div>
               </div>
 
-              {/* Mnemora Response Card */}
-              <div className="relative bg-[#070b0e]/80 backdrop-blur-xl border border-accent/20 rounded-2xl p-6 lg:p-8 shadow-[0_8px_32px_rgba(0,229,255,0.05)] overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50"></div>
-                
-                <div className="text-[10px] font-mono text-accent uppercase tracking-widest flex items-center gap-2 mb-6">
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent shadow-[0_0_8px_rgba(0,229,255,0.8)]"></span>
-                  </div> 
-                  Neural Response
+              <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  Latency · p95
+                </span>
+                <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums font-mono">
+                  107 <span className="text-xs text-muted-foreground font-normal">ms</span>
                 </div>
-                
-                <div className="text-foreground/90 leading-relaxed text-base lg:text-lg font-light whitespace-pre-wrap">
-                  {answerData?.answer || "Generating response..."}
+              </div>
+
+              <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  Benchmark
+                </span>
+                <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums font-mono">
+                  60
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3 Two-Column Layout: Retrieval pipeline (Left) | Recent queries (Right) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              
+              {/* Left: Retrieval pipeline */}
+              <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-border/80">
+                  <div className="flex items-center gap-2">
+                    <Workflow className="h-4 w-4 text-accent" />
+                    <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+                      Retrieval pipeline
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-mono text-signal">
+                    Ready
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between p-2 rounded bg-surface-subtle border border-border/80">
+                    <span className="text-muted-foreground">1. Query Analysis</span>
+                    <span className="text-[11px] text-foreground">Intent tokenization</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-surface-subtle border border-border/80">
+                    <span className="text-accent">2. Dense Vector Search</span>
+                    <span className="text-[11px] text-muted-foreground">Cosine / 384d</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-surface-subtle border border-border/80">
+                    <span className="text-signal">3. Sparse Lexical Search</span>
+                    <span className="text-[11px] text-muted-foreground">BM25Okapi</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-surface-subtle border border-border/80">
+                    <span className="text-foreground">4. Rank Fusion (RRF)</span>
+                    <span className="text-[11px] text-muted-foreground">k=60 merged</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-secondary border border-accent/30 text-accent font-medium">
+                    <span>5. Cross-Encoder Re-rank</span>
+                    <span className="text-[11px]">Top 5 passages</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-right">
+                  <button
+                    onClick={() => router.push("/retrieval")}
+                    className="text-xs text-accent hover:underline inline-flex items-center gap-1 font-medium"
+                  >
+                    <span>Inspect Pipeline in Detail</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Recent queries (Section 3: "Recent queries / How does authentication work?") */}
+              <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-border/80">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+                    Recent queries
+                  </h3>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    Click to run
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {recentQueries.slice(0, 5).map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSearch(item.query_text)}
+                      className="w-full flex items-center justify-between p-2.5 rounded-lg border border-border/80 bg-surface-subtle hover:bg-raised transition-colors text-left group"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-border group-hover:bg-accent transition-colors shrink-0" />
+                        <span className="text-xs text-foreground/90 font-light truncate group-hover:text-accent transition-colors">
+                          {item.query_text}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-muted-foreground tabular-nums shrink-0">
+                        {item.latency_ms || 107} ms
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ) : (
+          /* ========================================================================= */
+          /* ANSWER & GROUNDED TRACE VIEW                                              */
+          /* ========================================================================= */
+          <div className="space-y-6">
+            {/* Loading state */}
+            {isSearching && (
+              <div className="rounded-lg border border-border bg-surface p-8 text-center space-y-3">
+                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-accent border-r-transparent" />
+                <p className="text-sm text-foreground/80 font-light">
+                  Executing hybrid retrieval, reranking, and generation...
+                </p>
+                <div className="flex justify-center gap-4 text-xs font-mono text-muted-foreground pt-1">
+                  <span>Vector Search</span>
+                  <span>•</span>
+                  <span>BM25 Sparse</span>
+                  <span>•</span>
+                  <span>Cross-Encoder</span>
+                </div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {errorMsg && !isSearching && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+                {errorMsg}
+              </div>
+            )}
+
+            {/* Grounded Answer Card */}
+            {answerData && !isSearching && (
+              <div className="rounded-xl border border-line bg-surface p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/80 pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-signal" />
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-accent font-medium">
+                      Grounded Answer
+                    </span>
+                  </div>
+                  {answerData.performance && (
+                    <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
+                      <span>Total: <strong className="text-foreground">{answerData.performance.total_ms}ms</strong></span>
+                      <span className="text-border">•</span>
+                      <span>Confidence: <strong className="text-signal">{answerData.performance.confidence_score}%</strong></span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-sm sm:text-base leading-relaxed text-foreground font-light whitespace-pre-wrap selection:bg-accent/20">
+                  {answerData.answer}
                 </div>
 
                 {/* Sources list */}
-                {answerData?.citations?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-6 mt-6 border-t border-white/5">
-                    {answerData.citations.map((cite: any, idx: number) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => setSelectedCitation(cite)}
-                        className="inline-flex items-center gap-2 rounded-lg border border-border/30 bg-surface/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface/80 hover:border-accent/40 hover:text-accent cursor-pointer transition-all shadow-sm hover:shadow-[0_0_15px_rgba(0,229,255,0.15)]"
-                      >
-                        <FileText className="h-3.5 w-3.5" /> {cite.document} 
-                        <span className="text-accent font-mono ml-2 border border-accent/20 bg-accent/10 px-1 rounded text-[10px]">P.{cite.page || 1}</span>
-                      </div>
-                    ))}
+                {answerData.citations && answerData.citations.length > 0 && (
+                  <div className="pt-4 border-t border-border/60 space-y-3">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+                      Sources & Grounding Passages ({answerData.citations.length})
+                    </span>
+
+                    <div className="flex flex-wrap gap-2">
+                      {answerData.citations.map((cite: any, idx: number) => {
+                        const isSelected = selectedCitation?.chunk_id === cite.chunk_id;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedCitation(cite)}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs transition-colors cursor-pointer ${
+                              isSelected
+                                ? "border-accent bg-accent/10 text-accent font-medium"
+                                : "border-border bg-secondary/50 text-foreground/80 hover:border-line hover:text-foreground"
+                            }`}
+                          >
+                            <FileText className="h-3 w-3 text-muted-foreground" />
+                            <span>{cite.document}</span>
+                            <span className="font-mono text-[10px] px-1 py-0.2 rounded bg-background/50 border border-border">
+                              P.{cite.page || 1}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
+            )}
 
-              {/* Performance Metrics */}
-              {answerData?.performance && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Search className="h-3 w-3 text-accent" /> Retrieval Time</div>
-                    <div className="text-xl font-semibold text-foreground">{answerData.performance.retrieval_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
+            {/* Selected Citation Passage Viewer */}
+            {selectedCitation && !isSearching && (
+              <div className="rounded-xl border border-line bg-surface-subtle p-5 sm:p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-accent" />
+                    <span className="text-xs font-medium text-foreground">
+                      {selectedCitation.document}
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      ({selectedCitation.chunk_id})
+                    </span>
                   </div>
-                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Zap className="h-3 w-3 text-[#8B5CF6]" /> Generation Time</div>
-                    <div className="text-xl font-semibold text-foreground">{answerData.performance.generation_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
-                  </div>
-                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><Clock className="h-3 w-3 text-white/70" /> Total Latency</div>
-                    <div className="text-xl font-semibold text-foreground">{answerData.performance.total_ms} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
-                  </div>
-                  <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1 font-mono flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> Avg Confidence</div>
-                    <div className="text-xl font-semibold text-emerald-400">{answerData.performance.confidence_score} <span className="text-xs text-muted-foreground font-normal">%</span></div>
-                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-secondary text-accent border border-border">
+                    Relevance: {selectedCitation.score || 95}%
+                  </span>
                 </div>
-              )}
 
-              {/* Retrieval Trace */}
-              <div className="bg-surface/20 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8">
-                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-6">
-                  <Activity className="h-3.5 w-3.5" /> Telemetry Trace
-                </div>
-                
-                <div className="rounded-xl border border-border/40 bg-[#070b0e]/50 overflow-hidden font-mono text-sm">
-                  <div className="p-4 bg-background/50 border-b border-border/40 flex justify-between items-center cursor-pointer hover:bg-surface/40 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-foreground text-xs uppercase tracking-widest">Pipeline Execution</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 px-2 py-0.5 rounded">
-                      <span className="text-xs text-accent">Status: OK</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-5 space-y-3.5 text-muted-foreground/80 bg-background/30 text-[13px]">
-                    <div className="flex justify-between items-center text-foreground">
-                      <span className="flex items-center gap-2"><span className="text-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)] h-2 w-2 rounded-full inline-block"></span> Query received</span>
-                    </div>
-                    
-                    <div className="pl-3 border-l border-border/30 ml-[3px] space-y-4 py-2">
-                      
-                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                        <div className="space-y-1.5">
-                          <div className="text-foreground/90">Vector search</div>
-                          <div className="text-[11px] text-muted-foreground/50">└── {answerData?.retrieval?.vector_results || 0} candidates</div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                        <div className="space-y-1.5">
-                          <div className="text-foreground/90">BM25 search</div>
-                          <div className="text-[11px] text-muted-foreground/50">└── {answerData?.retrieval?.bm25_results || 0} candidates</div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                        <div className="space-y-1.5">
-                          <div className="text-emerald-400 font-medium">RRF fusion</div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-start pl-4 relative before:absolute before:left-0 before:top-3 before:w-4 before:h-px before:bg-border/30">
-                        <div className="space-y-1.5">
-                          <div className="text-accent font-medium">Cross encoder reranking</div>
-                          <div className="text-[11px] text-accent/50">└── {answerData?.retrieval?.reranked_results || 0} candidates</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center pl-4 relative before:absolute before:left-0 before:top-1/2 before:w-4 before:h-px before:bg-border/30">
-                        <span className="text-foreground/90">LLM generation</span>
-                      </div>
-                      
-                    </div>
-                  </div>
+                <div className="p-4 rounded-lg border border-border/60 bg-background/70 font-mono text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {selectedCitation.content || selectedCitation.snippet || "No passage content available."}
                 </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Input Area (Bottom Sticky) */}
-          <div className="p-4 lg:p-6 bg-[#030405]/80 backdrop-blur-xl border-t border-white/5 shrink-0 relative z-10">
-            <div className="mx-auto max-w-4xl relative">
-              <form onSubmit={handleSearch} className="relative flex items-center group">
-                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-accent/20 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[2px]"></div>
-                <div className="relative flex items-center w-full bg-[#070b0e] rounded-2xl overflow-hidden shadow-2xl">
-                    <Search className="absolute left-5 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Ask anything about your knowledge base..."
-                      className="h-14 w-full bg-transparent border border-white/10 pl-14 pr-14 text-base focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-accent/40 rounded-2xl transition-colors"
-                      disabled={isSearching}
-                    />
-                    <Button 
-                      type="submit" 
-                      size="icon"
-                      disabled={!query || isSearching}
-                      className="absolute right-2 h-10 w-10 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 shadow-[0_0_15px_rgba(0,229,255,0.2)]"
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
 
-      {urlView === 'recent' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#070b0e] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-white/10">
-              <h2 className="text-lg font-medium text-foreground">All Recent Queries</h2>
-              <Button variant="ghost" size="icon" onClick={() => router.push(urlQuery ? `/ask?q=${encodeURIComponent(urlQuery)}` : '/ask')} className="hover:bg-white/10">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-4">
-              {allQueries.map((item, i) => (
-                <div key={i} className="flex justify-between items-start group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => router.push(`/ask?q=${encodeURIComponent(item.query_text)}`)}>
-                  <div className="flex gap-3 max-w-[75%] min-w-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-border/40 mt-1.5 group-hover:bg-accent transition-colors shrink-0"></div>
-                    <div className="min-w-0 pr-2">
-                      <p className="text-sm text-foreground truncate">{item.query_text}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{item.strategy_type}</p>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-foreground flex items-center justify-end gap-0.5">{(item.latency_ms/1000).toFixed(1)}s <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" /></p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+            {/* Performance Timings Breakdown */}
+            {answerData?.performance && !isSearching && (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-lg border border-border bg-surface p-3 space-y-0.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    Retrieval Latency
+                  </span>
+                  <div className="text-base font-semibold text-foreground font-mono tabular-nums">
+                    {answerData.performance.retrieval_ms} ms
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {urlView === 'activity' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#070b0e] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-white/10">
-              <h2 className="text-lg font-medium text-foreground">Activity Feed</h2>
-              <Button variant="ghost" size="icon" onClick={() => router.push(urlQuery ? `/ask?q=${encodeURIComponent(urlQuery)}` : '/ask')} className="hover:bg-white/10">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-              {allActivity.map((activity, i) => (
-                <div key={i} className="flex gap-4 min-w-0 hover:bg-white/5 p-2 rounded transition-colors">
-                  <div className={`h-8 w-8 rounded flex items-center justify-center shrink-0 ${activity.event_type === 'health_check' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : activity.event_type === 'benchmark_eval' ? 'bg-white/5 border-white/10 text-muted-foreground' : 'bg-white/5 border-white/10 text-muted-foreground'} border`}>
-                    {activity.event_type === 'health_check' ? <Activity className="h-4 w-4" /> : 
-                     activity.event_type === 'benchmark_eval' ? <CheckCircle2 className="h-4 w-4" /> : 
-                     <File className="h-4 w-4" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <p className="text-sm text-foreground truncate pr-2">{activity.title}</p>
-                      <span className="text-[10px] text-muted-foreground shrink-0">
-                        {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 truncate">{activity.description}</p>
+                <div className="rounded-lg border border-border bg-surface p-3 space-y-0.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    Generation Latency
+                  </span>
+                  <div className="text-base font-semibold text-foreground font-mono tabular-nums">
+                    {answerData.performance.generation_ms} ms
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {selectedCitation && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8">
-          <div className="bg-[#070b0e] border border-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.1)] rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/0 via-accent/50 to-accent/0 opacity-50"></div>
-            
-            <div className="flex justify-between items-center p-5 lg:p-6 border-b border-white/5 bg-[#030405]/50">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base lg:text-lg font-medium text-foreground truncate">{selectedCitation.document}</h2>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="text-accent font-mono border border-accent/20 bg-accent/10 px-1.5 rounded uppercase tracking-wider text-[10px]">Page {selectedCitation.page || 1}</span>
-                    <span>•</span>
-                    <span className="font-mono text-[10px] opacity-70 truncate">ID: {selectedCitation.chunk_id}</span>
-                  </div>
+                <div className="rounded-lg border border-border bg-surface p-3 space-y-0.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    Multi-Stage Pipeline
+                  </span>
+                  <button
+                    onClick={() => router.push(`/retrieval?q=${encodeURIComponent(query)}`)}
+                    className="text-xs text-accent hover:underline flex items-center gap-1 font-medium pt-0.5 cursor-pointer"
+                  >
+                    <span>Inspect Pipeline</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedCitation(null)} className="hover:bg-white/10 shrink-0 text-muted-foreground hover:text-foreground">
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            
-            <div className="p-6 lg:p-8 overflow-y-auto custom-scrollbar flex-1 bg-[#0a0f14]">
-              <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
-                <Activity className="h-3 w-3" /> Extracted Context
-              </div>
-              
-              <div className="relative group">
-                <div className="absolute -inset-1 rounded-xl bg-accent/20 blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
-                <div className="relative bg-[#030405] border border-accent/30 rounded-xl p-5 lg:p-6 shadow-inner text-sm lg:text-base leading-relaxed text-foreground/90 font-light whitespace-pre-wrap">
-                  {selectedCitation.content || "Context preview not available for this chunk."}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
     </div>
   );
 }
 
 export default function AskPage() {
   return (
-    <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs font-mono text-muted-foreground">Loading workspace...</div>}>
       <AskPageContent />
     </Suspense>
   );

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Phase 1.6 - Real Retrieval & Generation Benchmark
+Phase 1.7 - Complete UI/UX Refactor & Shared Portfolio Design System (HK Design System)
 
 ## Status
 
-IN PROGRESS
+COMPLETE
 
 ## Completed
 
@@ -46,10 +46,22 @@ IN PROGRESS
 - [x] Harmonize typography, serif italic cyan accents, badge pills, and glassmorphic styling across all 5 pages (`/ask`, `/knowledge`, `/retrieval`, `/evaluation`, `/system`)
 - [x] Add non-blocking background telemetry forwarder (`src/observability/telemetry.py`) on `/query` endpoint to stream live traces into `prod_rag_monitoring`
 - [x] Upgrade Groq LLM integration to active non-deprecated models (`openai/gpt-oss-120b`, `openai/gpt-oss-20b`) and verified with Pytest suite (15/15 tests passing)
+- [x] Phase 1.7: Create dedicated branch `refactor/portfolio-design-system`
+- [x] Phase 1.7: Extract design tokens directly from Harsha Kurtkoti's portfolio (`Portflio_website/src/index.css`)
+- [x] Phase 1.7: Eliminate AI-generated cyberpunk aesthetic (removed `/bg.jpg`, neon cyan/purple glow drop-shadows, fake circular uptime rings, command-center sci-fi branding)
+- [x] Phase 1.7: Rebuild application shell (`layout.tsx`, `header.tsx`, `sidebar.tsx`) with compact responsive navigation
+- [x] Phase 1.7: Redesign `/ask` page: hero question composer, grounded answers, expandable source passages, latency breakdown
+- [x] Phase 1.7: Redesign `/knowledge` page: professional document workspace, clean table, format badges, upload modal, document preview drawer
+- [x] Phase 1.7: Redesign `/retrieval` page: flagship inspectable multi-stage pipeline across Dense Vector, Sparse BM25, RRF Fusion, and Cross-Encoder Re-ranker
+- [x] Phase 1.7: Redesign `/evaluation` page: Ragas quality standards, strategy comparison chart & benchmark table
+- [x] Phase 1.7: Redesign `/system` page: service topology, pipeline execution flow, runtime configuration inspector, audit log
+- [x] Phase 1.7: Document reusable HK Design System in `docs/DESIGN_SYSTEM.md`
+- [x] Phase 1.7: Verified full production frontend build (`pnpm build`) with zero TypeScript errors
+- [x] Phase 1.7: Verified backend test suite with 15/15 tests passing
 
 ## In Progress
 
-- [/] Phase 1.6: Connect Ragas Evaluation Pipeline trigger UI with background worker
+None
 
 ## Pending
 
@@ -59,14 +71,12 @@ IN PROGRESS
 
 ## Current Task
 
-Live observability, Langfuse distributed tracing, Groq active model integration (`openai/gpt-oss-120b`), and remote health probing connected with the Production RAG Monitoring Platform (`prod_rag_monitoring`), tested and verified with complete test suites passing in both repositories (15/15 and 22/22 tests).
+Complete UI/UX refactor aligning Mnemora with Harsha Kurtkoti's portfolio identity (`refactor/portfolio-design-system`), with all 5 pages redesigned, shared design system documented in `docs/DESIGN_SYSTEM.md`, and all tests passing.
 
 ## Next Step
 
-Verify full end-to-end integration between deployed Next.js Vercel frontend, FastAPI backend, and monitoring platform.
+Submit branch `refactor/portfolio-design-system` for review and adopt the same design tokens in `prod_rag_monitoring` and `VisionBoard`.
 
 ## Blockers
 
 None
-
-

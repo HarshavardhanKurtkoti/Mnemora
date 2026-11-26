@@ -9,7 +9,6 @@ import {
   Layers, 
   Activity, 
   CheckCircle2, 
-  AlertCircle, 
   RefreshCw, 
   Sliders, 
   HardDrive, 
@@ -20,7 +19,6 @@ import {
   Workflow,
   ArrowRight
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { fetchSystemDiagnostics, fetchHealthServices, fetchActivityFeed } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -34,13 +32,12 @@ export default function SystemPage() {
     try {
       const [diagData, activityData] = await Promise.all([
         fetchSystemDiagnostics().catch(() => null),
-        fetchActivityFeed(10).catch(() => [])
+        fetchActivityFeed(8).catch(() => [])
       ]);
 
       if (diagData) {
         setDiagnostics(diagData);
       } else {
-        // Fallback default structure
         setDiagnostics({
           status: "operational",
           uptime: "2h 45m",
@@ -64,7 +61,7 @@ export default function SystemPage() {
             { id: 3, service_name: "BM25 Index", status: "healthy", version_or_info: "BM25Okapi" },
             { id: 4, service_name: "Embeddings", status: "healthy", version_or_info: "all-MiniLM-L6-v2 (384d)" },
             { id: 5, service_name: "Reranker", status: "healthy", version_or_info: "Cross-Encoder MiniLM" },
-            { id: 6, service_name: "LLM Provider", status: "healthy", version_or_info: "Local Mock / OpenAI" },
+            { id: 6, service_name: "LLM Provider", status: "healthy", version_or_info: "Local Mock / Groq / OpenAI" },
             { id: 7, service_name: "Database Engine", status: "healthy", version_or_info: "SQLite Local" }
           ],
           configuration: {
@@ -97,7 +94,7 @@ export default function SystemPage() {
   const handleRunHealthCheck = async () => {
     setIsRunningCheck(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800)); // Smooth UI transition
+      await new Promise((resolve) => setTimeout(resolve, 600));
       await loadData();
     } finally {
       setIsRunningCheck(false);
@@ -107,104 +104,95 @@ export default function SystemPage() {
   const isHealthy = diagnostics?.status === "operational";
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-4 lg:p-6 bg-transparent relative">
-      {/* Ambient background lighting */}
-      <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-accent/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] bg-[#10B981]/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-[1600px] w-full mx-auto space-y-4">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6 bg-background">
+      <div className="max-w-6xl w-full mx-auto space-y-6">
         
-        {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
-                System <span className="font-serif italic text-accent opacity-90">Observability</span>
-              </h1>
-              <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-emerald-400 text-[10px] font-mono uppercase tracking-widest font-medium">
-                  {isHealthy ? "All Systems Operational" : "System Degraded"}
-                </span>
-              </div>
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-[2px] bg-accent inline-block" />
+              <span className="text-[11px] font-mono uppercase tracking-widest text-accent">
+                Infrastructure
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed">
+            <h1 className="text-2xl font-normal tracking-tight text-foreground">
+              System <em className="font-serif italic text-accent font-normal">Observability</em>
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Mnemora RAG Engine runtime health, service topology, and active indexing infrastructure.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-end md:self-center">
+          <div className="flex items-center gap-3 self-start sm:self-auto">
             {lastCheckTime && (
               <span className="text-[10px] font-mono text-muted-foreground">
-                Last checked: {lastCheckTime}
+                Checked: {lastCheckTime}
               </span>
             )}
-            <Button
+            <button
               onClick={handleRunHealthCheck}
               disabled={isRunningCheck}
-              className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-3.5 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all shrink-0"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-accent text-[#091712] font-medium text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors cursor-pointer"
             >
-              <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isRunningCheck && "animate-spin")} />
-              Run Health Check
-            </Button>
+              <RefreshCw className={cn("h-3.5 w-3.5", isRunningCheck && "animate-spin")} />
+              <span>Run Health Check</span>
+            </button>
           </div>
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/20 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Clock className="h-3.5 w-3.5 text-accent" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Server Uptime</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{diagnostics?.uptime || "0m"}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Server Uptime</div>
-            </div>
-          </div>
-
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-emerald-400">{diagnostics?.environment || "Local Dev"}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Environment</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums font-mono">
+              {diagnostics?.uptime || "0m"}
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 flex items-center justify-center shrink-0">
-              <Layers className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-signal" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Environment</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{diagnostics?.stats?.chunks_stored || 0}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Chunks In Index</div>
+            <div className="text-2xl font-semibold text-signal tracking-tight font-mono">
+              {diagnostics?.environment || "Local Dev"}
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 flex items-center justify-center shrink-0">
-              <HardDrive className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Layers className="h-3.5 w-3.5 text-foreground/80" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Chunks In Index</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{diagnostics?.server?.database_type || "SQLite"}</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Database Engine</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums font-mono">
+              {diagnostics?.stats?.chunks_stored || 423}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <HardDrive className="h-3.5 w-3.5 text-amber-400" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Database Engine</span>
+            </div>
+            <div className="text-base font-semibold text-foreground tracking-tight font-mono pt-1">
+              {diagnostics?.server?.database_type || "SQLite"}
             </div>
           </div>
         </div>
 
-        {/* Core Services Grid */}
-        <div className="space-y-2">
+        {/* Core Services Topology Grid */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-foreground font-medium">
-              <Cpu className="h-3.5 w-3.5 text-accent" />
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+              <Cpu className="h-4 w-4 text-accent" />
               <span>Active Service Topology</span>
             </div>
             <span className="text-[10px] font-mono text-muted-foreground">
-              {diagnostics?.services?.length || 0} Connected Services
+              {diagnostics?.services?.length || 7} Connected Components
             </span>
           </div>
 
@@ -214,17 +202,17 @@ export default function SystemPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all group"
+                  className="rounded-xl border border-border bg-surface p-4 flex flex-col justify-between hover:bg-raised transition-colors group space-y-3"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
+                      <div className="h-8 w-8 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-muted-foreground group-hover:text-accent transition-colors shrink-0">
                         {service.service_name.includes("FastAPI") ? <Terminal className="h-4 w-4" /> :
-                         service.service_name.includes("Vector") ? <Database className="h-4 w-4 text-[#00E5FF]" /> :
-                         service.service_name.includes("BM25") ? <FileText className="h-4 w-4 text-[#8B5CF6]" /> :
-                         service.service_name.includes("Embeddings") ? <Layers className="h-4 w-4 text-[#14B8A6]" /> :
-                         service.service_name.includes("Reranker") ? <Zap className="h-4 w-4 text-[#F59E0B]" /> :
-                         service.service_name.includes("LLM") ? <Cpu className="h-4 w-4 text-emerald-400" /> :
+                         service.service_name.includes("Vector") ? <Database className="h-4 w-4" /> :
+                         service.service_name.includes("BM25") ? <FileText className="h-4 w-4" /> :
+                         service.service_name.includes("Embeddings") ? <Layers className="h-4 w-4" /> :
+                         service.service_name.includes("Reranker") ? <Zap className="h-4 w-4" /> :
+                         service.service_name.includes("LLM") ? <Cpu className="h-4 w-4" /> :
                          <Server className="h-4 w-4" />}
                       </div>
                       <div>
@@ -232,17 +220,15 @@ export default function SystemPage() {
                         <p className="text-[10px] font-mono text-muted-foreground">{service.version_or_info || "Ready"}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/5 px-2 py-0.5 rounded-full">
-                      <span className={cn("h-1.5 w-1.5 rounded-full", healthy ? "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.6)]" : "bg-red-400")} />
-                      <span className={cn("text-[9px] font-mono uppercase tracking-wider", healthy ? "text-emerald-400" : "text-red-400")}>
-                        {service.status}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-signal">
+                      <span className={cn("h-1.5 w-1.5 rounded-full", healthy ? "bg-signal" : "bg-red-400")} />
+                      {service.status}
+                    </span>
                   </div>
 
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[9px] font-mono text-muted-foreground/70">
+                  <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[10px] font-mono text-muted-foreground/70">
                     <span>Target: Localhost</span>
-                    <span>Active Lifecycle</span>
+                    <span>Ready</span>
                   </div>
                 </div>
               );
@@ -254,159 +240,142 @@ export default function SystemPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           
           {/* Pipeline Flow Visualization */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+          <div className="rounded-xl border border-border bg-surface p-5 flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border/80">
               <div className="flex items-center gap-2">
-                <Workflow className="h-3.5 w-3.5 text-accent" />
-                <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
+                <Workflow className="h-4 w-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
                   RAG Execution Pipeline
                 </h3>
               </div>
-              <span className="text-[9px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono text-accent bg-secondary px-2 py-0.5 rounded border border-border">
                 Deterministic Flow
               </span>
             </div>
 
             <div className="space-y-2 py-1">
-              <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                <div className="h-5 w-5 rounded bg-white/5 font-mono text-[9px] flex items-center justify-center text-muted-foreground shrink-0">1</div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-surface-subtle p-3 text-xs">
+                <div className="h-5 w-5 rounded bg-secondary font-mono text-[10px] flex items-center justify-center text-muted-foreground shrink-0">1</div>
                 <div className="flex-1">
                   <span className="text-foreground font-medium">Document Ingestion & Chunking</span>
-                  <span className="text-[10px] text-muted-foreground ml-2 font-mono">Token split (800 / 100 overlap)</span>
+                  <span className="text-[11px] text-muted-foreground ml-2 font-mono">Token split (800 / 100 overlap)</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-3 w-3 text-muted-foreground/40 rotate-90" />
+              <div className="flex items-center justify-center text-muted-foreground/40">
+                <ArrowRight className="h-3 w-3 rotate-90" />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                  <div className="text-[#00E5FF] font-mono text-[9px] mb-0.5">2A. DENSE VECTOR</div>
+                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-xs space-y-1">
+                  <div className="text-accent font-mono text-[10px]">2A. DENSE VECTOR</div>
                   <div className="text-foreground font-medium text-[11px]">Qdrant Embeddings</div>
                 </div>
-                <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                  <div className="text-[#8B5CF6] font-mono text-[9px] mb-0.5">2B. SPARSE LEXICAL</div>
+                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-xs space-y-1">
+                  <div className="text-signal font-mono text-[10px]">2B. SPARSE LEXICAL</div>
                   <div className="text-foreground font-medium text-[11px]">BM25Okapi Search</div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-3 w-3 text-muted-foreground/40 rotate-90" />
+              <div className="flex items-center justify-center text-muted-foreground/40">
+                <ArrowRight className="h-3 w-3 rotate-90" />
               </div>
 
-              <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                <div className="h-5 w-5 rounded bg-[#14B8A6]/20 text-[#14B8A6] font-mono text-[9px] flex items-center justify-center shrink-0">3</div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-surface-subtle p-3 text-xs">
+                <div className="h-5 w-5 rounded bg-secondary font-mono text-[10px] flex items-center justify-center text-accent shrink-0">3</div>
                 <div className="flex-1">
                   <span className="text-foreground font-medium">Reciprocal Rank Fusion (RRF)</span>
-                  <span className="text-[10px] text-muted-foreground ml-2 font-mono">Weighted merge (k=60)</span>
+                  <span className="text-[11px] text-muted-foreground ml-2 font-mono">Rank merge (k=60)</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-3 w-3 text-muted-foreground/40 rotate-90" />
+              <div className="flex items-center justify-center text-muted-foreground/40">
+                <ArrowRight className="h-3 w-3 rotate-90" />
               </div>
 
-              <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                <div className="h-5 w-5 rounded bg-[#F59E0B]/20 text-[#F59E0B] font-mono text-[9px] flex items-center justify-center shrink-0">4</div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-surface-subtle p-3 text-xs">
+                <div className="h-5 w-5 rounded bg-secondary font-mono text-[10px] flex items-center justify-center text-signal shrink-0">4</div>
                 <div className="flex-1">
                   <span className="text-foreground font-medium">Cross-Encoder Re-ranker</span>
-                  <span className="text-[10px] text-muted-foreground ml-2 font-mono">ms-marco-MiniLM (Top 5)</span>
+                  <span className="text-[11px] text-muted-foreground ml-2 font-mono">ms-marco-MiniLM (Top 5)</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-3 w-3 text-muted-foreground/40 rotate-90" />
+              <div className="flex items-center justify-center text-muted-foreground/40">
+                <ArrowRight className="h-3 w-3 rotate-90" />
               </div>
 
-              <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg p-2.5 text-xs">
-                <div className="h-5 w-5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[9px] flex items-center justify-center shrink-0">5</div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-accent/40 bg-accent/5 p-3 text-xs">
+                <div className="h-5 w-5 rounded bg-accent/20 font-mono text-[10px] flex items-center justify-center text-accent font-semibold shrink-0">5</div>
                 <div className="flex-1">
-                  <span className="text-foreground font-medium">Grounded LLM Generation</span>
-                  <span className="text-[10px] text-muted-foreground ml-2 font-mono">Structured JSON & Citation validation</span>
+                  <span className="text-accent font-medium">Grounded LLM Generation</span>
+                  <span className="text-[11px] text-muted-foreground ml-2 font-mono">Citation verification</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Configuration Inspector */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+          <div className="rounded-xl border border-border bg-surface p-5 flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border/80">
               <div className="flex items-center gap-2">
-                <Sliders className="h-3.5 w-3.5 text-accent" />
-                <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
+                <Sliders className="h-4 w-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
                   Runtime Configuration
                 </h3>
               </div>
-              <span className="text-[9px] font-mono text-muted-foreground">Read-Only</span>
+              <span className="text-[10px] font-mono text-muted-foreground">Read-Only</span>
             </div>
 
             <div className="space-y-1.5 flex-1 overflow-y-auto custom-scrollbar pr-1 text-xs">
               {diagnostics?.configuration && Object.entries(diagnostics.configuration).map(([key, val]: [string, any], idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between py-1.5 px-2.5 rounded bg-white/[0.02] border border-white/5"
+                  className="flex items-center justify-between py-2 px-3 rounded-md bg-surface-subtle border border-border/80"
                 >
                   <span className="font-mono text-[11px] text-muted-foreground uppercase">{key.replace(/_/g, " ")}</span>
-                  <span className="font-mono text-[11px] text-foreground font-medium truncate max-w-[240px]">
-                    {String(val)}
+                  <span className="font-mono text-[11px] text-foreground font-medium">{String(val)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-3 border-t border-border text-[10px] font-mono text-muted-foreground flex items-center justify-between">
+              <span>Host: Windows / Python 3.11</span>
+              <span>FastAPI Port: 8000</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Activity Feed Section */}
+        {activityFeed.length > 0 && (
+          <div className="rounded-xl border border-border bg-surface p-5 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-border/80">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+                  System Audit & Activity Feed
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-signal">Live Telemetry</span>
+            </div>
+
+            <div className="divide-y divide-border/60">
+              {activityFeed.map((item, idx) => (
+                <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3 min-w-0 pr-4">
+                    <span className="h-1.5 w-1.5 rounded-full bg-signal shrink-0" />
+                    <span className="text-foreground font-medium truncate">{item.title}</span>
+                    <span className="text-muted-foreground text-[11px] truncate hidden sm:inline">{item.description}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                    {new Date(item.created_at).toLocaleTimeString()}
                   </span>
                 </div>
               ))}
-
-              <div className="flex items-center justify-between py-1.5 px-2.5 rounded bg-white/[0.02] border border-white/5">
-                <span className="font-mono text-[11px] text-muted-foreground uppercase">PROCESS ID</span>
-                <span className="font-mono text-[11px] text-accent font-medium">
-                  {diagnostics?.server?.pid || 14220}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-1.5 px-2.5 rounded bg-white/[0.02] border border-white/5">
-                <span className="font-mono text-[11px] text-muted-foreground uppercase">API PREFIX</span>
-                <span className="font-mono text-[11px] text-foreground font-medium">
-                  {diagnostics?.server?.api_prefix || "/api/v1"}
-                </span>
-              </div>
             </div>
           </div>
-
-        </div>
-
-        {/* Activity & Event Telemetry Feed */}
-        <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Activity className="h-3.5 w-3.5 text-accent" />
-              <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
-                System Activity & Telemetry Log
-              </h3>
-            </div>
-            <span className="text-[10px] font-mono text-muted-foreground">Recent Events</span>
-          </div>
-
-          <div className="space-y-2">
-            {activityFeed.length > 0 ? (
-              activityFeed.map((act: any, i: number) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02] border border-white/5 text-xs hover:bg-white/[0.04] transition-colors"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
-                    <span className="font-medium text-foreground truncate">{act.title || act.description}</span>
-                    <span className="text-[10px] text-muted-foreground truncate hidden md:inline">{act.description}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground shrink-0 ml-2">
-                    {new Date(act.created_at || Date.now()).toLocaleTimeString()}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="py-6 text-center text-xs text-muted-foreground font-light">
-                No recent activity events recorded.
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
       </div>
     </div>

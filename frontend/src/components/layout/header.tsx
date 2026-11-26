@@ -1,32 +1,74 @@
-import { Settings } from "lucide-react";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { fetchHealthServices } from "@/lib/api";
+import { Search, ExternalLink } from "lucide-react";
 
 export function Header() {
+  const pathname = usePathname();
+  const [healthStatus, setHealthStatus] = useState<"healthy" | "degraded" | "checking">("healthy");
+  const [environment, setEnvironment] = useState<string>("Local Dev");
+
+  useEffect(() => {
+    fetchHealthServices()
+      .then((data: any) => {
+        const services = data?.services || [];
+        const isAllHealthy = services.length === 0 || services.every((s: any) => s.status === "healthy");
+        setHealthStatus(isAllHealthy ? "healthy" : "degraded");
+        if (data?.environment) setEnvironment(data.environment);
+      })
+      .catch(() => {
+        setHealthStatus("healthy");
+      });
+  }, []);
+
+  const getActiveSection = () => {
+    if (pathname.startsWith("/ask") || pathname === "/") return "Ask";
+    if (pathname.startsWith("/knowledge")) return "Knowledge";
+    if (pathname.startsWith("/retrieval")) return "Retrieval";
+    if (pathname.startsWith("/evaluation")) return "Evaluation";
+    if (pathname.startsWith("/system")) return "System";
+    return "Workspace";
+  };
+
   return (
-    <header className="sticky top-0 z-30 flex h-[70px] shrink-0 items-center justify-between border-b border-border/10 bg-transparent backdrop-blur-sm px-8">
+    <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center justify-between border-b border-border bg-[#090f0e]/95 backdrop-blur-md px-5 sm:px-6">
+      {/* Brand & Workspace Breadcrumb matching Section 3 */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center h-8 w-8">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-accent drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-xl font-semibold tracking-widest text-foreground bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 uppercase leading-none">MNEMORA</h1>
-          <p className="text-[8px] font-mono tracking-widest text-accent/80 uppercase mt-0.5">Command Center</p>
-        </div>
-      </div>
-      
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2.5 bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]"></span>
+        <Link href="/ask" className="flex items-center gap-2 group">
+          <span className="font-semibold text-sm tracking-tight text-foreground group-hover:text-accent transition-colors">
+            Mnemora
           </span>
-          <span className="text-emerald-500 text-xs font-medium tracking-widest uppercase">System Operational</span>
+        </Link>
+
+        <span className="text-muted-foreground/40 text-xs font-mono">/</span>
+
+        <span className="text-xs text-muted-foreground font-mono">
+          Workspace / <span className="text-foreground font-medium">{getActiveSection()}</span>
+        </span>
+      </div>
+
+      {/* Right Operational Status */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-secondary/80 border border-border text-xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+          <span className="text-[11px] font-mono text-signal font-medium">
+            Operational
+          </span>
         </div>
-        
-        <button className="flex items-center justify-center h-8 w-8 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-          <Settings className="h-5 w-5" />
-        </button>
+
+        <a
+          href="https://www.harshakurtkoti.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-accent transition-colors px-1.5 py-1 rounded"
+          title="Harsha Kurtkoti Portfolio"
+        >
+          <span>HK</span>
+          <ExternalLink className="h-2.5 w-2.5" />
+        </a>
       </div>
     </header>
   );

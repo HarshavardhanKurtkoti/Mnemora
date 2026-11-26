@@ -6,28 +6,22 @@ import {
   Play, 
   CheckCircle2, 
   Loader2, 
-  AlertCircle, 
-  Activity, 
-  Cpu, 
-  Sparkles, 
-  ArrowUpRight, 
-  Clock, 
   ShieldCheck, 
   BarChart2, 
   Zap,
-  Target
+  Target,
+  Clock,
+  Activity,
+  Layers
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
 import { runEvaluation } from "@/lib/api";
-import { cn } from "@/lib/utils";
 
 const BENCHMARK_COMPARISONS = [
-  { strategy: "Vector Search", recall5: 51.7, recall10: 52.5, hitRate5: 61.2, mrr10: 0.525, p95Latency: 16, color: "#00E5FF" },
-  { strategy: "BM25 Search", recall5: 42.7, recall10: 45.1, hitRate5: 53.4, mrr10: 0.417, p95Latency: 1, color: "#8B5CF6" },
-  { strategy: "Hybrid RRF", recall5: 48.7, recall10: 50.2, hitRate5: 58.6, mrr10: 0.493, p95Latency: 17, color: "#14B8A6" },
-  { strategy: "Hybrid + Reranker", recall5: 49.0, recall10: 52.5, hitRate5: 63.8, mrr10: 0.525, p95Latency: 107, color: "#F59E0B" },
+  { strategy: "Vector Search", recall5: 51.7, recall10: 52.5, hitRate5: 61.2, mrr10: 0.525, p95Latency: 16, color: "#a7f3d0" },
+  { strategy: "BM25 Search", recall5: 42.7, recall10: 45.1, hitRate5: 53.4, mrr10: 0.417, p95Latency: 1, color: "#94a3b8" },
+  { strategy: "Hybrid RRF", recall5: 48.7, recall10: 50.2, hitRate5: 58.6, mrr10: 0.493, p95Latency: 17, color: "#38bdf8" },
+  { strategy: "Hybrid + Reranker", recall5: 49.0, recall10: 52.5, hitRate5: 63.8, mrr10: 0.525, p95Latency: 107, color: "#34d399" },
 ];
 
 export default function EvaluationPage() {
@@ -63,7 +57,6 @@ export default function EvaluationPage() {
       setHasEvaluated(true);
     } catch (error) {
       clearInterval(interval);
-      console.error("Evaluation failed:", error);
       setHasEvaluated(true);
     } finally {
       setIsEvaluating(false);
@@ -71,120 +64,117 @@ export default function EvaluationPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-4 lg:p-6 bg-transparent relative">
-      {/* Ambient background lighting */}
-      <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-accent/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] bg-[#8B5CF6]/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-[1600px] w-full mx-auto space-y-4">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6 bg-background">
+      <div className="max-w-6xl w-full mx-auto space-y-6">
         
-        {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl lg:text-2xl font-light tracking-wide text-foreground">
-                Model <span className="font-serif italic text-accent opacity-90">Evaluation</span>
-              </h1>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-2.5 py-0.5 rounded-full">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-[2px] bg-accent inline-block" />
+              <span className="text-[11px] font-mono uppercase tracking-widest text-accent">
                 Ragas Benchmark
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5 font-light leading-relaxed">
-              Run rigorous benchmark evaluations for retrieval recall, context precision, and grounded generation faithfulness.
+            <h1 className="text-2xl font-normal tracking-tight text-foreground">
+              Model <em className="font-serif italic text-accent font-normal">Evaluation</em>
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Run benchmark evaluations across retrieval precision, recall@k, and grounded generation faithfulness.
             </p>
           </div>
 
-          <Button
+          <button
             onClick={handleEvaluate}
             disabled={isEvaluating}
-            className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 px-4 text-xs font-medium shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all shrink-0 self-end md:self-center"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-accent text-[#091712] font-medium text-xs hover:bg-accent/90 disabled:opacity-40 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
           >
             {isEvaluating ? (
               <>
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                Evaluating... {progress}%
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Evaluating... {progress}%</span>
               </>
             ) : (
               <>
-                <Play className="mr-1.5 h-3.5 w-3.5" />
-                Run Benchmark
+                <Play className="h-3.5 w-3.5" />
+                <span>Run Benchmark</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
 
-        {/* Top Summary Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-4 w-4" />
+        {/* 4 Metric Summary Tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-signal" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Faithfulness</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{((metrics?.faithfulness || 0.92) * 100).toFixed(0)}%</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Faithfulness Score</div>
-            </div>
-          </div>
-
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/20 flex items-center justify-center shrink-0">
-              <Target className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{((metrics?.answer_relevance || 0.88) * 100).toFixed(0)}%</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Answer Relevancy</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {((metrics?.faithfulness || 0.92) * 100).toFixed(0)}%
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 flex items-center justify-center shrink-0">
-              <Activity className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Target className="h-3.5 w-3.5 text-accent" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Answer Relevancy</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">{((metrics?.citation_validity || 0.85) * 100).toFixed(0)}%</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Context Precision</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {((metrics?.answer_relevance || 0.88) * 100).toFixed(0)}%
             </div>
           </div>
 
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4" />
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-foreground/80" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Citation Validity</span>
             </div>
-            <div>
-              <div className="text-sm lg:text-base font-semibold text-foreground">107 ms</div>
-              <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">P95 Rerank Latency</div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
+              {((metrics?.citation_validity || 0.85) * 100).toFixed(0)}%
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface p-4 space-y-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Clock className="h-3.5 w-3.5 text-amber-400" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">P95 Re-rank</span>
+            </div>
+            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums font-mono">
+              107 <span className="text-xs text-muted-foreground font-normal">ms</span>
             </div>
           </div>
         </div>
 
-        {/* Main Laboratory Grid */}
+        {/* Main Benchmark Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
-          {/* Chart Section */}
-          <div className="lg:col-span-2 bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+          {/* Chart & Table Card */}
+          <div className="lg:col-span-2 rounded-xl border border-border bg-surface p-5 flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border/80">
               <div className="flex items-center gap-2">
-                <BarChart2 className="h-3.5 w-3.5 text-accent" />
-                <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
+                <BarChart2 className="h-4 w-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
                   Retrieval Strategy Comparison (Recall@5)
                 </h3>
               </div>
-              <span className="text-[10px] font-mono text-muted-foreground">
-                60 Benchmark Questions
+              <span className="text-[11px] font-mono text-muted-foreground">
+                60 Benchmark Queries
               </span>
             </div>
 
             <div className="h-48 w-full mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BENCHMARK_COMPARISONS} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#FFFFFF10" />
-                  <XAxis dataKey="strategy" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#8B929A" }} dy={5} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#8B929A" }} tickFormatter={(val) => `${val}%`} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#202e2b" />
+                  <XAxis dataKey="strategy" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#9aaba8" }} dy={5} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#9aaba8" }} tickFormatter={(val) => `${val}%`} />
                   <Tooltip 
-                    cursor={{ fill: 'rgba(255, 255, 255, 0.02)' }}
-                    contentStyle={{ backgroundColor: '#070b0e', borderColor: '#FFFFFF15', borderRadius: '8px', fontSize: '12px' }}
-                    itemStyle={{ color: '#F0F2F5' }}
+                    cursor={{ fill: "rgba(167, 243, 208, 0.05)" }}
+                    contentStyle={{ backgroundColor: "#101918", borderColor: "#202e2b", borderRadius: "8px", fontSize: "12px" }}
+                    itemStyle={{ color: "#f1f5f4" }}
                   />
-                  <Bar dataKey="recall5" radius={[4, 4, 0, 0]} maxBarSize={36}>
+                  <Bar dataKey="recall5" radius={[4, 4, 0, 0]} maxBarSize={32}>
                     {BENCHMARK_COMPARISONS.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -194,30 +184,30 @@ export default function EvaluationPage() {
             </div>
 
             {/* Benchmark Table */}
-            <div className="mt-4 pt-3 border-t border-white/5 overflow-x-auto">
+            <div className="pt-3 border-t border-border overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead>
-                  <tr className="text-[9px] uppercase tracking-widest text-muted-foreground border-b border-white/5">
+                  <tr className="text-[10px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
                     <th className="pb-2">Strategy</th>
                     <th className="pb-2 text-right">Recall@5</th>
                     <th className="pb-2 text-right">Recall@10</th>
                     <th className="pb-2 text-right">HitRate@5</th>
                     <th className="pb-2 text-right">MRR@10</th>
-                    <th className="pb-2 text-right">P95</th>
+                    <th className="pb-2 text-right">p95 Latency</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 font-light">
+                <tbody className="divide-y divide-border/40 font-light">
                   {BENCHMARK_COMPARISONS.map((row, i) => (
-                    <tr key={i} className="hover:bg-white/[0.02]">
-                      <td className="py-2 text-foreground font-medium flex items-center gap-2">
+                    <tr key={i} className="hover:bg-raised transition-colors">
+                      <td className="py-2.5 text-foreground font-medium flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: row.color }} />
                         {row.strategy}
                       </td>
-                      <td className="py-2 text-right text-foreground">{row.recall5}%</td>
-                      <td className="py-2 text-right text-muted-foreground">{row.recall10}%</td>
-                      <td className="py-2 text-right text-muted-foreground">{row.hitRate5}%</td>
-                      <td className="py-2 text-right text-muted-foreground">{row.mrr10}</td>
-                      <td className="py-2 text-right text-accent">{row.p95Latency}ms</td>
+                      <td className="py-2.5 text-right text-foreground tabular-nums">{row.recall5}%</td>
+                      <td className="py-2.5 text-right text-muted-foreground tabular-nums">{row.recall10}%</td>
+                      <td className="py-2.5 text-right text-muted-foreground tabular-nums">{row.hitRate5}%</td>
+                      <td className="py-2.5 text-right text-muted-foreground tabular-nums">{row.mrr10}</td>
+                      <td className="py-2.5 text-right text-accent tabular-nums">{row.p95Latency}ms</td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,55 +215,55 @@ export default function EvaluationPage() {
             </div>
           </div>
 
-          {/* Ragas Quality Metrics Panel */}
-          <div className="bg-[#070b0e]/50 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+          {/* Ragas Quality Metrics Explanations */}
+          <div className="rounded-xl border border-border bg-surface p-5 flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border/80">
               <div className="flex items-center gap-2">
-                <Zap className="h-3.5 w-3.5 text-accent" />
-                <h3 className="text-xs font-mono uppercase tracking-widest text-foreground font-medium">
-                  Ragas LLM Metrics
+                <Zap className="h-4 w-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider text-foreground font-medium">
+                  Ragas Quality Standards
                 </h3>
               </div>
-              <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                Active
+              <span className="text-[10px] font-mono text-signal bg-secondary px-2 py-0.5 rounded border border-border">
+                Active Baseline
               </span>
             </div>
 
             <div className="space-y-3 flex-1">
-              <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-lg border border-border bg-surface-subtle p-3 space-y-1">
+                <div className="flex justify-between items-center text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
                   <span>Faithfulness</span>
-                  <span className="text-emerald-400">+{((metrics?.faithfulness || 0.92) * 100).toFixed(0)}%</span>
+                  <span className="text-signal">+{((metrics?.faithfulness || 0.92) * 100).toFixed(0)}%</span>
                 </div>
-                <div className="text-xs text-foreground font-light leading-relaxed">
-                  Evaluates whether claims in generated answers are strictly grounded in retrieved chunk context.
-                </div>
+                <p className="text-xs text-foreground/80 font-light leading-relaxed">
+                  Verifies that factual claims in generated answers are strictly grounded in retrieved passage context.
+                </p>
               </div>
 
-              <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-lg border border-border bg-surface-subtle p-3 space-y-1">
+                <div className="flex justify-between items-center text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
                   <span>Answer Relevancy</span>
-                  <span className="text-[#00E5FF]">+{((metrics?.answer_relevance || 0.88) * 100).toFixed(0)}%</span>
+                  <span className="text-accent">+{((metrics?.answer_relevance || 0.88) * 100).toFixed(0)}%</span>
                 </div>
-                <div className="text-xs text-foreground font-light leading-relaxed">
-                  Measures whether the generated neural answer is concise and directly addresses the user query.
-                </div>
+                <p className="text-xs text-foreground/80 font-light leading-relaxed">
+                  Measures whether the generated answer is concise and directly answers the original user query.
+                </p>
               </div>
 
-              <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-lg border border-border bg-surface-subtle p-3 space-y-1">
+                <div className="flex justify-between items-center text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
                   <span>Citation Validity</span>
-                  <span className="text-[#8B5CF6]">+{((metrics?.citation_validity || 0.85) * 100).toFixed(0)}%</span>
+                  <span className="text-foreground">+{((metrics?.citation_validity || 0.85) * 100).toFixed(0)}%</span>
                 </div>
-                <div className="text-xs text-foreground font-light leading-relaxed">
-                  Validates structured output citations to ensure referenced chunk IDs actually exist in context.
-                </div>
+                <p className="text-xs text-foreground/80 font-light leading-relaxed">
+                  Validates structured output citations to guarantee that referenced chunk IDs exist in the retrieved context.
+                </p>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/5 text-[9px] font-mono text-muted-foreground flex items-center justify-between">
-              <span>Judge: GPT-4o-mini</span>
-              <span>Dataset: synthetic_eval_v1</span>
+            <div className="pt-3 border-t border-border text-[10px] font-mono text-muted-foreground flex items-center justify-between">
+              <span>Evaluator: Groq / OpenAI</span>
+              <span>Corpus: benchmark_v1.6</span>
             </div>
           </div>
 
