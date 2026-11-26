@@ -74,6 +74,8 @@ COMPLETE
 - [x] Structure Grafana folders cleanly (`Mnemora`, `Portfolio`, `Infrastructure`) via dual provisioning providers in `master-grafana/grafana/provisioning/dashboards/dashboards.yml`
 - [x] Implement live dynamic Prometheus metrics in `src/api/controllers/metrics_controller.py` exposing real Neon DB models (`SystemStat`, `SystemHealth`), latencies, and candidate counts
 - [x] Configure Prometheus scrape target `host.docker.internal:8080/metrics` with `honor_labels: true`, verified all 30 panels actively populate real data without 0/No Data errors
+- [x] Eliminate root-level dashboard duplicate: structured Grafana into 3 clean project folders (`Mnemora`, `Portfolio`, `Infrastructure`) with exactly one canonical dashboard per folder and zero loose root duplicates
+- [x] Fix donut chart label clutter: disabled slice text overlay (`displayLabels: []`) and simplified endpoint labels so breakdown tables render crisply without overlapping text
 
 ## In Progress
 
