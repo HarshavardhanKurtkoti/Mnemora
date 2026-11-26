@@ -470,16 +470,40 @@ export default function KnowledgePage() {
                 {uploadError}
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between text-xs font-mono">
-                  <span className="text-muted-foreground">Generating Chunks & Embeddings</span>
-                  <span className="text-accent">{Math.round(uploadProgress)}%</span>
+                  <span className="text-muted-foreground">
+                    {uploadProgress < 25 ? "Parsing Document Structure..." :
+                     uploadProgress < 55 ? "Generating Token Chunks (800 / 100)..." :
+                     uploadProgress < 85 ? "Computing FastEmbed 384d Vectors..." :
+                     "Upserting to Qdrant & BM25 Indices..."}
+                  </span>
+                  <span className="text-accent font-semibold tabular-nums">{Math.round(uploadProgress)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden border border-border/50">
                   <div
-                    className="h-full bg-accent transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-emerald-500 to-accent transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
+                </div>
+                {/* 4 Ingestion Phases Checklist */}
+                <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px]">
+                  <div className={cn("p-1.5 rounded border flex items-center justify-between", uploadProgress >= 25 ? "border-signal/40 bg-signal/10 text-signal" : "border-border/60 text-muted-foreground")}>
+                    <span>1. Text Parsing</span>
+                    {uploadProgress >= 25 && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                  <div className={cn("p-1.5 rounded border flex items-center justify-between", uploadProgress >= 55 ? "border-signal/40 bg-signal/10 text-signal" : "border-border/60 text-muted-foreground")}>
+                    <span>2. Token Chunking</span>
+                    {uploadProgress >= 55 && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                  <div className={cn("p-1.5 rounded border flex items-center justify-between", uploadProgress >= 85 ? "border-signal/40 bg-signal/10 text-signal" : "border-border/60 text-muted-foreground")}>
+                    <span>3. FastEmbed (384d)</span>
+                    {uploadProgress >= 85 && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                  <div className={cn("p-1.5 rounded border flex items-center justify-between", uploadProgress >= 98 ? "border-signal/40 bg-signal/10 text-signal" : "border-border/60 text-muted-foreground")}>
+                    <span>4. Dual Index Store</span>
+                    {uploadProgress >= 98 && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
                 </div>
               </div>
             )}

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { inspectRetrieval } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PipelineProgress } from "@/components/pipeline-progress";
 
 const SAMPLE_QUERIES = [
   "How does authentication work for checkout?",
@@ -202,6 +203,9 @@ function RetrievalInspectorContent() {
             )}
           </button>
         </form>
+
+        {/* Live Multi-Stage Pipeline Progress Tracker */}
+        <PipelineProgress isActive={isLoading} query={query} mode="inspect" />
 
         {/* Interactive Systems in Motion Architecture Pipeline Graph */}
         <div className="rounded-xl border border-border bg-[#091110] p-5 space-y-4 shadow-sm">

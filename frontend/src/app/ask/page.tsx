@@ -35,6 +35,7 @@ import {
   askMnemora 
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PipelineProgress } from "@/components/pipeline-progress";
 
 const DEFAULT_RECENT_QUERIES = [
   { query_text: "How does authentication work for checkout?", latency_ms: 107, strategy_type: "Hybrid RRF + Reranker" },
@@ -310,6 +311,9 @@ function AskPageContent() {
             </div>
           </div>
         </div>
+
+        {/* Live Multi-Stage Pipeline Progress Tracker */}
+        <PipelineProgress isActive={isSearching} query={query || urlQuery || ""} mode="query" />
 
         {/* Compact Knowledge Statistics */}
         {!urlQuery && !answerData && (

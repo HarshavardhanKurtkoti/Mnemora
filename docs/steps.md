@@ -53,6 +53,7 @@ COMPLETE
 - [x] Phase 1.8: Refine `/knowledge` page (improved table typography, row rhythm, format filter pills, human-readable metadata drawer replacing raw JSON-first previews)
 - [x] Phase 1.8: Build flagship `/retrieval` inspector (Systems in Motion architecture visualization, interactive stage selection, split-pane results, and candidate rank shift indicators)
 - [x] Phase 1.8: Refine `/evaluation` and `/system` observability pages (structured metric hierarchy, question-level benchmark inspection, interactive connected service dependency topology)
+- [x] Add live multi-stage pipeline progress tracker component (`pipeline-progress.tsx`) displaying step-by-step FastEmbed model caching, vector & lexical search, RRF fusion, and cross-encoder scoring on `/ask`, `/retrieval`, and `/knowledge`
 - [x] Phase 1.8: Verified Next.js production build (`pnpm build`) with zero errors across all 9 static routes
 - [x] Phase 1.8: Verified backend pytest suite with 15/15 tests passing
 - [x] Add `psycopg[binary]>=3.1.18` and PostgreSQL URI normalization in `src/config/database.py` to fix `ModuleNotFoundError: No module named 'psycopg'` in Docker container runtime
